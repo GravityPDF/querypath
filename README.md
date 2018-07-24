@@ -1,4 +1,4 @@
-# QueryPath: Find your way with the better implementation.
+# QueryPath: Find your way with better implementation.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
