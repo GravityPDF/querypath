@@ -1,16 +1,6 @@
-# QueryPath: Find your way.
-[![Stability: Maintenance](https://masterminds.github.io/stability/maintenance.svg)](https://masterminds.github.io/stability/maintenance.html)
+# QueryPath: Find your way with the better implementation.
 
-Authors: Matt Butcher (lead), Emily Brand, and many others
-
-[Website](http://querypath.org) |
-[API Docs](http://api.querypath.org/docs) |
-[VCS and Issue Tracking](http://github.com/technosophos/querypath) |
-[Support List](http://groups.google.com/group/support-querypath) |
-[Developer List](http://groups.google.com/group/devel-querypath) |
-[Pear channel](http://pear.querypath.org) |
-
-This package is licensed under an MIT license (COPYING-MIT.txt).
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 ## At A Glance
 
