@@ -1,5 +1,5 @@
 {
-    "name": "arthurkushman/QueryPath",
+    "name": "arthurkushman/query-path",
     "type": "library",
     "description": "HTML/XML querying (CSS 4 or XPath) and processing (like jQuery)",
     "homepage": "https://github.com/arthurkushman/querypath",
