@@ -136,10 +136,10 @@ class DOMQueryTest extends TestCase
 
     public function testForTests()
     {
-        $qp_methods = get_class_methods('\QueryPath\DOMQuery');
-        $test_methods = get_class_methods('\QueryPath\Tests\DOMQueryTest');
+        $qp_methods = get_class_methods(DOMQuery::class);
+        $test_methods = get_class_methods(DOMQueryTest::class);
 
-        $ignore = ["__construct", "__call", "__clone", "get", "getOptions", "setMatches", "toArray", "getIterator"];
+        $ignore = ['__construct', '__call', '__clone', 'get', 'getOptions', 'setMatches', 'toArray', 'getIterator'];
 
         $test_methods = array_map('strtolower', $test_methods);
 
@@ -147,7 +147,7 @@ class DOMQueryTest extends TestCase
             if (in_array($q, $ignore)) {
                 continue;
             }
-            $this->assertTrue(in_array(strtolower("test" . $q), $test_methods), $q . ' does not have a test method.');
+            $this->assertTrue(in_array(strtolower('test' . $q), $test_methods), $q . ' does not have a test method.');
         }
     }
 
@@ -172,7 +172,7 @@ class DOMQueryTest extends TestCase
 
     public function testQPAbstractFactory()
     {
-        $options = ['QueryPath_class' => '\QueryPath\Tests\QueryPathExtended'];
+        $options = ['QueryPath_class' => QueryPathExtended::class];
         $qp = qp(NULL, NULL, $options);
         $this->assertTrue($qp instanceof QueryPathExtended, 'Is instance of extending class.');
         $this->assertTrue($qp->foonator(), 'Has special foonator() function.');
@@ -181,7 +181,7 @@ class DOMQueryTest extends TestCase
     public function testQPAbstractFactoryIterating()
     {
         $xml = '<?xml version="1.0"?><l><i/><i/><i/><i/><i/></l>';
-        $options = ['QueryPath_class' => '\QueryPath\Tests\QueryPathExtended'];
+        $options = ['QueryPath_class' => QueryPathExtended::class];
         foreach (qp($xml, 'i', $options) as $item) {
             $this->assertTrue($item instanceof QueryPathExtended, 'Is instance of extending class.');
         }

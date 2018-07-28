@@ -14,7 +14,7 @@
 namespace QueryPath;
 
 use \QueryPath\CSS\QueryPathEventHandler;
-use \QueryPath;
+use \QueryPath\QueryPath;
 use \Masterminds\HTML5;
 
 
