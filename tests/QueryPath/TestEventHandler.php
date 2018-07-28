@@ -41,7 +41,7 @@ class TestEventHandler implements EventHandler
         }
     }
 
-    public function expects($stack)
+    public function expectsSmth($stack)
     {
         $this->expect = $stack;
     }

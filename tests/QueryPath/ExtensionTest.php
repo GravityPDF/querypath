@@ -16,8 +16,8 @@ class QueryPathExtensionTest extends TestCase
 
     public static function setUpBeforeClass()
     {
-        ExtensionRegistry::extend('\QueryPath\Tests\StubExtensionOne');
-        ExtensionRegistry::extend('\QueryPath\Tests\StubExtensionTwo');
+        ExtensionRegistry::extend(StubExtensionOne::class);
+        ExtensionRegistry::extend(StubExtensionTwo::class);
     }
 
     public function testExtensions()
@@ -27,7 +27,7 @@ class QueryPathExtensionTest extends TestCase
 
     public function testHasExtension()
     {
-        $this->assertTrue(ExtensionRegistry::hasExtension('\QueryPath\Tests\StubExtensionOne'));
+        $this->assertTrue(ExtensionRegistry::hasExtension(StubExtensionOne::class));
     }
 
     public function testStubToe()
@@ -57,9 +57,9 @@ class QueryPathExtensionTest extends TestCase
 
     public function testExtend()
     {
-        $this->assertFalse(ExtensionRegistry::hasExtension('\QueryPath\Tests\StubExtensionThree'));
-        ExtensionRegistry::extend('\QueryPath\Tests\StubExtensionThree');
-        $this->assertTrue(ExtensionRegistry::hasExtension('\QueryPath\Tests\StubExtensionThree'));
+        $this->assertFalse(ExtensionRegistry::hasExtension(StubExtensionThree::class));
+        ExtensionRegistry::extend(StubExtensionThree::class);
+        $this->assertTrue(ExtensionRegistry::hasExtension(StubExtensionThree::class));
     }
 
     public function tearDown()
@@ -154,7 +154,7 @@ class StubExtensionTwo implements Extension
 class StubExtensionThree implements Extension
 {
 
-    private $qp = NULL;
+    private $qp;
 
     public function __construct(\QueryPath\Query $qp)
     {

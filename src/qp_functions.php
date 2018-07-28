@@ -17,6 +17,8 @@
  * @endcode
  */
 
+use QueryPath\QueryPath;
+
 /** @addtogroup querypath_core Core API
  * Core classes and functions for QueryPath.
  *

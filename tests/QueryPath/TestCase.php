@@ -11,5 +11,5 @@ require_once __DIR__ . '/../../vendor/autoload.php';
 
 class TestCase extends \PHPUnit\Framework\TestCase
 {
-    public const DATA_FILE = 'test/data.xml';
+    public const DATA_FILE = 'tests/data.xml';
 }
