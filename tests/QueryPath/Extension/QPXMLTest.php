@@ -14,7 +14,7 @@ use QueryPathTests\TestCase;
 class QPXMLTest extends TestCase
 {
 
-    protected $file = './test/advanced.xml';
+    protected $file = './tests/advanced.xml';
 
     public static function setUpBeforeClass()
     {
