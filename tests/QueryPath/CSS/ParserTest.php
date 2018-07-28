@@ -5,6 +5,8 @@ namespace QueryPathTests\CSS;
 use QueryPath\CSS\Parser;
 use QueryPath\CSS\EventHandler;
 use QueryPathTests\TestCase;
+use QueryPathTests\TestEvent;
+use QueryPathTests\TestEventHandler;
 
 /**
  * @ingroup querypath_tests
@@ -15,38 +17,35 @@ class ParserTest extends TestCase
 
     private function getMockHandler($method)
     {
-        $mock = $this->createMock(TestEventHandler::class);
-        //$mock->expects($this->once())
-        //    ->method($method)
-        //    ->with($this->equalTo('mytest'));
+        $mock = $this->createMock('\QueryPath\Tests\TestEventHandler');
         $mock->method($method)->willReturn('mytest');
         return $mock;
     }
 
     public function testElementID()
     {
-        //$mock = $this->getMockHandler('elementID');
-        //$parser = new Parser('#mytest', $mock);
-        //$parser->parse();
+        $mock = $this->getMockHandler('elementID');
+        $parser = new Parser('#mytest', $mock);
+        $parser->parse();
 
     }
 
     public function testElement()
     {
         // Without namespace
-        //$mock = $this->getMockHandler('element');
-        //$parser = new Parser('mytest', $mock);
-        //$parser->parse();
-        //
-        //// With empty namespace
-        //$mock = $this->getMockHandler('element');
-        //$parser = new Parser('|mytest', $mock);
-        //$parser->parse();
+        $mock = $this->getMockHandler('element');
+        $parser = new Parser('mytest', $mock);
+        $parser->parse();
+
+        // With empty namespace
+        $mock = $this->getMockHandler('element');
+        $parser = new Parser('|mytest', $mock);
+        $parser->parse();
     }
 
     public function testElementNS()
     {
-        $mock = $this->getMock('\QueryPath\Tests\TestEventHandler', ['elementNS']);
+        $mock = $this->createMock('\QueryPath\Tests\TestEventHandler');
         $mock->expects($this->once())
             ->method('elementNS')
             ->with($this->equalTo('mytest'), $this->equalTo('myns'));
@@ -54,7 +53,7 @@ class ParserTest extends TestCase
         $parser = new Parser('myns|mytest', $mock);
         $parser->parse();
 
-        $mock = $this->getMock('\QueryPath\Tests\TestEventHandler', ['elementNS']);
+        $mock = $this->createMock('\QueryPath\Tests\TestEventHandler');
         $mock->expects($this->once())
             ->method('elementNS')
             ->with($this->equalTo('mytest'), $this->equalTo('*'));
@@ -62,7 +61,7 @@ class ParserTest extends TestCase
         $parser = new Parser('*|mytest', $mock);
         $parser->parse();
 
-        $mock = $this->getMock('\QueryPath\Tests\TestEventHandler', ['anyElementInNS']);
+        $mock = $this->createMock('\QueryPath\Tests\TestEventHandler');
         $mock->expects($this->once())
             ->method('anyElementInNS')
             ->with($this->equalTo('*'));
@@ -73,7 +72,7 @@ class ParserTest extends TestCase
 
     public function testAnyElement()
     {
-        $mock = $this->getMock('\QueryPath\Tests\TestEventHandler', ['anyElement', 'element']);
+        $mock = $this->createMock('\QueryPath\Tests\TestEventHandler');
         $mock->expects($this->once())
             ->method('anyElement');
 
@@ -83,7 +82,7 @@ class ParserTest extends TestCase
 
     public function testAnyElementInNS()
     {
-        $mock = $this->getMock('\QueryPath\Tests\TestEventHandler', ['anyElementInNS', 'element']);
+        $mock = $this->createMock('\QueryPath\Tests\TestEventHandler');
         $mock->expects($this->once())
             ->method('anyElementInNS')
             ->with($this->equalTo('myns'));
@@ -94,7 +93,7 @@ class ParserTest extends TestCase
 
     public function testElementClass()
     {
-        $mock = $this->getMock('\QueryPath\Tests\TestEventHandler', ['elementClass']);
+        $mock = $this->createMock('\QueryPath\Tests\TestEventHandler', ['elementClass']);
         $mock->expects($this->once())
             ->method('elementClass')
             ->with($this->equalTo('myclass'));
@@ -107,7 +106,7 @@ class ParserTest extends TestCase
     {
 
         // Test empty pseudoclass
-        $mock = $this->getMock('\QueryPath\Tests\TestEventHandler', ['pseudoClass']);
+        $mock = $this->createMock('\QueryPath\Tests\TestEventHandler');
         $mock->expects($this->once())
             ->method('pseudoClass')
             ->with($this->equalTo('mypclass'));
@@ -116,7 +115,7 @@ class ParserTest extends TestCase
         $parser->parse();
 
         // Test pseudoclass with value
-        $mock = $this->getMock('\QueryPath\Tests\TestEventHandler', ['pseudoClass']);
+        $mock = $this->createMock('\QueryPath\Tests\TestEventHandler');
         $mock->expects($this->once())
             ->method('pseudoClass')
             ->with($this->equalTo('mypclass'), $this->equalTo('myval'));
@@ -125,7 +124,7 @@ class ParserTest extends TestCase
         $parser->parse();
 
         // Test pseudclass with pseudoclass:
-        $mock = $this->getMock('\QueryPath\Tests\TestEventHandler', ['pseudoClass']);
+        $mock = $this->createMock('\QueryPath\Tests\TestEventHandler');
         $mock->expects($this->once())
             ->method('pseudoClass')
             ->with($this->equalTo('mypclass'), $this->equalTo(':anotherPseudo'));
@@ -138,7 +137,7 @@ class ParserTest extends TestCase
     public function testPseudoElement()
     {
         // Test pseudo-element
-        $mock = $this->getMock('\QueryPath\Tests\TestEventHandler', ['pseudoElement']);
+        $mock = $this->createMock('\QueryPath\Tests\TestEventHandler');
         $mock->expects($this->once())
             ->method('pseudoElement')
             ->with($this->equalTo('mypele'));
@@ -150,7 +149,7 @@ class ParserTest extends TestCase
     public function testDirectDescendant()
     {
         // Test direct Descendant
-        $mock = $this->getMock('\QueryPath\Tests\TestEventHandler', ['directDescendant']);
+        $mock = $this->createMock('\QueryPath\Tests\TestEventHandler');
         $mock->expects($this->once())
             ->method('directDescendant');
 
@@ -162,7 +161,7 @@ class ParserTest extends TestCase
     public function testAnyDescendant()
     {
         // Test direct Descendant
-        $mock = $this->getMock('\QueryPath\Tests\TestEventHandler', ['anyDescendant']);
+        $mock = $this->createMock('\QueryPath\Tests\TestEventHandler');
         $mock->expects($this->once())
             ->method('anyDescendant');
 
@@ -174,7 +173,7 @@ class ParserTest extends TestCase
     public function testAdjacent()
     {
         // Test sibling
-        $mock = $this->getMock('\QueryPath\Tests\TestEventHandler', ['adjacent']);
+        $mock = $this->createMock('\QueryPath\Tests\TestEventHandler');
         $mock->expects($this->once())
             ->method('adjacent');
 
@@ -185,7 +184,7 @@ class ParserTest extends TestCase
     public function testSibling()
     {
         // Test adjacent
-        $mock = $this->getMock('\QueryPath\Tests\TestEventHandler', ['sibling']);
+        $mock = $this->createMock('\QueryPath\Tests\TestEventHandler');
         $mock->expects($this->once())
             ->method('sibling');
 
@@ -196,7 +195,7 @@ class ParserTest extends TestCase
     public function testAnotherSelector()
     {
         // Test adjacent
-        $mock = $this->getMock('\QueryPath\Tests\TestEventHandler', ['anotherSelector']);
+        $mock = $this->createMock('\QueryPath\Tests\TestEventHandler');
         $mock->expects($this->once())
             ->method('anotherSelector');
 
@@ -216,7 +215,7 @@ class ParserTest extends TestCase
         $parser = new Parser('[test=~far]', new TestEventHandler());
         try {
             $parser->parse();
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             //print $e->getMessage();
             throw $e;
         }
@@ -231,7 +230,7 @@ class ParserTest extends TestCase
             'element[attr2]'      => 'attr2', // Issue #
         ];
         foreach ($selectors as $filter => $expected) {
-            $mock = $this->getMock('\QueryPath\Tests\TestEventHandler', ['attribute']);
+            $mock = $this->createMock('\QueryPath\Tests\TestEventHandler');
             $mock->expects($this->once())
                 ->method('attribute')
                 ->with($this->equalTo($expected));
@@ -267,7 +266,7 @@ class ParserTest extends TestCase
             '*[attr=""]'         => ['attr', '', EventHandler::isExactly],
         ];
         foreach ($selectors as $filter => $expected) {
-            $mock = $this->getMock('\QueryPath\Tests\TestEventHandler', ['attribute']);
+            $mock = $this->createMock('\QueryPath\Tests\TestEventHandler');
             $mock->expects($this->once())
                 ->method('attribute')
                 ->with($this->equalTo($expected[0]), $this->equalTo($expected[1]), $this->equalTo($expected[2]));
@@ -286,7 +285,7 @@ class ParserTest extends TestCase
         ];
 
         foreach ($selectors as $filter => $expected) {
-            $mock = $this->getMock('\QueryPath\Tests\TestEventHandler', ['attributeNS']);
+            $mock = $this->createMock('\QueryPath\Tests\TestEventHandler', ['attributeNS']);
             $mock->expects($this->once())
                 ->method('attributeNS')
                 ->with($this->equalTo($expected[0]), $this->equalTo($expected[1]), $this->equalTo($expected[2]),
@@ -335,9 +334,9 @@ class ParserTest extends TestCase
     {
 
         $expect = [
-            new TestEvent(TestEvent::elementNS, 'element', 'ns'),
-            new TestEvent(TestEvent::elementClass, 'class'),
-            new TestEvent(TestEvent::attribute, 'name', 'value', EventHandler::isExactly),
+            new TestEvent(TestEvent::ELEMENT_NS, 'element', 'ns'),
+            new TestEvent(TestEvent::ELEMENT_CLASS, 'class'),
+            new TestEvent(TestEvent::ATTRIBUTE, 'name', 'value', EventHandler::isExactly),
         ];
         $selector = 'ns|element.class[name="value"]';
 
@@ -366,21 +365,21 @@ class ParserTest extends TestCase
      .class2[attr2~="longer string of text."]:pseudoClass(value)
      .class3::pseudoElement';
         $expect = [
-            new TestEvent(TestEvent::elementNS, 'ele1', '*'),
-            new TestEvent(TestEvent::directDescendant),
-            new TestEvent(TestEvent::element, 'ele2'),
-            new TestEvent(TestEvent::elementClass, 'class1'),
-            new TestEvent(TestEvent::adjacent),
-            new TestEvent(TestEvent::elementNS, 'ele3', 'ns1'),
-            new TestEvent(TestEvent::elementClass, 'class2'),
-            new TestEvent(TestEvent::attribute, 'attr', 'simple', EventHandler::isExactly),
-            new TestEvent(TestEvent::sibling),
-            new TestEvent(TestEvent::elementClass, 'class2'),
-            new TestEvent(TestEvent::attribute, 'attr2', 'longer string of text.', EventHandler::containsWithSpace),
-            new TestEvent(TestEvent::pseudoClass, 'pseudoClass', 'value'),
-            new TestEvent(TestEvent::anyDescendant),
-            new TestEvent(TestEvent::elementClass, 'class3'),
-            new TestEvent(TestEvent::pseudoElement, 'pseudoElement'),
+            new TestEvent(TestEvent::ELEMENT_NS, 'ele1', '*'),
+            new TestEvent(TestEvent::DIRECT_DESCENDANT),
+            new TestEvent(TestEvent::ELEMENT, 'ele2'),
+            new TestEvent(TestEvent::ELEMENT_CLASS, 'class1'),
+            new TestEvent(TestEvent::ADJACENT),
+            new TestEvent(TestEvent::ELEMENT_NS, 'ele3', 'ns1'),
+            new TestEvent(TestEvent::ELEMENT_CLASS, 'class2'),
+            new TestEvent(TestEvent::ATTRIBUTE, 'attr', 'simple', EventHandler::isExactly),
+            new TestEvent(TestEvent::SIBLING),
+            new TestEvent(TestEvent::ELEMENT_CLASS, 'class2'),
+            new TestEvent(TestEvent::ATTRIBUTE, 'attr2', 'longer string of text.', EventHandler::containsWithSpace),
+            new TestEvent(TestEvent::PSEUDO_CLASS, 'pseudoClass', 'value'),
+            new TestEvent(TestEvent::ANY_DESCENDANT),
+            new TestEvent(TestEvent::ELEMENT_CLASS, 'class3'),
+            new TestEvent(TestEvent::PSEUDO_ELEMENT, 'pseudoElement'),
         ];
 
 
@@ -405,174 +404,5 @@ class ParserTest extends TestCase
         $handler->dumpStack();
         $this->assertTrue($handler->success());
         */
-    }
-}
-
-/**
- * Testing harness for the EventHandler.
- *
- * @ingroup querypath_tests
- * @group   CSS
- */
-class TestEventHandler implements EventHandler
-{
-
-    public $stack;
-    public $expect = [];
-
-    public function __construct()
-    {
-        $this->stack = [];
-    }
-
-    public function getStack()
-    {
-        return $this->stack;
-    }
-
-    public function dumpStack()
-    {
-        print "\nExpected:\n";
-        $format = "Element %d: %s\n";
-        foreach ($this->expect as $item) {
-            printf($format, $item->eventType(), implode(',', $item->params()));
-        }
-
-        print "Got:\n";
-        foreach ($this->stack as $item) {
-            printf($format, $item->eventType(), implode(',', $item->params()));
-        }
-    }
-
-    public function expects($stack)
-    {
-        $this->expect = $stack;
-    }
-
-    public function success()
-    {
-        return ($this->expect == $this->stack);
-    }
-
-    public function elementID($id)
-    {
-        $this->stack[] = new TestEvent(TestEvent::elementID, $id);
-    }
-
-    public function element($name)
-    {
-        $this->stack[] = new TestEvent(TestEvent::element, $name);
-    }
-
-    public function elementNS($name, $namespace = NULL)
-    {
-        $this->stack[] = new TestEvent(TestEvent::elementNS, $name, $namespace);
-    }
-
-    public function anyElement()
-    {
-        $this->stack[] = new TestEvent(TestEvent::anyElement);
-    }
-
-    public function anyElementInNS($ns)
-    {
-        $this->stack[] = new TestEvent(TestEvent::anyElementInNS, $ns);
-    }
-
-    public function elementClass($name)
-    {
-        $this->stack[] = new TestEvent(TestEvent::elementClass, $name);
-    }
-
-    public function attribute($name, $value = NULL, $operation = EventHandler::isExactly)
-    {
-        $this->stack[] = new TestEvent(TestEvent::attribute, $name, $value, $operation);
-    }
-
-    public function attributeNS($name, $ns, $value = NULL, $operation = EventHandler::isExactly)
-    {
-        $this->stack[] = new TestEvent(TestEvent::attributeNS, $name, $ns, $value, $operation);
-    }
-
-    public function pseudoClass($name, $value = NULL)
-    {
-        $this->stack[] = new TestEvent(TestEvent::pseudoClass, $name, $value);
-    }
-
-    public function pseudoElement($name)
-    {
-        $this->stack[] = new TestEvent(TestEvent::pseudoElement, $name);
-    }
-
-    public function directDescendant()
-    {
-        $this->stack[] = new TestEvent(TestEvent::directDescendant);
-    }
-
-    public function anyDescendant()
-    {
-        $this->stack[] = new TestEvent(TestEvent::anyDescendant);
-    }
-
-    public function adjacent()
-    {
-        $this->stack[] = new TestEvent(TestEvent::adjacent);
-    }
-
-    public function anotherSelector()
-    {
-        $this->stack[] = new TestEvent(TestEvent::anotherSelector);
-    }
-
-    public function sibling()
-    {
-        $this->stack[] = new TestEvent(TestEvent::sibling);
-    }
-}
-
-/**
- * Simple utility object for use with the TestEventHandler.
- *
- * @ingroup querypath_tests
- * @group   CSS
- */
-class TestEvent
-{
-
-    public const elementID = 0;
-    public const element   = 1;
-    public const elementNS = 2;
-    const anyElement       = 3;
-    const elementClass     = 4;
-    const attribute        = 5;
-    const attributeNS      = 6;
-    const pseudoClass      = 7;
-    const pseudoElement    = 8;
-    const directDescendant = 9;
-    const adjacent         = 10;
-    const anotherSelector  = 11;
-    const sibling          = 12;
-    const anyElementInNS   = 13;
-    const anyDescendant    = 14;
-
-    var $type = NULL;
-    var $params = NULL;
-
-    public function __construct($event_type)
-    {
-        $this->type = $event_type;
-        $args = func_get_args();
-        array_shift($args);
-        $this->params = $args;
-    }
-
-    public function eventType()
-    {
-        return $this->type;
-    }
-
-    public function params()
-    {
-        return $this->params;
     }
 }

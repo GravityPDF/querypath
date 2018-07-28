@@ -30,11 +30,11 @@ namespace QueryPath\CSS;
 class SimpleSelector
 {
 
-    public const ADJACENT          = 1;
-    public const DIRECT_DESCENDANT = 2;
-    public const ANOTHER_SELECTOR  = 4;
-    public const SIBLING           = 8;
-    public const ANY_DESCENDANT    = 16;
+    public const ADJACENT          = 0x1;
+    public const DIRECT_DESCENDANT = 0x2;
+    public const ANOTHER_SELECTOR  = 0x4;
+    public const SIBLING           = 0x8;
+    public const ANY_DESCENDANT    = 0x10;
 
     public $element;
     public $ns;
