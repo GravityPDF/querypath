@@ -1095,7 +1095,7 @@ class DOMQueryTest extends TestCase
 
         $this->assertEquals(1, $q->size());
 
-        $this->assertEquals("foo:bar", $q->ns());
+        $this->assertEquals('foo:bar', $q->ns());
     }
 
     /**

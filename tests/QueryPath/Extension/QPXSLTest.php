@@ -2,7 +2,7 @@
 
 namespace QueryPathTests\Extension;
 
-use QueryPath;
+use QueryPath\QueryPath;
 use QueryPathTests\TestCase;
 use QueryPath\Extension\QPXSL;
 

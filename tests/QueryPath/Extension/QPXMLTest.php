@@ -2,6 +2,7 @@
 
 namespace QueryPathTests\Extension;
 
+use QueryPath\QueryPath;
 use QueryPath\Extension\QPXML;
 use QueryPathTests\TestCase;
 
@@ -17,7 +18,7 @@ class QPXMLTest extends TestCase
 
     public static function setUpBeforeClass()
     {
-        \QueryPath::enable(QPXML::class);
+        QueryPath::enable(QPXML::class);
     }
 
     public function testCDATA()

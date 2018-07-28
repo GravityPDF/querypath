@@ -2,6 +2,7 @@
 
 namespace QueryPathTests\CSS;
 
+use PHPUnit\Framework\MockObject\MockObject;
 use QueryPath\CSS\Parser;
 use QueryPath\CSS\EventHandler;
 use QueryPathTests\TestCase;
@@ -15,6 +16,10 @@ use QueryPathTests\TestEventHandler;
 class ParserTest extends TestCase
 {
 
+    /**
+     * @param $method
+     * @return EventHandler|MockObject
+     */
     private function getMockHandler($method)
     {
         $mock = $this->createMock(TestEventHandler::class);

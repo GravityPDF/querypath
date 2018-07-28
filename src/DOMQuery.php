@@ -45,12 +45,12 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
      *
      * @since 2.0
      */
-    const DEFAULT_PARSER_FLAGS = NULL;
+    public const DEFAULT_PARSER_FLAGS = NULL;
 
-    const JS_CSS_ESCAPE_CDATA             = '\\1';
-    const JS_CSS_ESCAPE_CDATA_CCOMMENT    = '/* \\1 */';
-    const JS_CSS_ESCAPE_CDATA_DOUBLESLASH = '// \\1';
-    const JS_CSS_ESCAPE_NONE              = '';
+    public const JS_CSS_ESCAPE_CDATA             = '\\1';
+    public const JS_CSS_ESCAPE_CDATA_CCOMMENT    = '/* \\1 */';
+    public const JS_CSS_ESCAPE_CDATA_DOUBLESLASH = '// \\1';
+    public const JS_CSS_ESCAPE_NONE              = '';
 
     //const IGNORE_ERRORS = 1544; //E_NOTICE | E_USER_WARNING | E_USER_NOTICE;
     private $errTypes = 771; //E_ERROR; | E_USER_ERROR;
@@ -58,7 +58,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
     /**
      * The base DOMDocument.
      */
-    protected $document = NULL;
+    protected $document;
     private $options = [
         'parser_flags'                 => NULL,
         'omit_xml_declaration'         => false,
@@ -725,7 +725,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
                 return $result;
             }
         } else {
-            $attVal = \QueryPath::encodeDataURL($data, $mime, $context);
+            $attVal = QueryPath::encodeDataURL($data, $mime, $context);
 
             return $this->attr($attr, $attVal);
         }
@@ -3061,7 +3061,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
             print $this->document->saveXML(NULL, $options);
         } else {
             try {
-                set_error_handler(['\QueryPath\IOException', 'initializeFromError']);
+                set_error_handler([IOException::class, 'initializeFromError']);
                 $this->document->save($path, $options);
             } catch (Exception $e) {
                 restore_error_handler();
@@ -3501,7 +3501,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
      */
     public function branch($selector = NULL)
     {
-        $temp = \QueryPath::with($this->matches, NULL, $this->options);
+        $temp = QueryPath::with($this->matches, NULL, $this->options);
         //if (isset($selector)) $temp->find($selector);
         $temp->document = $this->document;
         if (isset($selector)) {
