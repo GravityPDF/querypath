@@ -6,5 +6,6 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
-    'e3beed4731da89c2f2c570aad27339ae' => $baseDir . '/src/qp_functions.php',
+    '6124b4c8570aa390c21fafd04a26c69f' => $vendorDir . '/myclabs/deep-copy/src/DeepCopy/deep_copy.php',
+    '73321c0e02b4d45ae9c8366042d80de4' => $baseDir . '/src/qp_functions.php',
 );
