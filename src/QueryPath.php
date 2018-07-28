@@ -177,6 +177,12 @@ class QueryPath
   </html>';
 
 
+    /**
+     * @param null $document
+     * @param null $selector
+     * @param array $options
+     * @return mixed|\QueryPath\DOMQuery
+     */
     public static function with($document = NULL, $selector = NULL, $options = [])
     {
         $qpClass = isset($options['QueryPath_class']) ? $options['QueryPath_class'] : '\QueryPath\DOMQuery';

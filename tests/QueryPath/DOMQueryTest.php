@@ -8,11 +8,11 @@ namespace QueryPathTests;
 use QueryPath\DOMQuery;
 use \Masterminds\HTML5;
 
-define('DATA_FILE', __DIR__ . '/../../data.xml');
-define('DATA_HTML_FILE', __DIR__ . '/../../data.html');
-define('NO_WRITE_FILE', __DIR__ . '/../../no-write.xml');
-define('MEDIUM_FILE', __DIR__ . '/../../amplify.xml');
-define('HTML_IN_XML_FILE', __DIR__ . '/../../html.xml');
+define('DATA_FILE', __DIR__ . '/../data.xml');
+define('DATA_HTML_FILE', __DIR__ . '/../data.html');
+define('NO_WRITE_FILE', __DIR__ . '/../no-write.xml');
+define('MEDIUM_FILE', __DIR__ . '/../amplify.xml');
+define('HTML_IN_XML_FILE', __DIR__ . '/../html.xml');
 
 /**
  * Tests for DOM Query. Primarily, this is focused on the DomQueryImpl

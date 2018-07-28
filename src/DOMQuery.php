@@ -4228,18 +4228,18 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
         $ext = $lastDot !== false ? strtolower(substr($filename, $lastDot)) : '';
 
         try {
-            set_error_handler(['\QueryPath\ParseException', 'initializeFromError'], $this->errTypes);
+            set_error_handler([ParseException::class, 'initializeFromError'], $this->errTypes);
 
             // If the parser is explicitly set to XML, use that parser.
-            if ($useParser == 'xml') {
-                $r = $document->load($filename, $flags);
+            if ($useParser === 'xml') {
+                $document->load($filename, $flags);
             } // Otherwise, see if it looks like HTML.
-            elseif (isset($htmlExtensions[$ext]) || $useParser == 'html') {
+            elseif ($useParser === 'html' || isset($htmlExtensions[$ext])) {
                 // Try parsing it as HTML.
-                $r = $document->loadHTMLFile($filename);
+                $document->loadHTMLFile($filename);
             } // Default to XML.
             else {
-                $r = $document->load($filename, $flags);
+                $document->load($filename, $flags);
             }
 
         } // Emulate 'finally' behavior.
