@@ -67,8 +67,7 @@ class Parser
             $this->selector();
 
             $finalPosition = $this->scanner->position();
-
-            if ($this->scanner->token !== false && $finalPosition == $position) {
+            if ($this->scanner->token !== false && $finalPosition === $position) {
                 // If we get here, then the scanner did not pop a single character
                 // off of the input stream during a full run of the parser, which
                 // means that the current input does not match any recognizable
@@ -598,6 +597,14 @@ class Parser
     {
         $filter = sprintf('Expected %s, got %s', Token::name($expected), Token::name($got));
         throw new ParseException($filter);
+    }
+
+    /**
+     * @return Scanner
+     */
+    public function getScanner(): Scanner
+    {
+        return $this->scanner;
     }
 
 }

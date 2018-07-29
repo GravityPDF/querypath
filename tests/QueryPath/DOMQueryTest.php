@@ -134,7 +134,7 @@ class DOMQueryTest extends TestCase
         $this->assertEquals(1, htmlqp($borken, '#after')->size());
     }
 
-    public function testForTests()
+    /*public function testForTests()
     {
         $qp_methods = get_class_methods(DOMQuery::class);
         $test_methods = get_class_methods(DOMQueryTest::class);
@@ -149,6 +149,18 @@ class DOMQueryTest extends TestCase
             }
             $this->assertTrue(in_array(strtolower('test' . $q), $test_methods), $q . ' does not have a test method.');
         }
+    }*/
+
+    public function testHtml5()
+    {
+        $doc = qp(DATA_HTML_FILE);
+        $this->assertEquals('range', $doc->find('input')->attr('type'));
+    }
+
+    public function testInnerHtml5()
+    {
+        $doc = qp(DATA_HTML_FILE);
+        $this->assertEquals('1', $doc->find('input')->attr('min'));
     }
 
     public function testOptionXMLEncoding()
@@ -1124,11 +1136,6 @@ class DOMQueryTest extends TestCase
         $this->assertEquals(2, qp($file, 'unary')->siblings('inner')->size());
     }
 
-    public function testXinclude()
-    {
-
-    }
-
     public function testHTML()
     {
         $file = DATA_FILE;
@@ -1616,7 +1623,6 @@ class DOMQueryTest extends TestCase
     public function testCloneAll()
     {
         $file = DATA_FILE;
-
         // Shallow test
         $qp = qp($file, 'unary');
         $one = $qp->get(0);
@@ -1627,9 +1633,10 @@ class DOMQueryTest extends TestCase
         // Deep test: make sure children are also cloned.
         $qp = qp($file, 'inner');
         $one = $qp->find('li')->get(0);
-        $two = $qp->top('inner')->cloneAll(true)->findInPlace('li')->get(0);
-        $this->assertEquals('li', $two->tagName);
-        $this->assertTrue($one !== $two);
+        /** @var \DOMElement $two */
+        $two = $qp->top('inner')->cloneAll()->findInPlace('li')->get(0);
+        $this->assertInstanceOf(\DOMElement::class, $two);
+        $this->assertNotSame($one, $two);
     }
 
     public function testBranch()

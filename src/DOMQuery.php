@@ -250,7 +250,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
      *  The DOMQuery object, wrapping the root element (document element)
      *  for the current document.
      */
-    public function top($selector = NULL)
+    public function top($selector = NULL): DOMQuery
     {
         //$this->setMatches($this->document->documentElement);
         //return !empty($selector) ? $this->find($selector) : $this;
@@ -410,8 +410,8 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
      */
     public function get($index = NULL, $asObject = false)
     {
-        if (isset($index)) {
-            return ($this->size() > $index) ? $this->getNthMatch($index) : NULL;
+        if ($index !== NULL) {
+            return ($this->count() > $index) ? $this->getNthMatch($index) : NULL;
         }
         // Retain support for legacy.
         if (!$asObject) {
@@ -2531,13 +2531,17 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
      * Write the QueryPath document to HTML5.
      *
      * See html()
+     *
+     * @param null $markup
+     * @return null|DOMQuery|string
+     * @throws \QueryPath\QueryPath
      */
-    function html5($markup = NULL)
+    public function html5($markup = NULL)
     {
         $html5 = new HTML5($this->options);
 
         // append HTML to existing
-        if (isset($markup)) {
+        if ($markup === NULL) {
 
             // Parse the HTML and insert it into the DOM
             $doc = $html5->loadHTMLFragment($markup);
@@ -2547,8 +2551,8 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
             return $this;
         }
 
-        $length = $this->size();
-        if ($length == 0) {
+        $length = $this->count();
+        if ($length === 0) {
             return NULL;
         }
         // Only return the first item -- that's what JQ does.
@@ -3124,7 +3128,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
     public function writeHTML5($path = NULL)
     {
         $html5 = new HTML5();
-        if ($path == NULL) {
+        if ($path === NULL) {
             // Print the document to stdout.
             print $html5->saveHTML($this->document);
 

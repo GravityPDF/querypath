@@ -37,7 +37,7 @@ final class Scanner
     /**
      * Return the position of the reader in the string.
      */
-    public function position()
+    public function position(): int
     {
         return $this->is->position;
     }
