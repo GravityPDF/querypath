@@ -1,4 +1,4 @@
-# QueryPath: Find your way with better implementation.
+# QueryPath: Find the better way
 
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/arthurkushman/querypath/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/arthurkushman/querypath/?branch=master)
 [![Build Status](https://scrutinizer-ci.com/g/arthurkushman/querypath/badges/build.png?b=master)](https://scrutinizer-ci.com/g/arthurkushman/querypath/build-status/master)
