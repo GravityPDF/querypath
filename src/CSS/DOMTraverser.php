@@ -132,16 +132,11 @@ class DOMTraverser implements Traverser
         //$selector = $handler->toArray();
         $found = $this->newMatches();
         foreach ($handler as $selectorGroup) {
-            // fprintf(STDOUT, "Selector group.\n");
             // Initialize matches if necessary.
             if ($this->initialized) {
                 $candidates = $this->matches;
             } else {
-                //if (empty($selectorGroup)) {
-                // fprintf(STDOUT, "%s", print_r($handler->toArray(), TRUE));
-                //}
                 $candidates = $this->initialMatch($selectorGroup[0], $this->matches);
-                //$this->initialized = TRUE;
             }
 
             /** @var \DOMElement $candidate */
@@ -154,7 +149,6 @@ class DOMTraverser implements Traverser
             }
         }
         $this->setMatches($found);
-
 
         return $this;
     }
@@ -398,8 +392,11 @@ class DOMTraverser implements Traverser
      *
      * This should only be executed when not working with
      * an existing match set.
+     * @param \QueryPath\CSS\SimpleSelector $selector
+     * @param SplObjectStorage $matches
+     * @return SplObjectStorage
      */
-    protected function initialMatch($selector, $matches)
+    protected function initialMatch(SimpleSelector $selector, SplObjectStorage $matches) : SplObjectStorage
     {
         $element = $selector->element;
 
@@ -408,8 +405,6 @@ class DOMTraverser implements Traverser
         if ($element === NULL) {
             $element = '*';
         }
-
-        // fprintf(STDOUT, "Initial match using %s.\n", $selector);
 
         // We try to do some optimization here to reduce the
         // number of matches to the bare minimum. This will
@@ -421,7 +416,6 @@ class DOMTraverser implements Traverser
         // to work with.
         if (/*$element == '*' &&*/
         !empty($selector->id)) {
-            // fprintf(STDOUT, "ID Fastrack on %s\n", $selector);
             $initialMatches = $this->initialMatchOnID($selector, $matches);
         } // If a namespace is set, find the namespace matches.
         elseif (!empty($selector->ns)) {
@@ -431,15 +425,11 @@ class DOMTraverser implements Traverser
         // substantially reduce the number of elements that
         // we start with.
         elseif ($element === '*' && !empty($selector->classes)) {
-//            print_r($selector);
-//            print_r($matches);
-            // fprintf(STDOUT, "Class Fastrack on %s\n", $selector);
             $initialMatches = $this->initialMatchOnClasses($selector, $matches);
         } else {
             $initialMatches = $this->initialMatchOnElement($selector, $matches);
         }
 
-        //fprintf(STDOUT, "Found %d nodes.\n", count($this->matches));
         return $initialMatches;
     }
 
@@ -450,9 +440,11 @@ class DOMTraverser implements Traverser
      * set, then this should be used to find by ID,
      * which will drastically reduce the amount of
      * comparison operations done in PHP.
-     *
+     * @param \QueryPath\CSS\SimpleSelector $selector
+     * @param SplObjectStorage $matches
+     * @return SplObjectStorage
      */
-    protected function initialMatchOnID($selector, $matches)
+    protected function initialMatchOnID(SimpleSelector $selector, SplObjectStorage $matches) : SplObjectStorage
     {
         $id    = $selector->id;
         $found = $this->newMatches();
@@ -466,11 +458,12 @@ class DOMTraverser implements Traverser
         $xpath     = new \DOMXPath($this->dom);
 
         // Now we try to find any matching IDs.
-        /** @var \DOMDocument $node */
+        /** @var \DOMElement $node */
         foreach ($matches as $node) {
             if ($node->getAttribute('id') === $id) {
                 $found->attach($node);
             }
+
             $nl = $this->initialXpathQuery($xpath, $node, $baseQuery);
             if (!empty($nl) && $nl instanceof \DOMNodeList) {
                 $this->attachNodeList($nl, $found);
@@ -591,8 +584,11 @@ class DOMTraverser implements Traverser
 
     /**
      * Get elements and filter by namespace.
+     * @param \QueryPath\CSS\SimpleSelector $selector
+     * @param SplObjectStorage $matches
+     * @return SplObjectStorage
      */
-    protected function initialMatchOnElementNS($selector, $matches)
+    protected function initialMatchOnElementNS(SimpleSelector $selector, SplObjectStorage $matches) : SplObjectStorage
     {
         $ns = $selector->ns;
 
@@ -610,7 +606,7 @@ class DOMTraverser implements Traverser
         foreach ($elements as $node) {
             // This lookup must be done PER NODE.
             $nsuri = $node->lookupNamespaceURI($ns);
-            if (empty($nsuri) || $node->namespaceURI != $nsuri) {
+            if (empty($nsuri) || $node->namespaceURI !== $nsuri) {
                 $detach[] = $node;
             }
         }
