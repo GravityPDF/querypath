@@ -54,7 +54,7 @@ use \QueryPath\CSS\DOMTraverser\PseudoElement;
  */
 class DOMTraverser implements Traverser
 {
-    protected $matches = [];
+    protected $matches     = [];
     protected $selector;
     protected $dom;
     protected $initialized = true;
@@ -72,7 +72,7 @@ class DOMTraverser implements Traverser
      */
     public function __construct(\SPLObjectStorage $splos, bool $initialized = false, $scopeNode = NULL)
     {
-        $this->psHandler = new PseudoClass();
+        $this->psHandler   = new PseudoClass();
         $this->initialized = $initialized;
 
         // Re-use the initial splos
@@ -119,11 +119,11 @@ class DOMTraverser implements Traverser
      *   DOMNode objects.
      * @throws ParseException
      */
-    public function find($selector): DOMTraverser
+    public function find($selector) : DOMTraverser
     {
         // Setup
         $handler = new Selector();
-        $parser = new Parser($selector, $handler);
+        $parser  = new Parser($selector, $handler);
         $parser->parse();
         $this->selector = $handler;
 
@@ -142,6 +142,7 @@ class DOMTraverser implements Traverser
                 //$this->initialized = TRUE;
             }
 
+            /** @var \DOMElement $candidate */
             foreach ($candidates as $candidate) {
                 // fprintf(STDOUT, "Testing %s against %s.\n", $candidate->tagName, $selectorGroup[0]);
                 if ($this->matchesSelector($candidate, $selectorGroup)) {
@@ -175,14 +176,13 @@ class DOMTraverser implements Traverser
      * absolutely huge selectors or for versions of PHP tuned to
      * strictly limit recursion depth.
      *
-     * @param object DOMNode
+     * @param \DOMElement $node
      *   The DOMNode to check.
-     * @param array Selector->toArray()
-     *   The Selector to check.
+     * @param $selector
      * @return boolean
      *   A boolean TRUE if the node matches, false otherwise.
      */
-    public function matchesSelector($node, $selector)
+    public function matchesSelector(\DOMElement $node, $selector)
     {
         return $this->matchesSimpleSelector($node, $selector, 0);
     }
@@ -194,14 +194,14 @@ class DOMTraverser implements Traverser
      * this checks only a simple selector (plus an optional
      * combinator).
      *
-     * @param object DOMNode
-     *   The DOMNode to check.
-     * @param object SimpleSelector
-     *   The Selector to check.
+     * @param \DOMElement $node
+     * @param $selectors
+     * @param $index
      * @return boolean
      *   A boolean TRUE if the node matches, false otherwise.
+     * @throws NotImplementedException
      */
-    public function matchesSimpleSelector($node, $selectors, $index)
+    public function matchesSimpleSelector(\DOMElement $node, $selectors, $index)
     {
         $selector = $selectors[$index];
         // Note that this will short circuit as soon as one of these
@@ -253,7 +253,7 @@ class DOMTraverser implements Traverser
      * @return boolean
      *   TRUE if the next selector(s) match.
      */
-    public function combine($node, $selectors, $index)
+    public function combine(\DOMElement $node, $selectors, $index)
     {
         $selector = $selectors[$index];
         //$this->debug(implode(' ', $selectors));
@@ -450,7 +450,7 @@ class DOMTraverser implements Traverser
      */
     protected function initialMatchOnID($selector, $matches)
     {
-        $id = $selector->id;
+        $id    = $selector->id;
         $found = $this->newMatches();
 
         // Issue #145: DOMXPath will through an exception if the DOM is
@@ -459,7 +459,7 @@ class DOMTraverser implements Traverser
             return $found;
         }
         $baseQuery = ".//*[@id='{$id}']";
-        $xpath = new \DOMXPath($this->dom);
+        $xpath     = new \DOMXPath($this->dom);
 
         // Now we try to find any matching IDs.
         /** @var \DOMDocument $node */
@@ -496,8 +496,8 @@ class DOMTraverser implements Traverser
         if (!($this->dom instanceof \DOMDocument)) {
             return $found;
         }
-        $baseQuery = ".//*[@class]";
-        $xpath = new \DOMXPath($this->dom);
+        $baseQuery = './/*[@class]';
+        $xpath     = new \DOMXPath($this->dom);
 
         // Now we try to find any matching IDs.
         foreach ($matches as $node) {
@@ -510,13 +510,14 @@ class DOMTraverser implements Traverser
             }
 
             $nl = $this->initialXpathQuery($xpath, $node, $baseQuery);
-            foreach ($nl as $node) {
-                $classes = $node->getAttribute('class');
+            /** @var \DOMElement $subNode */
+            foreach ($nl as $subNode) {
+                $classes    = $subNode->getAttribute('class');
                 $classArray = explode(' ', $classes);
 
                 $intersect = array_intersect($selector->classes, $classArray);
-                if (count($intersect) == count($selector->classes)) {
-                    $found->attach($node);
+                if (count($intersect) === count($selector->classes)) {
+                    $found->attach($subNode);
                 }
             }
         }
@@ -532,13 +533,17 @@ class DOMTraverser implements Traverser
      *
      * This is optimized for very specific use, and is not a general
      * purpose function.
+     * @param \DOMXPath $xpath
+     * @param \DOMElement $node
+     * @param string $query
+     * @return \DOMNodeList
      */
-    private function initialXpathQuery($xpath, $node, $query)
+    private function initialXpathQuery(\DOMXPath $xpath, \DOMElement $node, string $query) : \DOMNodeList
     {
         // This works around a bug in which the document element
         // does not correctly search with the $baseQuery.
         if ($node->isSameNode($this->dom->documentElement)) {
-            $query = substr($query, 1);
+            $query = mb_substr($query, 1);
         }
 
         return $xpath->query($query, $node);
@@ -586,7 +591,7 @@ class DOMTraverser implements Traverser
         $elements = $this->initialMatchOnElement($selector, $matches);
 
         // "any namespace" matches anything.
-        if ($ns == '*') {
+        if ($ns === '*') {
             return $elements;
         }
 
@@ -618,15 +623,19 @@ class DOMTraverser implements Traverser
      * - namespaced element (ns|foo)
      * - namespaced wildcard (ns|*)
      * - wildcard (* or *|*)
+     * @param \DOMElement $node
+     * @param $element
+     * @param null $ns
+     * @return bool
      */
-    protected function matchElement($node, $element, $ns = NULL)
+    protected function matchElement(\DOMElement $node, $element, $ns = NULL) : bool
     {
         if (empty($element)) {
             return true;
         }
 
         // Handle namespace.
-        if (!empty($ns) && $ns != '*') {
+        if (!empty($ns) && $ns !== '*') {
             // Check whether we have a matching NS URI.
             $nsuri = $node->lookupNamespaceURI($ns);
             if (empty($nsuri) || $node->namespaceURI !== $nsuri) {
@@ -635,7 +644,7 @@ class DOMTraverser implements Traverser
         }
 
         // Compare local name to given element name.
-        return $element == '*' || $node->localName == $element;
+        return $element === '*' || $node->localName === $element;
     }
 
     /**
@@ -670,8 +679,11 @@ class DOMTraverser implements Traverser
      *
      * This can handle namespaced attributes, including namespace
      * wildcards.
+     * @param \DOMElement $node
+     * @param $attributes
+     * @return bool
      */
-    protected function matchAttributes($node, $attributes)
+    protected function matchAttributes(\DOMElement $node, $attributes) : bool
     {
         if (empty($attributes)) {
             return true;
@@ -681,20 +693,20 @@ class DOMTraverser implements Traverser
             $val = isset($attr['value']) ? $attr['value'] : NULL;
 
             // Namespaced attributes.
-            if (isset($attr['ns']) && $attr['ns'] != '*') {
+            if (isset($attr['ns']) && $attr['ns'] !== '*') {
                 $nsuri = $node->lookupNamespaceURI($attr['ns']);
                 if (empty($nsuri) || !$node->hasAttributeNS($nsuri, $attr['name'])) {
                     return false;
                 }
                 $matches = Util::matchesAttributeNS($node, $attr['name'], $nsuri, $val, $attr['op']);
-            } elseif (isset($attr['ns']) && $attr['ns'] == '*' && $node->hasAttributes()) {
+            } elseif (isset($attr['ns']) && $attr['ns'] === '*' && $node->hasAttributes()) {
                 // Cycle through all of the attributes in the node. Note that
                 // these are DOMAttr objects.
                 $matches = false;
-                $name = $attr['name'];
+                $name    = $attr['name'];
                 foreach ($node->attributes as $attrNode) {
-                    if ($attrNode->localName == $name) {
-                        $nsuri = $attrNode->namespaceURI;
+                    if ($attrNode->localName === $name) {
+                        $nsuri   = $attrNode->namespaceURI;
                         $matches = Util::matchesAttributeNS($node, $name, $nsuri, $val, $attr['op']);
                     }
                 }
@@ -713,20 +725,26 @@ class DOMTraverser implements Traverser
 
     /**
      * Check that the given DOMNode has the given ID.
+     * @param \DOMElement $node
+     * @param $id
+     * @return bool
      */
-    protected function matchId($node, $id)
+    protected function matchId(\DOMElement $node, $id) : bool
     {
         if (empty($id)) {
             return true;
         }
 
-        return $node->hasAttribute('id') && $node->getAttribute('id') == $id;
+        return $node->hasAttribute('id') && $node->getAttribute('id') === $id;
     }
 
     /**
      * Check that the given DOMNode has all of the given classes.
+     * @param \DOMElement $node
+     * @param $classes
+     * @return bool
      */
-    protected function matchClasses($node, $classes)
+    protected function matchClasses(\DOMElement $node, $classes) : bool
     {
         if (empty($classes)) {
             return true;
@@ -744,17 +762,17 @@ class DOMTraverser implements Traverser
         // The intersection should match the given $classes.
         $missing = array_diff($classes, array_intersect($classes, $eleClasses));
 
-        return count($missing) == 0;
+        return count($missing) === 0;
     }
 
-    protected function matchPseudoClasses($node, $pseudoClasses)
+    protected function matchPseudoClasses(\DOMElement $node, $pseudoClasses)
     {
         $ret = true;
         foreach ($pseudoClasses as $pseudoClass) {
             $name = $pseudoClass['name'];
             // Avoid E_STRICT violation.
-            $value = isset($pseudoClass['value']) ? $pseudoClass['value'] : NULL;
-            $ret &= $this->psHandler->elementMatches($name, $node, $this->scopeNode, $value);
+            $value = $pseudoClass['value'] ?? NULL;
+            $ret   &= $this->psHandler->elementMatches($name, $node, $this->scopeNode, $value);
         }
 
         return $ret;
@@ -766,8 +784,12 @@ class DOMTraverser implements Traverser
      * If any pseudo-elements are passed, this will test to see
      * <i>if conditions obtain that would allow the pseudo-element
      * to be created</i>. This does not modify the match in any way.
+     * @param \DOMElement $node
+     * @param $pseudoElements
+     * @return bool
+     * @throws NotImplementedException
      */
-    protected function matchPseudoElements($node, $pseudoElements)
+    protected function matchPseudoElements(\DOMElement $node, $pseudoElements) : bool
     {
         if (empty($pseudoElements)) {
             return true;
@@ -781,9 +803,11 @@ class DOMTraverser implements Traverser
                 case 'after':
                     return strlen($node->textContent) > 0;
                 case 'selection':
-                    throw new \QueryPath\CSS\NotImplementedException("::$name is not implemented.");
+                    throw new \QueryPath\CSS\NotImplementedException("::$pse is not implemented.");
             }
         }
+
+        return false;
     }
 
     protected function newMatches()
@@ -812,6 +836,8 @@ class DOMTraverser implements Traverser
 
     /**
      * Attach all nodes in a node list to the given \SplObjectStorage.
+     * @param \DOMNodeList $nodeList
+     * @param \SplObjectStorage $splos
      */
     public function attachNodeList(\DOMNodeList $nodeList, \SplObjectStorage $splos)
     {
