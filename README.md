@@ -12,14 +12,17 @@ QueryPath is a jQuery-like library for working with XML and HTML
 documents in PHP. It now contains support for HTML5 via the
 [HTML5-PHP project](https://github.com/Masterminds/html5-php).
 
+### Installation
+``` 
+composer require arthurkushman/query-path 
+```
+
 ### Gettings Started
 
 Assuming you have successfully installed QueryPath via Composer, you can
 parse documents like this:
 
 ```
-require_once "vendor/autoload.php";
-
 // HTML5 (new)
 $qp = html5qp("path/to/file.html");
 
