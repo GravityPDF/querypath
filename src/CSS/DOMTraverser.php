@@ -8,6 +8,8 @@ namespace QueryPath\CSS;
 use \QueryPath\CSS\DOMTraverser\Util;
 use \QueryPath\CSS\DOMTraverser\PseudoClass;
 use \QueryPath\CSS\DOMTraverser\PseudoElement;
+use QueryPath\CSS\SimpleSelector;
+use SplObjectStorage;
 
 /**
  * Traverse a DOM, finding matches to the selector.
@@ -428,7 +430,9 @@ class DOMTraverser implements Traverser
         // If the element is a wildcard, using class can
         // substantially reduce the number of elements that
         // we start with.
-        elseif ($element == '*' && !empty($selector->classes)) {
+        elseif ($element === '*' && !empty($selector->classes)) {
+//            print_r($selector);
+//            print_r($matches);
             // fprintf(STDOUT, "Class Fastrack on %s\n", $selector);
             $initialMatches = $this->initialMatchOnClasses($selector, $matches);
         } else {
@@ -486,8 +490,11 @@ class DOMTraverser implements Traverser
      *
      * In any other case, the element finding algo is
      * faster and should be used instead.
+     * @param \QueryPath\CSS\SimpleSelector $selector
+     * @param $matches
+     * @return \SplObjectStorage
      */
-    protected function initialMatchOnClasses($selector, $matches)
+    protected function initialMatchOnClasses(SimpleSelector $selector, SplObjectStorage $matches) : \SplObjectStorage
     {
         $found = $this->newMatches();
 
@@ -500,11 +507,12 @@ class DOMTraverser implements Traverser
         $xpath     = new \DOMXPath($this->dom);
 
         // Now we try to find any matching IDs.
+        /** @var \DOMElement $node */
         foreach ($matches as $node) {
             // Refactor me!
             if ($node->hasAttribute('class')) {
                 $intersect = array_intersect($selector->classes, explode(' ', $node->getAttribute('class')));
-                if (count($intersect) == count($selector->classes)) {
+                if (count($intersect) === count($selector->classes)) {
                     $found->attach($node);
                 }
             }
@@ -556,7 +564,7 @@ class DOMTraverser implements Traverser
      * @param $matches
      * @return \SplObjectStorage
      */
-    protected function initialMatchOnElement($selector, $matches)
+    protected function initialMatchOnElement(SimpleSelector $selector, SplObjectStorage $matches) : SplObjectStorage
     {
         $element = $selector->element;
         if (NULL === $element) {
