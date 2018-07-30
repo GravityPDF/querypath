@@ -12,6 +12,8 @@ QueryPath is a jQuery-like library for working with XML and HTML
 documents in PHP. It now contains support for HTML5 via the
 [HTML5-PHP project](https://github.com/Masterminds/html5-php).
 
+Requires PHP>=7.1
+
 ### Installation
 ``` 
 composer require arthurkushman/query-path 
@@ -76,63 +78,6 @@ qp($xml, 'tr:last')->after('<tr><td/><td/><td/></tr>')->writeXML();
 
 With over 60 functions and robust support for chaining, you can
 accomplish sophisticated XML and HTML processing using QueryPath.
-
-## QueryPath Installers
-
-The preferred method of installing QueryPath is via [Composer](http://getcomposer.org).
-
-You can also download the package from GitHub.
-
-### Composer (Preferred)
-
-To add QueryPath as a library in your project, add this to the 'require'
-section of your `composer.json`:
-
-```json
-{
-  "require": {
-    "querypath/QueryPath": ">=3.0.0"
-  }
-}
-```
-
-The run `php composer.phar install` in that directory.
-
-To stay up to date on stable code, you can use `dev-master` instead of `>=3.0.0`.
-
-### Manual Install
-
-You can either download a stable release from the
-[GitHub Tags page](https://github.com/technosophos/querypath/tags)
-or you can use `git` to clone
-[this repository](http://github.com/technosophos/querypath) and work from
-the code.
-
-## Including QueryPath
-
-As of QueryPath 3.x, QueryPath uses the Composer autoloader if you
-installed with composer:
-```php
-<?php
-require 'vendor/autoload.php';
-?>
-```
-
-Without Composer, you can include QueryPath like this:
-
-```php
-<?php
-require 'QueryPath/src/qp.php';
-?>
-```
-
-QueryPath can also be compiled into a Phar and then included like this:
-
-```php
-<?php
-require 'QueryPath.phar';
-?>
-```
 
 From there, the main functions you will want to use are `qp()`
 (alias of `QueryPath::with()`) and `htmlqp()` (alias of
