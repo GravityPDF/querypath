@@ -124,7 +124,7 @@ class ExtensionRegistry
         return $extInstances;
     }
 
-    public static function extensionNames()
+    public static function extensionNames() : array
     {
         return self::$extensionRegistry;
     }
@@ -135,8 +135,9 @@ class ExtensionRegistry
      * If extension autoloading is disabled, then QueryPath will not
      * automatically load all registred extensions when a new Query
      * object is created using qp().
+     * @param bool $boolean
      */
-    public static function autoloadExtensions($boolean = true)
+    public static function autoloadExtensions($boolean = true) : void
     {
         self::$useRegistry = $boolean;
     }

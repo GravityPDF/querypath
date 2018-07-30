@@ -107,6 +107,7 @@ class QueryPathEventHandlerTest extends TestCase
 
     /**
      * @expectedException \QueryPath\CSS\ParseException
+     * @throws \QueryPath\CSS\ParseException
      */
     public function testEmptySelector()
     {

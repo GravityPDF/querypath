@@ -72,7 +72,7 @@ final class Scanner
         ++$this->it;
         if ($this->is->isEmpty()) {
             if ($this->recurse) {
-                throw new \QueryPath\Exception("Recursion error detected at iteration " . $this->it . '.');
+                throw new \QueryPath\Exception('Recursion error detected at iteration ' . $this->it . '.');
             }
             //print "{$this->it}: All done\n";
             $this->recurse = true;
@@ -84,7 +84,7 @@ final class Scanner
         //print __FUNCTION__ . " Testing $ch.\n";
         if (ctype_space($ch)) {
             $this->value = ' '; // Collapse all WS to a space.
-            $this->token = $tok = Token::white;
+            $this->token = $tok = Token::WHITE;
 
             //$ch = $this->is->consume();
             return $tok;
@@ -93,7 +93,7 @@ final class Scanner
         if ($ch === '-' || $ch === '_' || ctype_alnum($ch)) {
             // It's a character
             $this->value = $ch; //strtolower($ch);
-            $this->token = $tok = Token::char;
+            $this->token = $tok = Token::CHAR;
 
             return $tok;
         }
@@ -102,64 +102,64 @@ final class Scanner
 
         switch ($ch) {
             case '*':
-                $tok = Token::star;
+                $tok = Token::STAR;
                 break;
             case chr(ord('>')):
-                $tok = Token::rangle;
+                $tok = Token::RANGLE;
                 break;
             case '.':
-                $tok = Token::dot;
+                $tok = Token::DOT;
                 break;
             case '#':
-                $tok = Token::octo;
+                $tok = Token::OCTO;
                 break;
             case '[':
-                $tok = Token::lsquare;
+                $tok = Token::LSQUARE;
                 break;
             case ']':
-                $tok = Token::rsquare;
+                $tok = Token::RSQUARE;
                 break;
             case ':':
-                $tok = Token::colon;
+                $tok = Token::COLON;
                 break;
             case '(':
-                $tok = Token::lparen;
+                $tok = Token::LPAREN;
                 break;
             case ')':
-                $tok = Token::rparen;
+                $tok = Token::RPAREN;
                 break;
             case '+':
-                $tok = Token::plus;
+                $tok = Token::PLUS;
                 break;
             case '~':
-                $tok = Token::tilde;
+                $tok = Token::TILDE;
                 break;
             case '=':
-                $tok = Token::eq;
+                $tok = Token::EQ;
                 break;
             case '|':
-                $tok = Token::pipe;
+                $tok = Token::PIPE;
                 break;
             case ',':
-                $tok = Token::comma;
+                $tok = Token::COMMA;
                 break;
             case chr(34):
-                $tok = Token::quote;
+                $tok = Token::QUOTE;
                 break;
             case "'":
-                $tok = Token::squote;
+                $tok = Token::SQUOTE;
                 break;
             case '\\':
-                $tok = Token::bslash;
+                $tok = Token::BSLASH;
                 break;
             case '^':
-                $tok = Token::carat;
+                $tok = Token::CARAT;
                 break;
             case '$':
-                $tok = Token::dollar;
+                $tok = Token::DOLLAR;
                 break;
             case '@':
-                $tok = Token::at;
+                $tok = Token::AT;
                 break;
         }
 
@@ -175,7 +175,7 @@ final class Scanner
             // certain strings. Extended ASCII is used here, though I
             // Don't know if these are really legal.
             if (($ord >= 32 && $ord <= 126) || ($ord >= 128 && $ord <= 255)) {
-                $tok = Token::stringLegal;
+                $tok = Token::STRING_LEGAL;
             } else {
                 throw new ParseException('Illegal character found in stream: ' . $ord);
             }
@@ -194,10 +194,9 @@ final class Scanner
     public function getNameString()
     {
         $buf = '';
-        while ($this->token === Token::char) {
+        while ($this->token === Token::CHAR) {
             $buf .= $this->value;
             $this->nextToken();
-            //print '_';
         }
 
         return $buf;
@@ -221,8 +220,8 @@ final class Scanner
      */
     public function getQuotedString()
     {
-        if ($this->token == Token::quote || $this->token == Token::squote || $this->token == Token::lparen) {
-            $end = ($this->token == Token::lparen) ? Token::rparen : $this->token;
+        if ($this->token === Token::QUOTE || $this->token === Token::SQUOTE || $this->token === Token::LPAREN) {
+            $end = ($this->token === Token::LPAREN) ? Token::RPAREN : $this->token;
             $buf = '';
             $escape = false;
 
@@ -231,7 +230,7 @@ final class Scanner
             // The second conjunct is probably not necessary.
             while ($this->token !== false && $this->token > -1) {
                 //print "Char: $this->value \n";
-                if ($this->token == Token::bslash && !$escape) {
+                if ($this->token == Token::BSLASH && !$escape) {
                     // XXX: The backslash (\) is removed here.
                     // Turn on escaping.
                     //$buf .= $this->value;
@@ -258,8 +257,8 @@ final class Scanner
     // Get the contents inside of a pseudoClass().
     public function getPseudoClassString()
     {
-        if ($this->token === Token::quote || $this->token === Token::squote || $this->token === Token::lparen) {
-            $end = ($this->token === Token::lparen) ? Token::rparen : $this->token;
+        if ($this->token === Token::QUOTE || $this->token === Token::SQUOTE || $this->token === Token::LPAREN) {
+            $end = ($this->token === Token::LPAREN) ? Token::RPAREN : $this->token;
             $buf = '';
             $escape = false;
 
@@ -268,7 +267,7 @@ final class Scanner
             // The second conjunct is probably not necessary.
             while ($this->token !== false && $this->token > -1) {
                 //print "Char: $this->value \n";
-                if ($this->token === Token::bslash && !$escape) {
+                if ($this->token === Token::BSLASH && !$escape) {
                     // XXX: The backslash (\) is removed here.
                     // Turn on escaping.
                     //$buf .= $this->value;
@@ -278,7 +277,7 @@ final class Scanner
                     $buf .= $this->value;
                     $escape = false;
                 } // Allow nested pseudoclasses.
-                elseif ($this->token === Token::lparen) {
+                elseif ($this->token === Token::LPAREN) {
                     $buf .= '(';
                     $buf .= $this->getPseudoClassString();
                     $buf .= ')';

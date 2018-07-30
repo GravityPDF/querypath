@@ -14,31 +14,31 @@ namespace QueryPath\CSS;
  */
 final class Token
 {
-    public const char    = 0;
-    public const star    = 1;
-    public const rangle  = 2;
-    public const dot     = 3;
-    public const octo    = 4;
-    public const rsquare = 5;
-    public const lsquare = 6;
-    public const colon   = 7;
-    public const rparen  = 8;
-    public const lparen  = 9;
-    public const plus    = 10;
-    public const tilde   = 11;
-    public const eq      = 12;
-    public const pipe    = 13;
-    public const comma   = 14;
-    public const white   = 15;
-    public const quote   = 16;
-    public const squote  = 17;
-    public const bslash  = 18;
-    public const carat   = 19;
-    public const dollar  = 20;
-    public const at      = 21; // This is not in the spec. Apparently, old broken CSS uses it.
+    public const CHAR    = 0x0;
+    public const STAR    = 0x1;
+    public const RANGLE  = 0x2;
+    public const DOT     = 0x3;
+    public const OCTO    = 0x4;
+    public const RSQUARE = 0x5;
+    public const LSQUARE = 0x6;
+    public const COLON   = 0x7;
+    public const RPAREN  = 0x8;
+    public const LPAREN  = 0x9;
+    public const PLUS    = 0xA;
+    public const TILDE   = 0xB;
+    public const EQ      = 0xC;
+    public const PIPE    = 0xD;
+    public const COMMA   = 0xE;
+    public const WHITE   = 0xF;
+    public const QUOTE   = 0x10;
+    public const SQUOTE  = 0x11;
+    public const BSLASH  = 0x12;
+    public const CARAT   = 0x13;
+    public const DOLLAR  = 0x14;
+    public const AT      = 0x15; // This is not in the spec. Apparently, old broken CSS uses it.
 
     // In legal range for string.
-    const stringLegal = 99;
+    public const STRING_LEGAL = 0x63;
 
     /**
      * Get a name for a given constant. Used for error handling.
@@ -71,9 +71,9 @@ final class Token
         ];
         if (isset($a[$const_int]) && is_numeric($const_int)) {
             return $a[$const_int];
-        } elseif ($const_int === 99) {
+        } elseif ($const_int === self::STRING_LEGAL) {
             return 'a legal non-alphanumeric character';
-        } elseif ($const_int == false) {
+        } elseif ($const_int === false) {
             return 'end of file';
         }
 

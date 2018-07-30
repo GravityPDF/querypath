@@ -87,6 +87,7 @@
 namespace QueryPath;
 
 use \Masterminds\HTML5;
+use QueryPath\ExtensionRegistry;
 
 /**
  *
@@ -185,7 +186,7 @@ class QueryPath
      */
     public static function with($document = NULL, $selector = NULL, $options = [])
     {
-        $qpClass = isset($options['QueryPath_class']) ? $options['QueryPath_class'] : '\QueryPath\DOMQuery';
+        $qpClass = $options['QueryPath_class'] ?? '\QueryPath\DOMQuery';
 
         $qp = new $qpClass($document, $selector, $options);
 
@@ -251,7 +252,7 @@ class QueryPath
      */
     public static function withHTML5($source = NULL, $selector = NULL, $options = [])
     {
-        $qpClass = isset($options['QueryPath_class']) ? $options['QueryPath_class'] : '\QueryPath\DOMQuery';
+        $qpClass = $options['QueryPath_class'] ?? '\QueryPath\DOMQuery';
 
         if (is_string($source)) {
             $html5 = new HTML5();
@@ -306,10 +307,10 @@ class QueryPath
 
         if (is_array($extensionNames)) {
             foreach ($extensionNames as $extension) {
-                \QueryPath\ExtensionRegistry::extend($extension);
+                ExtensionRegistry::extend($extension);
             }
         } else {
-            \QueryPath\ExtensionRegistry::extend($extensionNames);
+            ExtensionRegistry::extend($extensionNames);
         }
     }
 
@@ -330,9 +331,9 @@ class QueryPath
      *
      * @see QueryPath::ExtensionRegistry
      */
-    public static function enabledExtensions()
+    public static function enabledExtensions() : array
     {
-        return \QueryPath\ExtensionRegistry::extensionNames();
+        return ExtensionRegistry::extensionNames();
     }
 
 
@@ -357,10 +358,9 @@ class QueryPath
      * @param resource $context
      *    A valid context. Use this only if you need to pass a stream context. This is only necessary
      *    if $data is a URL. (See {@link stream_context_create()}).
-     * @return
-     *    An encoded data URL.
+     * @return string An encoded data URL.
      */
-    public static function encodeDataURL($data, $mime = 'application/octet-stream', $context = NULL)
+    public static function encodeDataURL($data, $mime = 'application/octet-stream', $context = NULL) : string
     {
         if (is_resource($data)) {
             $data = stream_get_contents($data);
