@@ -17,8 +17,8 @@ namespace QueryPath;
 class ParseException extends \QueryPath\Exception
 {
 
-    const ERR_MSG_FORMAT  = 'Parse error in %s on line %d column %d: %s (%d)';
-    const WARN_MSG_FORMAT = 'Parser warning in %s on line %d column %d: %s (%d)';
+    public const ERR_MSG_FORMAT  = 'Parse error in %s on line %d column %d: %s (%d)';
+    public const WARN_MSG_FORMAT = 'Parser warning in %s on line %d column %d: %s (%d)';
 
     // trigger_error
     public function __construct($msg = '', $code = 0, $file = NULL, $line = NULL)
@@ -26,7 +26,7 @@ class ParseException extends \QueryPath\Exception
 
         $msgs = [];
         foreach (libxml_get_errors() as $err) {
-            $format = $err->level == LIBXML_ERR_WARNING ? self::WARN_MSG_FORMAT : self::ERR_MSG_FORMAT;
+            $format = $err->level === LIBXML_ERR_WARNING ? self::WARN_MSG_FORMAT : self::ERR_MSG_FORMAT;
             $msgs[] = sprintf($format, $err->file, $err->line, $err->column, $err->message, $err->code);
         }
         $msg .= implode("\n", $msgs);

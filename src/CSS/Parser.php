@@ -56,8 +56,9 @@ class Parser
      * implementation will be responsible for handling the events.
      *
      * @throws ParseException
+     * @throws Exception
      */
-    public function parse()
+    public function parse() : void
     {
         $this->scanner->nextToken();
 
@@ -78,9 +79,7 @@ class Parser
                 // pattern.
                 throw new ParseException('CSS selector is not well formed.');
             }
-
         }
-
     }
 
     /**
@@ -109,7 +108,7 @@ class Parser
     /**
      * Handle an entire CSS selector.
      */
-    private function selector()
+    private function selector() : void
     {
         if ($this->DEBUG) {
             print "SELECTOR{$this->scanner->position()}\n";
@@ -122,7 +121,7 @@ class Parser
     /**
      * Consume whitespace and return a count of the number of whitespace consumed.
      */
-    private function consumeWhitespace()
+    private function consumeWhitespace() : int
     {
         if ($this->DEBUG) {
             print "CONSUME WHITESPACE\n";
@@ -147,7 +146,7 @@ class Parser
      * @throws ParseException
      * @throws \QueryPath\Exception
      */
-    private function combinator()
+    private function combinator() : void
     {
         if ($this->DEBUG) {
             echo 'COMBINATOR' . PHP_EOL;
@@ -209,21 +208,22 @@ class Parser
 
     /**
      * Check if the token is a combinator.
+     * @param int $tok
+     * @return bool
      */
-    private function isCombinator($tok)
+    private function isCombinator(int $tok) : bool
     {
-        $combinators = [Token::PLUS, Token::RANGLE, Token::COMMA, Token::TILDE];
-
-        return in_array($tok, $combinators);
+        return in_array($tok, [Token::PLUS, Token::RANGLE, Token::COMMA, Token::TILDE], true);
     }
 
     /**
      * Handle a simple selector.
+     * @throws ParseException
      */
-    private function simpleSelectors()
+    private function simpleSelectors() : void
     {
         if ($this->DEBUG) {
-            print "SIMPLE SELECTOR\n";
+            print 'SIMPLE SELECTOR' . PHP_EOL;
         }
         $this->allElements();
         $this->elementName();
@@ -237,7 +237,7 @@ class Parser
      * Handles CSS ID selectors.
      * This will call EventHandler::elementID().
      */
-    private function elementID()
+    private function elementID() : void
     {
         if ($this->DEBUG) {
             print "ELEMENT ID\n";
@@ -256,10 +256,10 @@ class Parser
      * Handles CSS class selectors.
      * This will call the EventHandler::elementClass() method.
      */
-    private function elementClass()
+    private function elementClass() : void
     {
         if ($this->DEBUG) {
-            print "ELEMENT CLASS\n";
+            print 'ELEMENT CLASS' . PHP_EOL;
         }
         if ($this->scanner->token == Token::DOT) {
             $this->scanner->nextToken();
@@ -278,14 +278,15 @@ class Parser
      *
      * This will call EventHandler::pseudoClass() when a
      * pseudo-class is parsed.
+     * @throws ParseException
+     * @throws Exception
      */
-    private function pseudoClass($restricted = false)
+    private function pseudoClass($restricted = false) : void
     {
         if ($this->DEBUG) {
-            print "PSEUDO-CLASS\n";
+            echo 'PSEUDO-CLASS' . PHP_EOL;
         }
-        if ($this->scanner->token == Token::COLON) {
-
+        if ($this->scanner->token === Token::COLON) {
             // Check for CSS 3 pseudo element:
             $isPseudoElement = false;
             if ($this->scanner->nextToken() === Token::COLON) {
@@ -294,14 +295,14 @@ class Parser
             }
 
             $name = $this->scanner->getNameString();
-            if ($restricted && $name == 'not') {
+            if ($restricted && $name === 'not') {
                 throw new ParseException("The 'not' pseudo-class is illegal in this context.");
             }
 
             $value = NULL;
-            if ($this->scanner->token == Token::LPAREN) {
+            if ($this->scanner->token === Token::LPAREN) {
                 if ($isPseudoElement) {
-                    throw new ParseException("Illegal left paren. Pseudo-Element cannot have arguments.");
+                    throw new ParseException('Illegal left paren. Pseudo-Element cannot have arguments.');
                 }
                 $value = $this->pseudoClassValue();
             }
@@ -309,7 +310,7 @@ class Parser
             // FIXME: This should throw errors when pseudo element has values.
             if ($isPseudoElement) {
                 if ($restricted) {
-                    throw new ParseException("Pseudo-Elements are illegal in this context.");
+                    throw new ParseException('Pseudo-Elements are illegal in this context.');
                 }
                 $this->handler->pseudoElement($name);
                 $this->consumeWhitespace();
@@ -318,7 +319,7 @@ class Parser
                 // check to make sure that we are either at the end of the stream or that a
                 // new selector is starting. Only one pseudo-element is allowed per selector.
                 if ($this->scanner->token !== false && $this->scanner->token !== Token::COMMA) {
-                    throw new ParseException("A Pseudo-Element must be the last item in a selector.");
+                    throw new ParseException('A Pseudo-Element must be the last item in a selector.');
                 }
             } else {
                 $this->handler->pseudoClass($name, $value);
@@ -338,7 +339,7 @@ class Parser
      */
     private function pseudoClassValue()
     {
-        if ($this->scanner->token == Token::LPAREN) {
+        if ($this->scanner->token === Token::LPAREN) {
             $buf = '';
 
             // For now, just leave pseudoClass value vague.

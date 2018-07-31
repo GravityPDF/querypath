@@ -79,7 +79,7 @@ class PseudoClass
             case 'lang':
                 // No value = exception.
                 if (!isset($value)) {
-                    throw new NotImplementedException(":lang() requires a value.");
+                    throw new NotImplementedException(':lang() requires a value.');
                 }
 
                 return $this->lang($node, $value);
@@ -174,7 +174,7 @@ class PseudoClass
                 break;
             case 'not':
                 if (empty($value)) {
-                    throw new ParseException(":not() requires a value.");
+                    throw new ParseException(':not() requires a value.');
                 }
 
                 return $this->isNot($node, $value);
@@ -186,9 +186,8 @@ class PseudoClass
             case 'contains-exactly':
                 return $this->containsExactly($node, $value);
             default:
-                throw new \QueryPath\CSS\ParseException("Unknown Pseudo-Class: " . $name);
+                throw new \QueryPath\CSS\ParseException('Unknown Pseudo-Class: ' . $name);
         }
-        $this->findAnyElement = false;
     }
 
     /**

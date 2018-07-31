@@ -1760,7 +1760,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
      */
     public function wrapAll($markup)
     {
-        if ($this->matches->count() == 0) {
+        if ($this->matches->count() === 0) {
             return;
         }
 
@@ -1945,12 +1945,15 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
      *  Returns the prepared item.
      * @throws QueryPath::Exception
      *  Thrown if the object passed in is not of a supprted object type.
+     * @throws Exception
      */
     protected function prepareInsert($item)
     {
         if (empty($item)) {
-            return;
-        } elseif (is_string($item)) {
+            return null;
+        }
+
+        if (is_string($item)) {
             // If configured to do so, replace all entities.
             if ($this->options['replace_entities']) {
                 $item = \QueryPath\Entities::replaceAllEntities($item);
@@ -1958,7 +1961,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
 
             $frag = $this->document->createDocumentFragment();
             try {
-                set_error_handler(['\QueryPath\ParseException', 'initializeFromError'], $this->errTypes);
+                set_error_handler([ParseException::class, 'initializeFromError'], $this->errTypes);
                 $frag->appendXML($item);
             } // Simulate a finally block.
             catch (Exception $e) {
@@ -1968,9 +1971,11 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
             restore_error_handler();
 
             return $frag;
-        } elseif ($item instanceof DOMQuery) {
-            if ($item->size() == 0) {
-                return;
+        }
+
+        if ($item instanceof DOMQuery) {
+            if ($item->count() === 0) {
+                return null;
             }
 
             $frag = $this->document->createDocumentFragment();
@@ -1979,21 +1984,25 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
             }
 
             return $frag;
-        } elseif ($item instanceof \DOMNode) {
+        }
+
+        if ($item instanceof \DOMNode) {
             if ($item->ownerDocument !== $this->document) {
                 // Deep clone this and attach it to this document
                 $item = $this->document->importNode($item, true);
             }
 
             return $item;
-        } elseif ($item instanceof \SimpleXMLElement) {
+        }
+
+        if ($item instanceof \SimpleXMLElement) {
             $element = dom_import_simplexml($item);
 
             return $this->document->importNode($element, true);
         }
         // What should we do here?
         //var_dump($item);
-        throw new \QueryPath\Exception("Cannot prepare item of unsupported type: " . gettype($item));
+        throw new \QueryPath\Exception('Cannot prepare item of unsupported type: ' . gettype($item));
     }
 
     /**
