@@ -59,7 +59,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
      * The base DOMDocument.
      */
     protected $document;
-    private $options = [
+    private   $options = [
         'parser_flags'                 => NULL,
         'omit_xml_declaration'         => false,
         'replace_entities'             => false,
@@ -75,7 +75,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
      * The last array of matches.
      */
     protected $last = []; // Last set of matches.
-    private $ext = []; // Extensions array.
+    private   $ext  = []; // Extensions array.
 
     /**
      * The number of current matches.
@@ -97,13 +97,14 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
      * @param array $options
      *   An associative array of options.
      * @see qp()
+     * @throws Exception
      */
     public function __construct($document = NULL, $string = NULL, $options = [])
     {
-        $string = trim($string);
+        $string        = trim($string);
         $this->options = $options + Options::get() + $this->options;
 
-        $parser_flags = isset($options['parser_flags']) ? $options['parser_flags'] : self::DEFAULT_PARSER_FLAGS;
+        $parser_flags = $options['parser_flags'] ?? self::DEFAULT_PARSER_FLAGS;
         if (!empty($this->options['ignore_parser_warnings'])) {
             // Don't convert parser warnings into exceptions.
             $this->errTypes = 257; //E_ERROR | E_USER_ERROR;
@@ -125,13 +126,13 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
             // This is the most frequent object type.
             if ($document instanceof \SplObjectStorage) {
                 $this->matches = $document;
-                if ($document->count() != 0) {
+                if ($document->count() !== 0) {
                     $first = $this->getFirstMatch();
                     if (!empty($first->ownerDocument)) {
                         $this->document = $first->ownerDocument;
                     }
                 }
-            } elseif ($document instanceof DOMQuery) {
+            } elseif ($document instanceof self) {
                 //$this->matches = $document->get(NULL, TRUE);
                 $this->setMatches($document->get(NULL, true));
                 if ($this->matches->count() > 0) {
@@ -149,7 +150,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
                 $this->document = $document;
                 $this->setMatches($document->documentElement);
             } elseif ($document instanceof \SimpleXMLElement) {
-                $import = dom_import_simplexml($document);
+                $import         = dom_import_simplexml($document);
                 $this->document = $import->ownerDocument;
                 //$this->matches = array($import);
                 $this->setMatches($import);
@@ -174,20 +175,19 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
         } else {
 
             // $document is a filename
-            $context = empty($options['context']) ? NULL : $options['context'];
+            $context        = empty($options['context']) ? NULL : $options['context'];
             $this->document = $this->parseXMLFile($document, $parser_flags, $context);
             $this->setMatches($this->document->documentElement);
         }
 
         // Globally set the output option.
+        $this->document->formatOutput = true;
         if (isset($this->options['format_output']) && $this->options['format_output'] == false) {
             $this->document->formatOutput = false;
-        } else {
-            $this->document->formatOutput = true;
         }
 
         // Do a find if the second param was set.
-        if (isset($string) && strlen($string) > 0) {
+        if (strlen($string) > 0) {
             // We don't issue a find because that creates a new DOMQuery.
             //$this->find($string);
 
@@ -250,7 +250,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
      *  The DOMQuery object, wrapping the root element (document element)
      *  for the current document.
      */
-    public function top($selector = NULL): DOMQuery
+    public function top($selector = NULL) : DOMQuery
     {
         //$this->setMatches($this->document->documentElement);
         //return !empty($selector) ? $this->find($selector) : $this;
@@ -508,7 +508,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
             if ($this->matches->count() == 0) {
                 return NULL;
             }
-            $ele = $this->getFirstMatch();
+            $ele    = $this->getFirstMatch();
             $buffer = [];
 
             // This does not appear to be part of the DOM
@@ -654,7 +654,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
         }
 
         // Collapse CSS into a string.
-        $format = '%s: %s;';
+        $format     = '%s: %s;';
         $css_string = '';
         foreach ($css as $n => $v) {
             $css_string .= sprintf($format, $n, trim($v));
@@ -712,7 +712,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
             }
 
             // So 1 and 2 should be MIME types, and 3 should be the base64-encoded data.
-            $regex = '/^data:([a-zA-Z0-9]+)\/([a-zA-Z0-9]+);base64,(.*)$/';
+            $regex   = '/^data:([a-zA-Z0-9]+)\/([a-zA-Z0-9]+);base64,(.*)$/';
             $matches = [];
             preg_match($regex, $data, $matches);
 
@@ -852,7 +852,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
     {
 
         $found = new \SplObjectStorage();
-        $tmp = new \SplObjectStorage();
+        $tmp   = new \SplObjectStorage();
         foreach ($this->matches as $m) {
             $tmp->attach($m);
             // Seems like this should be right... but it fails unit
@@ -952,7 +952,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
         if ($modifyDOM) {
             $placeholder = $oldFirst->ownerDocument->createElement('_PLACEHOLDER_');
             $placeholder = $oldFirst->parentNode->insertBefore($placeholder, $oldFirst);
-            $len = count($list);
+            $len         = count($list);
             for ($i = 0; $i < $len; ++$i) {
                 $node = $list[$i];
                 $node = $node->parentNode->removeChild($node);
@@ -994,8 +994,8 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
     public function filterLambda($fn)
     {
         $function = create_function('$index, $item', $fn);
-        $found = new \SplObjectStorage();
-        $i = 0;
+        $found    = new \SplObjectStorage();
+        $i        = 0;
         foreach ($this->matches as $item) {
             if ($function($i++, $item) !== false) {
                 $found->attach($item);
@@ -1084,7 +1084,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
     public function filterCallback($callback)
     {
         $found = new \SplObjectStorage();
-        $i = 0;
+        $i     = 0;
         if (is_callable($callback)) {
             foreach ($this->matches as $item) {
                 if (call_user_func($callback, $i++, $item) !== false) {
@@ -1209,17 +1209,17 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
                     if (is_array($c) || $c instanceof \Iterable) {
                         foreach ($c as $retval) {
                             if (!is_object($retval)) {
-                                $tmp = new \stdClass();
+                                $tmp              = new \stdClass();
                                 $tmp->textContent = $retval;
-                                $retval = $tmp;
+                                $retval           = $tmp;
                             }
                             $found->attach($retval);
                         }
                     } else {
                         if (!is_object($c)) {
-                            $tmp = new \stdClass();
+                            $tmp              = new \stdClass();
                             $tmp->textContent = $c;
-                            $c = $tmp;
+                            $c                = $tmp;
                         }
                         $found->attach($c);
                     }
@@ -1247,7 +1247,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
      */
     public function slice($start, $length = 0)
     {
-        $end = $length;
+        $end   = $length;
         $found = new \SplObjectStorage();
         if ($start >= $this->size()) {
             return $this->inst($found, NULL, $this->options);
@@ -1608,7 +1608,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
      */
     public function replaceWith($new)
     {
-        $data = $this->prepareInsert($new);
+        $data  = $this->prepareInsert($new);
         $found = new \SplObjectStorage();
         foreach ($this->matches as $m) {
             $parent = $m->parentNode;
@@ -1675,7 +1675,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
 
             // Move children to peer of parent.
             $parent = $m->parentNode;
-            $old = $parent->removeChild($m);
+            $old    = $parent->removeChild($m);
             $parent->parentNode->insertBefore($old, $parent);
             $parents->attach($parent);
         }
@@ -1784,7 +1784,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
             $bottom = $data;
         }
 
-        $first = $this->getFirstMatch();
+        $first  = $this->getFirstMatch();
         $parent = $first->parentNode;
         $parent->insertBefore($data, $first);
         foreach ($this->matches as $m) {
@@ -1863,10 +1863,10 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
     public function deepest()
     {
         $deepest = 0;
-        $winner = new \SplObjectStorage();
+        $winner  = new \SplObjectStorage();
         foreach ($this->matches as $m) {
             $local_deepest = 0;
-            $local_ele = $this->deepestNode($m, 0, NULL, $local_deepest);
+            $local_ele     = $this->deepestNode($m, 0, NULL, $local_deepest);
 
             // Replace with the new deepest.
             if ($local_deepest > $deepest) {
@@ -1973,7 +1973,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
             return $frag;
         }
 
-        if ($item instanceof DOMQuery) {
+        if ($item instanceof self) {
             if ($item->count() === 0) {
                 return null;
             }
@@ -2172,7 +2172,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
         // Note that this does not use setMatches because it must set the previous
         // set of matches to empty array.
         $this->matches = $this->last;
-        $this->last = new \SplObjectStorage();
+        $this->last    = new \SplObjectStorage();
 
         return $this;
     }
@@ -2250,7 +2250,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
      */
     public function children($selector = NULL)
     {
-        $found = new \SplObjectStorage();
+        $found  = new \SplObjectStorage();
         $filter = strlen($selector) > 0;
 
         if ($filter) {
@@ -2717,7 +2717,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
             return '';
         }
 
-        $html5 = new HTML5($this->options);
+        $html5  = new HTML5($this->options);
         $buffer = '';
         foreach ($first->childNodes as $child) {
             $buffer .= $html5->saveHTML($child);
@@ -2748,7 +2748,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
     {
         $tmp = [];
         foreach ($this->matches as $m) {
-            $txt = $m->textContent;
+            $txt     = $m->textContent;
             $trimmed = trim($txt);
             // If filter empties out, then we only add items that have content.
             if ($filterEmpties) {
@@ -2850,7 +2850,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
         foreach ($this->matches as $m) {
             $p = $m;
             while (isset($p->previousSibling) && $p->previousSibling->nodeType == XML_TEXT_NODE) {
-                $p = $p->previousSibling;
+                $p      = $p->previousSibling;
                 $buffer .= $p->textContent;
             }
         }
@@ -2869,7 +2869,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
         foreach ($this->matches as $m) {
             $n = $m;
             while (isset($n->nextSibling) && $n->nextSibling->nodeType == XML_TEXT_NODE) {
-                $n = $n->nextSibling;
+                $n      = $n->nextSibling;
                 $buffer .= $n->textContent;
             }
         }
@@ -2973,13 +2973,13 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
         // This is slightly lenient: It allows for cases where code incorrectly places content
         // inside of these supposedly unary elements.
         $unary = '/<(area|base|basefont|br|col|frame|hr|img|input|isindex|link|meta|param)(?(?=\s)([^>\/]+))><\/[^>]*>/i';
-        $text = preg_replace($unary, '<\\1\\2 />', $text);
+        $text  = preg_replace($unary, '<\\1\\2 />', $text);
 
         // Experimental: Support for enclosing CDATA sections with comments to be both XML compat
         // and HTML 4/5 compat
-        $cdata = '/(<!\[CDATA\[|\]\]>)/i';
+        $cdata   = '/(<!\[CDATA\[|\]\]>)/i';
         $replace = $this->options['escape_xhtml_js_css_sections'];
-        $text = preg_replace($cdata, $replace, $text);
+        $text    = preg_replace($cdata, $replace, $text);
 
         return $text;
     }
@@ -3404,7 +3404,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
             foreach ($this->matches as $m) {
                 if ($m->hasAttribute('class')) {
                     $vals = array_filter(explode(' ', $m->getAttribute('class')));
-                    $buf = [];
+                    $buf  = [];
                     foreach ($vals as $v) {
                         if (!in_array($v, $to_remove)) {
                             $buf[] = $v;
@@ -3616,7 +3616,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
             $this->find($selector);
         }
 
-        $found = new \SplObjectStorage();
+        $found      = new \SplObjectStorage();
         $this->last = $this->matches;
         foreach ($this->matches as $item) {
             // The item returned is (according to docs) different from
@@ -3746,7 +3746,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
     public function even()
     {
         $found = new \SplObjectStorage();
-        $even = false;
+        $even  = false;
         foreach ($this->matches as $m) {
             if ($even && $m->nodeType == XML_ELEMENT_NODE) {
                 $found->attach($m);
@@ -3775,7 +3775,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
     public function odd()
     {
         $found = new \SplObjectStorage();
-        $odd = true;
+        $odd   = true;
         foreach ($this->matches as $m) {
             if ($odd && $m->nodeType == XML_ELEMENT_NODE) {
                 $found->attach($m);
@@ -3825,7 +3825,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
     {
         // Could possibly use $m->firstChild http://theserverpages.com/php/manual/en/ref.dom.php
         $found = new \SplObjectStorage();
-        $flag = false;
+        $flag  = false;
         foreach ($this->matches as $m) {
             foreach ($m->childNodes as $c) {
                 if ($c->nodeType == XML_ELEMENT_NODE) {
@@ -3856,7 +3856,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
     public function last()
     {
         $found = new \SplObjectStorage();
-        $item = NULL;
+        $item  = NULL;
         foreach ($this->matches as $m) {
             if ($m->nodeType == XML_ELEMENT_NODE) {
                 $item = $m;
@@ -3883,7 +3883,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
     public function lastChild()
     {
         $found = new \SplObjectStorage();
-        $item = NULL;
+        $item  = NULL;
         foreach ($this->matches as $m) {
             foreach ($m->childNodes as $c) {
                 if ($c->nodeType == XML_ELEMENT_NODE) {
@@ -4042,7 +4042,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
     {
 
         $document = new \DOMDocument('1.0');
-        $lead = strtolower(substr($string, 0, 5)); // <?xml
+        $lead     = strtolower(substr($string, 0, 5)); // <?xml
         try {
             set_error_handler(['\QueryPath\ParseException', 'initializeFromError'], $this->errTypes);
 
@@ -4050,7 +4050,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
                 // Is there another way to do this?
 
                 $from_enc = isset($this->options['convert_from_encoding']) ? $this->options['convert_from_encoding'] : 'auto';
-                $to_enc = $this->options['convert_to_encoding'];
+                $to_enc   = $this->options['convert_to_encoding'];
 
                 if (function_exists('mb_convert_encoding')) {
                     $string = mb_convert_encoding($string, $to_enc, $from_enc);
@@ -4224,7 +4224,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
         }
 
         $document = new \DOMDocument();
-        $lastDot = strrpos($filename, '.');
+        $lastDot  = strrpos($filename, '.');
 
         $htmlExtensions = [
             '.html' => 1,
@@ -4299,7 +4299,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
 
         // Note that an empty ext registry indicates that extensions are disabled.
         if (!empty($this->ext) && ExtensionRegistry::hasMethod($name)) {
-            $owner = ExtensionRegistry::getMethodClass($name);
+            $owner  = ExtensionRegistry::getMethodClass($name);
             $method = new \ReflectionMethod($owner, $name);
 
             return $method->invokeArgs($this->ext[$owner], $arguments);
@@ -4315,7 +4315,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
      */
     public function getIterator()
     {
-        $i = new QueryPathIterator($this->matches);
+        $i          = new QueryPathIterator($this->matches);
         $i->options = $this->options;
 
         return $i;
