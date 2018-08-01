@@ -10,9 +10,9 @@ use DOMNode;
  *
  * @package QueryPath
  *
- * @property array matches
+ * @property \Traversable|array|\SplObjectStorage matches
  */
-abstract class DOM
+abstract class DOM implements Query, \IteratorAggregate, \Countable
 {
 
     /**

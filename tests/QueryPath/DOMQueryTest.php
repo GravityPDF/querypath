@@ -1530,7 +1530,7 @@ class DOMQueryTest extends TestCase
     <div>Text A </div>
     <div>
     </div><div>Text B</div></wrapper></root>';
-        $this->assertEquals('Text A , Text B', qp($xml, 'div')->childrenText(', ', true), 'Just inner text.');
+        $this->assertEquals('Text A , Text B', qp($xml, 'div')->childrenText(', '), 'Just inner text.');
     }
 
     public function testNext()

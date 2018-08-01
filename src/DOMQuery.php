@@ -35,7 +35,7 @@ use \Masterminds\HTML5;
  * @see     QueryPath.php
  * @ingroup querypath_core
  */
-class DOMQuery extends DOM implements Query, \IteratorAggregate, \Countable
+class DOMQuery extends DOM
 {
 
     /**
@@ -105,8 +105,6 @@ class DOMQuery extends DOM implements Query, \IteratorAggregate, \Countable
      */
     public function top($selector = NULL): DOMQuery
     {
-        //$this->setMatches($this->document->documentElement);
-        //return !empty($selector) ? $this->find($selector) : $this;
         return $this->inst($this->document->documentElement, $selector, $this->options);
     }
 
@@ -124,18 +122,20 @@ class DOMQuery extends DOM implements Query, \IteratorAggregate, \Countable
      *   not set the root of the document tree if it cannot find any elements
      *   from which to determine what the root is. The workaround is to use
      *   {@link top()} to select the root element again.
+     * @throws CSS\ParseException
      */
     public function find($selector): DOMQuery
     {
-
-        //$query = new QueryPathEventHandler($this->matches);
         $query = new DOMTraverser($this->matches);
         $query->find($selector);
-        //$this->setMatches($query->matches());
-        //return $this;
         return $this->inst($query->matches(), NULL, $this->options);
     }
 
+    /**
+     * @param $selector
+     * @return $this
+     * @throws CSS\ParseException
+     */
     public function findInPlace($selector)
     {
         $query = new DOMTraverser($this->matches);
@@ -191,8 +191,6 @@ class DOMQuery extends DOM implements Query, \IteratorAggregate, \Countable
         }
 
         return $this->inst($found, NULL, $this->options);
-        //$this->setMatches($found);
-        //return $this;
     }
 
     /**
@@ -224,7 +222,7 @@ class DOMQuery extends DOM implements Query, \IteratorAggregate, \Countable
      * @return int
      *  The number of matches in the DOMQuery.
      */
-    public function count()
+    public function count(): int
     {
         return $this->matches->count();
     }
@@ -2509,7 +2507,7 @@ class DOMQuery extends DOM implements Query, \IteratorAggregate, \Countable
      * @return string
      *  The concatenated values of all children.
      */
-    function childrenText($separator = ' ')
+    public function childrenText($separator = ' ')
     {
         // Branch makes it non-destructive.
         return $this->branch()->xpath('descendant::text()')->textImplode($separator);
