@@ -13,8 +13,8 @@
 
 namespace QueryPath;
 
+use QueryPath\CSS\DOMTraverser;
 use \QueryPath\CSS\QueryPathEventHandler;
-use \QueryPath\QueryPath;
 use \Masterminds\HTML5;
 
 
@@ -35,47 +35,14 @@ use \Masterminds\HTML5;
  * @see     QueryPath.php
  * @ingroup querypath_core
  */
-class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
+class DOMQuery extends DOM implements Query, \IteratorAggregate, \Countable
 {
 
-    /**
-     * Default parser flags.
-     *
-     * These are flags that will be used if no global or local flags override them.
-     *
-     * @since 2.0
-     */
-    public const DEFAULT_PARSER_FLAGS = NULL;
-
-    public const JS_CSS_ESCAPE_CDATA             = '\\1';
-    public const JS_CSS_ESCAPE_CDATA_CCOMMENT    = '/* \\1 */';
-    public const JS_CSS_ESCAPE_CDATA_DOUBLESLASH = '// \\1';
-    public const JS_CSS_ESCAPE_NONE              = '';
-
-    //const IGNORE_ERRORS = 1544; //E_NOTICE | E_USER_WARNING | E_USER_NOTICE;
-    private $errTypes = 771; //E_ERROR; | E_USER_ERROR;
-
-    /**
-     * The base DOMDocument.
-     */
-    protected $document;
-    private   $options = [
-        'parser_flags'                 => NULL,
-        'omit_xml_declaration'         => false,
-        'replace_entities'             => false,
-        'exception_level'              => 771, // E_ERROR | E_USER_ERROR | E_USER_WARNING | E_WARNING
-        'ignore_parser_warnings'       => false,
-        'escape_xhtml_js_css_sections' => self::JS_CSS_ESCAPE_CDATA_CCOMMENT,
-    ];
-    /**
-     * The array of matches.
-     */
-    protected $matches = [];
     /**
      * The last array of matches.
      */
     protected $last = []; // Last set of matches.
-    private   $ext  = []; // Extensions array.
+    private $ext = []; // Extensions array.
 
     /**
      * The number of current matches.
@@ -83,120 +50,6 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
      * @see count()
      */
     public $length = 0;
-
-    /**
-     * Constructor.
-     *
-     * Typically, a new DOMQuery is created by QueryPath::with(), QueryPath::withHTML(),
-     * qp(), or htmlqp().
-     *
-     * @param mixed $document
-     *   A document-like object.
-     * @param string $string
-     *   A CSS 3 Selector
-     * @param array $options
-     *   An associative array of options.
-     * @see qp()
-     * @throws Exception
-     */
-    public function __construct($document = NULL, $string = NULL, $options = [])
-    {
-        $string        = trim($string);
-        $this->options = $options + Options::get() + $this->options;
-
-        $parser_flags = $options['parser_flags'] ?? self::DEFAULT_PARSER_FLAGS;
-        if (!empty($this->options['ignore_parser_warnings'])) {
-            // Don't convert parser warnings into exceptions.
-            $this->errTypes = 257; //E_ERROR | E_USER_ERROR;
-        } elseif (isset($this->options['exception_level'])) {
-            // Set the error level at which exceptions will be thrown. By default,
-            // QueryPath will throw exceptions for
-            // E_ERROR | E_USER_ERROR | E_WARNING | E_USER_WARNING.
-            $this->errTypes = $this->options['exception_level'];
-        }
-
-        // Empty: Just create an empty QP.
-        if (empty($document)) {
-            $this->document = isset($this->options['encoding']) ? new \DOMDocument('1.0',
-                $this->options['encoding']) : new \DOMDocument();
-            $this->setMatches(new \SplObjectStorage());
-        } // Figure out if document is DOM, HTML/XML, or a filename
-        elseif (is_object($document)) {
-
-            // This is the most frequent object type.
-            if ($document instanceof \SplObjectStorage) {
-                $this->matches = $document;
-                if ($document->count() !== 0) {
-                    $first = $this->getFirstMatch();
-                    if (!empty($first->ownerDocument)) {
-                        $this->document = $first->ownerDocument;
-                    }
-                }
-            } elseif ($document instanceof self) {
-                //$this->matches = $document->get(NULL, TRUE);
-                $this->setMatches($document->get(NULL, true));
-                if ($this->matches->count() > 0) {
-                    $this->document = $this->getFirstMatch()->ownerDocument;
-                }
-            } elseif ($document instanceof \DOMDocument) {
-                $this->document = $document;
-                //$this->matches = $this->matches($document->documentElement);
-                $this->setMatches($document->documentElement);
-            } elseif ($document instanceof \DOMNode) {
-                $this->document = $document->ownerDocument;
-                //$this->matches = array($document);
-                $this->setMatches($document);
-            } elseif ($document instanceof \Masterminds\HTML5) {
-                $this->document = $document;
-                $this->setMatches($document->documentElement);
-            } elseif ($document instanceof \SimpleXMLElement) {
-                $import         = dom_import_simplexml($document);
-                $this->document = $import->ownerDocument;
-                //$this->matches = array($import);
-                $this->setMatches($import);
-            } else {
-                throw new \QueryPath\Exception('Unsupported class type: ' . get_class($document));
-            }
-        } elseif (is_array($document)) {
-            //trigger_error('Detected deprecated array support', E_USER_NOTICE);
-            if (!empty($document) && $document[0] instanceof \DOMNode) {
-                $found = new \SplObjectStorage();
-                foreach ($document as $item) {
-                    $found->attach($item);
-                }
-                //$this->matches = $found;
-                $this->setMatches($found);
-                $this->document = $this->getFirstMatch()->ownerDocument;
-            }
-        } elseif ($this->isXMLish($document)) {
-            // $document is a string with XML
-            $this->document = $this->parseXMLString($document);
-            $this->setMatches($this->document->documentElement);
-        } else {
-
-            // $document is a filename
-            $context        = empty($options['context']) ? NULL : $options['context'];
-            $this->document = $this->parseXMLFile($document, $parser_flags, $context);
-            $this->setMatches($this->document->documentElement);
-        }
-
-        // Globally set the output option.
-        $this->document->formatOutput = true;
-        if (isset($this->options['format_output']) && $this->options['format_output'] == false) {
-            $this->document->formatOutput = false;
-        }
-
-        // Do a find if the second param was set.
-        if (strlen($string) > 0) {
-            // We don't issue a find because that creates a new DOMQuery.
-            //$this->find($string);
-
-            $query = new \QueryPath\CSS\DOMTraverser($this->matches);
-            $query->find($string);
-            $this->setMatches($query->matches());
-        }
-    }
-
 
     /**
      * Get the effective options for the current DOMQuery object.
@@ -224,7 +77,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
      * @see   QueryPath::Options::merge()
      * @since 2.0
      */
-    public function getOptions()
+    public function getOptions(): array
     {
         return $this->options;
     }
@@ -250,7 +103,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
      *  The DOMQuery object, wrapping the root element (document element)
      *  for the current document.
      */
-    public function top($selector = NULL) : DOMQuery
+    public function top($selector = NULL): DOMQuery
     {
         //$this->setMatches($this->document->documentElement);
         //return !empty($selector) ? $this->find($selector) : $this;
@@ -272,11 +125,11 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
      *   from which to determine what the root is. The workaround is to use
      *   {@link top()} to select the root element again.
      */
-    public function find($selector)
+    public function find($selector): DOMQuery
     {
 
         //$query = new QueryPathEventHandler($this->matches);
-        $query = new \QueryPath\CSS\DOMTraverser($this->matches);
+        $query = new DOMTraverser($this->matches);
         $query->find($selector);
         //$this->setMatches($query->matches());
         //return $this;
@@ -285,7 +138,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
 
     public function findInPlace($selector)
     {
-        $query = new \QueryPath\CSS\DOMTraverser($this->matches);
+        $query = new DOMTraverser($this->matches);
         $query->find($selector);
         $this->setMatches($query->matches());
 
@@ -508,7 +361,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
             if ($this->matches->count() == 0) {
                 return NULL;
             }
-            $ele    = $this->getFirstMatch();
+            $ele = $this->getFirstMatch();
             $buffer = [];
 
             // This does not appear to be part of the DOM
@@ -654,7 +507,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
         }
 
         // Collapse CSS into a string.
-        $format     = '%s: %s;';
+        $format = '%s: %s;';
         $css_string = '';
         foreach ($css as $n => $v) {
             $css_string .= sprintf($format, $n, trim($v));
@@ -712,7 +565,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
             }
 
             // So 1 and 2 should be MIME types, and 3 should be the base64-encoded data.
-            $regex   = '/^data:([a-zA-Z0-9]+)\/([a-zA-Z0-9]+);base64,(.*)$/';
+            $regex = '/^data:([a-zA-Z0-9]+)\/([a-zA-Z0-9]+);base64,(.*)$/';
             $matches = [];
             preg_match($regex, $data, $matches);
 
@@ -852,13 +705,13 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
     {
 
         $found = new \SplObjectStorage();
-        $tmp   = new \SplObjectStorage();
+        $tmp = new \SplObjectStorage();
         foreach ($this->matches as $m) {
             $tmp->attach($m);
             // Seems like this should be right... but it fails unit
             // tests. Need to compare to jQuery.
             // $query = new \QueryPath\CSS\DOMTraverser($tmp, TRUE, $m);
-            $query = new \QueryPath\CSS\DOMTraverser($tmp);
+            $query = new DOMTraverser($tmp);
             $query->find($selector);
             if (count($query->matches())) {
                 $found->attach($m);
@@ -952,7 +805,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
         if ($modifyDOM) {
             $placeholder = $oldFirst->ownerDocument->createElement('_PLACEHOLDER_');
             $placeholder = $oldFirst->parentNode->insertBefore($placeholder, $oldFirst);
-            $len         = count($list);
+            $len = count($list);
             for ($i = 0; $i < $len; ++$i) {
                 $node = $list[$i];
                 $node = $node->parentNode->removeChild($node);
@@ -994,8 +847,8 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
     public function filterLambda($fn)
     {
         $function = create_function('$index, $item', $fn);
-        $found    = new \SplObjectStorage();
-        $i        = 0;
+        $found = new \SplObjectStorage();
+        $i = 0;
         foreach ($this->matches as $item) {
             if ($function($i++, $item) !== false) {
                 $found->attach($item);
@@ -1084,7 +937,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
     public function filterCallback($callback)
     {
         $found = new \SplObjectStorage();
-        $i     = 0;
+        $i = 0;
         if (is_callable($callback)) {
             foreach ($this->matches as $item) {
                 if (call_user_func($callback, $i++, $item) !== false) {
@@ -1209,17 +1062,17 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
                     if (is_array($c) || $c instanceof \Iterable) {
                         foreach ($c as $retval) {
                             if (!is_object($retval)) {
-                                $tmp              = new \stdClass();
+                                $tmp = new \stdClass();
                                 $tmp->textContent = $retval;
-                                $retval           = $tmp;
+                                $retval = $tmp;
                             }
                             $found->attach($retval);
                         }
                     } else {
                         if (!is_object($c)) {
-                            $tmp              = new \stdClass();
+                            $tmp = new \stdClass();
                             $tmp->textContent = $c;
-                            $c                = $tmp;
+                            $c = $tmp;
                         }
                         $found->attach($c);
                     }
@@ -1247,7 +1100,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
      */
     public function slice($start, $length = 0)
     {
-        $end   = $length;
+        $end = $length;
         $found = new \SplObjectStorage();
         if ($start >= $this->size()) {
             return $this->inst($found, NULL, $this->options);
@@ -1608,7 +1461,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
      */
     public function replaceWith($new)
     {
-        $data  = $this->prepareInsert($new);
+        $data = $this->prepareInsert($new);
         $found = new \SplObjectStorage();
         foreach ($this->matches as $m) {
             $parent = $m->parentNode;
@@ -1675,7 +1528,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
 
             // Move children to peer of parent.
             $parent = $m->parentNode;
-            $old    = $parent->removeChild($m);
+            $old = $parent->removeChild($m);
             $parent->parentNode->insertBefore($old, $parent);
             $parents->attach($parent);
         }
@@ -1784,7 +1637,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
             $bottom = $data;
         }
 
-        $first  = $this->getFirstMatch();
+        $first = $this->getFirstMatch();
         $parent = $first->parentNode;
         $parent->insertBefore($data, $first);
         foreach ($this->matches as $m) {
@@ -1863,10 +1716,10 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
     public function deepest()
     {
         $deepest = 0;
-        $winner  = new \SplObjectStorage();
+        $winner = new \SplObjectStorage();
         foreach ($this->matches as $m) {
             $local_deepest = 0;
-            $local_ele     = $this->deepestNode($m, 0, NULL, $local_deepest);
+            $local_ele = $this->deepestNode($m, 0, NULL, $local_deepest);
 
             // Replace with the new deepest.
             if ($local_deepest > $deepest) {
@@ -1884,125 +1737,6 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
         }
 
         return $this->inst($winner, NULL, $this->options);
-    }
-
-    /**
-     * A depth-checking function. Typically, it only needs to be
-     * invoked with the first parameter. The rest are used for recursion.
-     *
-     * @see deepest();
-     * @param DOMNode $ele
-     *  The element.
-     * @param int $depth
-     *  The depth guage
-     * @param mixed $current
-     *  The current set.
-     * @param DOMNode $deepest
-     *  A reference to the current deepest node.
-     * @return array
-     *  Returns an array of DOM nodes.
-     */
-    protected function deepestNode(\DOMNode $ele, $depth = 0, $current = NULL, &$deepest = NULL)
-    {
-        // FIXME: Should this use SplObjectStorage?
-        if (!isset($current)) {
-            $current = [$ele];
-        }
-        if (!isset($deepest)) {
-            $deepest = $depth;
-        }
-        if ($ele->hasChildNodes()) {
-            foreach ($ele->childNodes as $child) {
-                if ($child->nodeType === XML_ELEMENT_NODE) {
-                    $current = $this->deepestNode($child, $depth + 1, $current, $deepest);
-                }
-            }
-        } elseif ($depth > $deepest) {
-            $current = [$ele];
-            $deepest = $depth;
-        } elseif ($depth === $deepest) {
-            $current[] = $ele;
-        }
-
-        return $current;
-    }
-
-    /**
-     * Prepare an item for insertion into a DOM.
-     *
-     * This handles a variety of boilerplate tasks that need doing before an
-     * indeterminate object can be inserted into a DOM tree.
-     * - If item is a string, this is converted into a document fragment and returned.
-     * - If item is a DOMQuery, then all items are retrieved and converted into
-     *   a document fragment and returned.
-     * - If the item is a DOMNode, it is imported into the current DOM if necessary.
-     * - If the item is a SimpleXMLElement, it is converted into a DOM node and then
-     *   imported.
-     *
-     * @param mixed $item
-     *  Item to prepare for insert.
-     * @return mixed
-     *  Returns the prepared item.
-     * @throws QueryPath::Exception
-     *  Thrown if the object passed in is not of a supprted object type.
-     * @throws Exception
-     */
-    protected function prepareInsert($item)
-    {
-        if (empty($item)) {
-            return null;
-        }
-
-        if (is_string($item)) {
-            // If configured to do so, replace all entities.
-            if ($this->options['replace_entities']) {
-                $item = \QueryPath\Entities::replaceAllEntities($item);
-            }
-
-            $frag = $this->document->createDocumentFragment();
-            try {
-                set_error_handler([ParseException::class, 'initializeFromError'], $this->errTypes);
-                $frag->appendXML($item);
-            } // Simulate a finally block.
-            catch (Exception $e) {
-                restore_error_handler();
-                throw $e;
-            }
-            restore_error_handler();
-
-            return $frag;
-        }
-
-        if ($item instanceof self) {
-            if ($item->count() === 0) {
-                return null;
-            }
-
-            $frag = $this->document->createDocumentFragment();
-            foreach ($item->matches as $m) {
-                $frag->appendXML($item->document->saveXML($m));
-            }
-
-            return $frag;
-        }
-
-        if ($item instanceof \DOMNode) {
-            if ($item->ownerDocument !== $this->document) {
-                // Deep clone this and attach it to this document
-                $item = $this->document->importNode($item, true);
-            }
-
-            return $item;
-        }
-
-        if ($item instanceof \SimpleXMLElement) {
-            $element = dom_import_simplexml($item);
-
-            return $this->document->importNode($element, true);
-        }
-        // What should we do here?
-        //var_dump($item);
-        throw new \QueryPath\Exception('Cannot prepare item of unsupported type: ' . gettype($item));
     }
 
     /**
@@ -2172,7 +1906,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
         // Note that this does not use setMatches because it must set the previous
         // set of matches to empty array.
         $this->matches = $this->last;
-        $this->last    = new \SplObjectStorage();
+        $this->last = new \SplObjectStorage();
 
         return $this;
     }
@@ -2250,7 +1984,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
      */
     public function children($selector = NULL)
     {
-        $found  = new \SplObjectStorage();
+        $found = new \SplObjectStorage();
         $filter = strlen($selector) > 0;
 
         if ($filter) {
@@ -2262,7 +1996,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
                     // This is basically an optimized filter() just for children().
                     if ($filter) {
                         $tmp->attach($c);
-                        $query = new \QueryPath\CSS\DOMTraverser($tmp, true, $c);
+                        $query = new DOMTraverser($tmp, true, $c);
                         $query->find($selector);
                         if (count($query->matches()) > 0) {
                             $found->attach($c);
@@ -2717,7 +2451,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
             return '';
         }
 
-        $html5  = new HTML5($this->options);
+        $html5 = new HTML5($this->options);
         $buffer = '';
         foreach ($first->childNodes as $child) {
             $buffer .= $html5->saveHTML($child);
@@ -2748,7 +2482,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
     {
         $tmp = [];
         foreach ($this->matches as $m) {
-            $txt     = $m->textContent;
+            $txt = $m->textContent;
             $trimmed = trim($txt);
             // If filter empties out, then we only add items that have content.
             if ($filterEmpties) {
@@ -2850,7 +2584,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
         foreach ($this->matches as $m) {
             $p = $m;
             while (isset($p->previousSibling) && $p->previousSibling->nodeType == XML_TEXT_NODE) {
-                $p      = $p->previousSibling;
+                $p = $p->previousSibling;
                 $buffer .= $p->textContent;
             }
         }
@@ -2869,7 +2603,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
         foreach ($this->matches as $m) {
             $n = $m;
             while (isset($n->nextSibling) && $n->nextSibling->nodeType == XML_TEXT_NODE) {
-                $n      = $n->nextSibling;
+                $n = $n->nextSibling;
                 $buffer .= $n->textContent;
             }
         }
@@ -2973,13 +2707,13 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
         // This is slightly lenient: It allows for cases where code incorrectly places content
         // inside of these supposedly unary elements.
         $unary = '/<(area|base|basefont|br|col|frame|hr|img|input|isindex|link|meta|param)(?(?=\s)([^>\/]+))><\/[^>]*>/i';
-        $text  = preg_replace($unary, '<\\1\\2 />', $text);
+        $text = preg_replace($unary, '<\\1\\2 />', $text);
 
         // Experimental: Support for enclosing CDATA sections with comments to be both XML compat
         // and HTML 4/5 compat
-        $cdata   = '/(<!\[CDATA\[|\]\]>)/i';
+        $cdata = '/(<!\[CDATA\[|\]\]>)/i';
         $replace = $this->options['escape_xhtml_js_css_sections'];
-        $text    = preg_replace($cdata, $replace, $text);
+        $text = preg_replace($cdata, $replace, $text);
 
         return $text;
     }
@@ -3404,7 +3138,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
             foreach ($this->matches as $m) {
                 if ($m->hasAttribute('class')) {
                     $vals = array_filter(explode(' ', $m->getAttribute('class')));
-                    $buf  = [];
+                    $buf = [];
                     foreach ($vals as $v) {
                         if (!in_array($v, $to_remove)) {
                             $buf[] = $v;
@@ -3526,17 +3260,10 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
 
     protected function inst($matches, $selector, $options)
     {
-        /*
-    $temp = \QueryPath::with($matches, NULL, $options);
-    //if (isset($selector)) $temp->find($selector);
-    $temp->document = $this->document;
-    if (isset($selector)) $temp->findInPlace($selector);
-    return $temp;
-     */
         // https://en.wikipedia.org/wiki/Dolly_(sheep)
         $dolly = clone $this;
         $dolly->setMatches($matches);
-        //var_dump($dolly); exit;
+
         if (isset($selector)) {
             $dolly->findInPlace($selector);
         }
@@ -3616,7 +3343,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
             $this->find($selector);
         }
 
-        $found      = new \SplObjectStorage();
+        $found = new \SplObjectStorage();
         $this->last = $this->matches;
         foreach ($this->matches as $item) {
             // The item returned is (according to docs) different from
@@ -3746,7 +3473,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
     public function even()
     {
         $found = new \SplObjectStorage();
-        $even  = false;
+        $even = false;
         foreach ($this->matches as $m) {
             if ($even && $m->nodeType == XML_ELEMENT_NODE) {
                 $found->attach($m);
@@ -3775,7 +3502,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
     public function odd()
     {
         $found = new \SplObjectStorage();
-        $odd   = true;
+        $odd = true;
         foreach ($this->matches as $m) {
             if ($odd && $m->nodeType == XML_ELEMENT_NODE) {
                 $found->attach($m);
@@ -3825,7 +3552,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
     {
         // Could possibly use $m->firstChild http://theserverpages.com/php/manual/en/ref.dom.php
         $found = new \SplObjectStorage();
-        $flag  = false;
+        $flag = false;
         foreach ($this->matches as $m) {
             foreach ($m->childNodes as $c) {
                 if ($c->nodeType == XML_ELEMENT_NODE) {
@@ -3856,7 +3583,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
     public function last()
     {
         $found = new \SplObjectStorage();
-        $item  = NULL;
+        $item = NULL;
         foreach ($this->matches as $m) {
             if ($m->nodeType == XML_ELEMENT_NODE) {
                 $item = $m;
@@ -3883,7 +3610,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
     public function lastChild()
     {
         $found = new \SplObjectStorage();
-        $item  = NULL;
+        $item = NULL;
         foreach ($this->matches as $m) {
             foreach ($m->childNodes as $c) {
                 if ($c->nodeType == XML_ELEMENT_NODE) {
@@ -4014,257 +3741,6 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
 
     /////// INTERNAL FUNCTIONS ////////
 
-
-    /**
-     * Determine whether a given string looks like XML or not.
-     *
-     * Basically, this scans a portion of the supplied string, checking to see
-     * if it has a tag-like structure. It is possible to "confuse" this, which
-     * may subsequently result in parse errors, but in the vast majority of
-     * cases, this method serves as a valid inicator of whether or not the
-     * content looks like XML.
-     *
-     * Things that are intentional excluded:
-     * - plain text with no markup.
-     * - strings that look like filesystem paths.
-     *
-     * Subclasses SHOULD NOT OVERRIDE THIS. Altering it may be altering
-     * core assumptions about how things work. Instead, classes should
-     * override the constructor and pass in only one of the parsed types
-     * that this class expects.
-     */
-    protected function isXMLish($string)
-    {
-        return (strpos($string, '<') !== false && strpos($string, '>') !== false);
-    }
-
-    private function parseXMLString($string, $flags = NULL)
-    {
-
-        $document = new \DOMDocument('1.0');
-        $lead     = strtolower(substr($string, 0, 5)); // <?xml
-        try {
-            set_error_handler(['\QueryPath\ParseException', 'initializeFromError'], $this->errTypes);
-
-            if (isset($this->options['convert_to_encoding'])) {
-                // Is there another way to do this?
-
-                $from_enc = isset($this->options['convert_from_encoding']) ? $this->options['convert_from_encoding'] : 'auto';
-                $to_enc   = $this->options['convert_to_encoding'];
-
-                if (function_exists('mb_convert_encoding')) {
-                    $string = mb_convert_encoding($string, $to_enc, $from_enc);
-                }
-
-            }
-
-            // This is to avoid cases where low ascii digits have slipped into HTML.
-            // AFAIK, it should not adversly effect UTF-8 documents.
-            if (!empty($this->options['strip_low_ascii'])) {
-                $string = filter_var($string, FILTER_UNSAFE_RAW, FILTER_FLAG_ENCODE_LOW);
-            }
-
-            // Allow users to override parser settings.
-            if (empty($this->options['use_parser'])) {
-                $useParser = '';
-            } else {
-                $useParser = strtolower($this->options['use_parser']);
-            }
-
-            // If HTML parser is requested, we use it.
-            if ($useParser == 'html') {
-                $document->loadHTML($string);
-            } // Parse as XML if it looks like XML, or if XML parser is requested.
-            elseif ($lead == '<?xml' || $useParser == 'xml') {
-                if ($this->options['replace_entities']) {
-                    $string = \QueryPath\Entities::replaceAllEntities($string);
-                }
-                $document->loadXML($string, $flags);
-            } // In all other cases, we try the HTML parser.
-            else {
-                $document->loadHTML($string);
-            }
-        } // Emulate 'finally' behavior.
-        catch (Exception $e) {
-            restore_error_handler();
-            throw $e;
-        }
-        restore_error_handler();
-
-        if (empty($document)) {
-            throw new \QueryPath\ParseException('Unknown parser exception.');
-        }
-
-        return $document;
-    }
-
-    /**
-     * EXPERT: Be very, very careful using this.
-     * A utility function for setting the current set of matches.
-     * It makes sure the last matches buffer is set (for end() and andSelf()).
-     *
-     * @since 2.0
-     */
-    public function setMatches($matches, $unique = true)
-    {
-        // This causes a lot of overhead....
-        //if ($unique) $matches = self::unique($matches);
-        $this->last = $this->matches;
-
-        // Just set current matches.
-        if ($matches instanceof \SplObjectStorage) {
-            $this->matches = $matches;
-        } // This is likely legacy code that needs conversion.
-        elseif (is_array($matches)) {
-            trigger_error('Legacy array detected.');
-            $tmp = new \SplObjectStorage();
-            foreach ($matches as $m) {
-                $tmp->attach($m);
-            }
-            $this->matches = $tmp;
-        }
-        // For non-arrays, try to create a new match set and
-        // add this object.
-        else {
-            $found = new \SplObjectStorage();
-            if (isset($matches)) {
-                $found->attach($matches);
-            }
-            $this->matches = $found;
-        }
-
-        // EXPERIMENTAL: Support for qp()->length.
-        $this->length = $this->matches->count();
-    }
-
-    /**
-     * Set the match monitor to empty.
-     *
-     * This preserves history.
-     *
-     * @since 2.0
-     */
-    private function noMatches()
-    {
-        $this->setMatches(NULL);
-    }
-
-    /**
-     * A utility function for retriving a match by index.
-     *
-     * The internal data structure used in DOMQuery does not have
-     * strong random access support, so we suppliment it with this method.
-     */
-    private function getNthMatch($index)
-    {
-        if ($index > $this->matches->count() || $index < 0) {
-            return;
-        }
-
-        $i = 0;
-        foreach ($this->matches as $m) {
-            if ($i++ == $index) {
-                return $m;
-            }
-        }
-    }
-
-    /**
-     * Convenience function for getNthMatch(0).
-     */
-    private function getFirstMatch()
-    {
-        $this->matches->rewind();
-
-        return $this->matches->current();
-    }
-
-    /**
-     * Parse an XML or HTML file.
-     *
-     * This attempts to autodetect the type of file, and then parse it.
-     *
-     * @param string $filename
-     *  The file name to parse.
-     * @param int $flags
-     *  The OR-combined flags accepted by the DOM parser. See the PHP documentation
-     *  for DOM or for libxml.
-     * @param resource $context
-     *  The stream context for the file IO. If this is set, then an alternate
-     *  parsing path is followed: The file is loaded by PHP's stream-aware IO
-     *  facilities, read entirely into memory, and then handed off to
-     *  {@link parseXMLString()}. On large files, this can have a performance impact.
-     * @throws \QueryPath\ParseException
-     *  Thrown when a file cannot be loaded or parsed.
-     */
-    private function parseXMLFile($filename, $flags = NULL, $context = NULL)
-    {
-
-        // If a context is specified, we basically have to do the reading in
-        // two steps:
-        if (!empty($context)) {
-            try {
-                set_error_handler(['\QueryPath\ParseException', 'initializeFromError'], $this->errTypes);
-                $contents = file_get_contents($filename, false, $context);
-            }
-                // Apparently there is no 'finally' in PHP, so we have to restore the error
-                // handler this way:
-            catch (Exception $e) {
-                restore_error_handler();
-                throw $e;
-            }
-            restore_error_handler();
-
-            if ($contents == false) {
-                throw new \QueryPath\ParseException(sprintf('Contents of the file %s could not be retrieved.',
-                    $filename));
-            }
-
-            return $this->parseXMLString($contents, $flags);
-        }
-
-        $document = new \DOMDocument();
-        $lastDot  = strrpos($filename, '.');
-
-        $htmlExtensions = [
-            '.html' => 1,
-            '.htm'  => 1,
-        ];
-
-        // Allow users to override parser settings.
-        if (empty($this->options['use_parser'])) {
-            $useParser = '';
-        } else {
-            $useParser = strtolower($this->options['use_parser']);
-        }
-
-        $ext = $lastDot !== false ? strtolower(substr($filename, $lastDot)) : '';
-
-        try {
-            set_error_handler([ParseException::class, 'initializeFromError'], $this->errTypes);
-
-            // If the parser is explicitly set to XML, use that parser.
-            if ($useParser === 'xml') {
-                $document->load($filename, $flags);
-            } // Otherwise, see if it looks like HTML.
-            elseif ($useParser === 'html' || isset($htmlExtensions[$ext])) {
-                // Try parsing it as HTML.
-                $document->loadHTMLFile($filename);
-            } // Default to XML.
-            else {
-                $document->load($filename, $flags);
-            }
-
-        } // Emulate 'finally' behavior.
-        catch (Exception $e) {
-            restore_error_handler();
-            throw $e;
-        }
-        restore_error_handler();
-
-        return $document;
-    }
-
     /**
      * Call extension methods.
      *
@@ -4299,7 +3775,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
 
         // Note that an empty ext registry indicates that extensions are disabled.
         if (!empty($this->ext) && ExtensionRegistry::hasMethod($name)) {
-            $owner  = ExtensionRegistry::getMethodClass($name);
+            $owner = ExtensionRegistry::getMethodClass($name);
             $method = new \ReflectionMethod($owner, $name);
 
             return $method->invokeArgs($this->ext[$owner], $arguments);
@@ -4315,7 +3791,7 @@ class DOMQuery implements \QueryPath\Query, \IteratorAggregate, \Countable
      */
     public function getIterator()
     {
-        $i          = new QueryPathIterator($this->matches);
+        $i = new QueryPathIterator($this->matches);
         $i->options = $this->options;
 
         return $i;
