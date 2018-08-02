@@ -769,7 +769,14 @@ class DOMTraverser implements Traverser
         return count($missing) === 0;
     }
 
-    protected function matchPseudoClasses(\DOMElement $node, $pseudoClasses)
+    /**
+     * @param \DOMElement $node
+     * @param $pseudoClasses
+     * @return bool
+     * @throws NotImplementedException
+     * @throws ParseException
+     */
+    protected function matchPseudoClasses(\DOMElement $node, $pseudoClasses): bool
     {
         $ret = true;
         foreach ($pseudoClasses as $pseudoClass) {

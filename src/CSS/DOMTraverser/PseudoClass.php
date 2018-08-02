@@ -206,7 +206,7 @@ class PseudoClass
 
         $match = true;
         foreach ($node->attributes as $attrNode) {
-            if ($attrNode->localName == 'lang') {
+            if ($attrNode->localName === 'lang') {
 
                 if ($attrNode->nodeName == $attrNode->localName) {
                     // fprintf(STDOUT, "%s in NS %s\n", $attrNode->name, $attrNode->nodeName);
@@ -450,7 +450,7 @@ class PseudoClass
         return is_int($prod) && $prod >= 0;
     }
 
-    protected function isLocalLink($node)
+    protected function isLocalLink($node): bool
     {
         if (!$node->hasAttribute('href')) {
             return false;
