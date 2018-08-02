@@ -105,7 +105,7 @@ class DOMQuery extends DOM
      */
     public function top($selector = NULL): DOMQuery
     {
-        return $this->inst($this->document->documentElement, $selector, $this->options);
+        return $this->inst($this->document->documentElement, $selector);
     }
 
     /**
@@ -128,7 +128,7 @@ class DOMQuery extends DOM
     {
         $query = new DOMTraverser($this->matches);
         $query->find($selector);
-        return $this->inst($query->matches(), NULL, $this->options);
+        return $this->inst($query->matches(), NULL);
     }
 
     /**
@@ -190,7 +190,7 @@ class DOMQuery extends DOM
             }
         }
 
-        return $this->inst($found, NULL, $this->options);
+        return $this->inst($found, NULL);
     }
 
     /**
@@ -623,7 +623,7 @@ class DOMQuery extends DOM
      */
     public function eq($index)
     {
-        return $this->inst($this->getNthMatch($index), NULL, $this->options);
+        return $this->inst($this->getNthMatch($index), NULL);
         // XXX: Might there be a more efficient way of doing this?
         //$this->setMatches($this->getNthMatch($index));
         //return $this;
@@ -717,7 +717,7 @@ class DOMQuery extends DOM
             $tmp->detach($m);
         }
 
-        return $this->inst($found, NULL, $this->options);
+        return $this->inst($found, NULL);
     }
 
     /**
@@ -812,7 +812,7 @@ class DOMQuery extends DOM
             $placeholder->parentNode->removeChild($placeholder);
         }
 
-        return $this->inst($found, NULL, $this->options);
+        return $this->inst($found, NULL);
     }
 
     /**
@@ -853,7 +853,7 @@ class DOMQuery extends DOM
             }
         }
 
-        return $this->inst($found, NULL, $this->options);
+        return $this->inst($found, NULL);
     }
 
     /**
@@ -902,7 +902,7 @@ class DOMQuery extends DOM
             }
         }
 
-        return $this->inst($found, NULL, $this->options);
+        return $this->inst($found, NULL);
     }
 
     /**
@@ -946,7 +946,7 @@ class DOMQuery extends DOM
             throw new \QueryPath\Exception('The specified callback is not callable.');
         }
 
-        return $this->inst($found, NULL, $this->options);
+        return $this->inst($found, NULL);
     }
 
     /**
@@ -988,7 +988,7 @@ class DOMQuery extends DOM
             }
         }
 
-        return $this->inst($found, NULL, $this->options);
+        return $this->inst($found, NULL);
     }
 
     /**
@@ -1081,7 +1081,7 @@ class DOMQuery extends DOM
             throw new \QueryPath\Exception('Callback is not callable.');
         }
 
-        return $this->inst($found, NULL, $this->options);
+        return $this->inst($found, NULL);
     }
 
     /**
@@ -1101,7 +1101,7 @@ class DOMQuery extends DOM
         $end = $length;
         $found = new \SplObjectStorage();
         if ($start >= $this->size()) {
-            return $this->inst($found, NULL, $this->options);
+            return $this->inst($found, NULL);
         }
 
         $i = $j = 0;
@@ -1116,7 +1116,7 @@ class DOMQuery extends DOM
             ++$i;
         }
 
-        return $this->inst($found, NULL, $this->options);
+        return $this->inst($found, NULL);
     }
 
     /**
@@ -1467,7 +1467,7 @@ class DOMQuery extends DOM
             $found->attach($parent->removeChild($m));
         }
 
-        return $this->inst($found, NULL, $this->options);
+        return $this->inst($found, NULL);
     }
 
     /**
@@ -1734,7 +1734,7 @@ class DOMQuery extends DOM
             }
         }
 
-        return $this->inst($winner, NULL, $this->options);
+        return $this->inst($winner, NULL);
     }
 
     /**
@@ -2008,7 +2008,7 @@ class DOMQuery extends DOM
                 }
             }
         }
-        $new = $this->inst($found, NULL, $this->options);
+        $new = $this->inst($found, NULL);
 
         return $new;
     }
@@ -2043,7 +2043,7 @@ class DOMQuery extends DOM
             }
         }
 
-        return $this->inst($found, NULL, $this->options);
+        return $this->inst($found, NULL);
     }
 
     /**
@@ -2080,9 +2080,9 @@ class DOMQuery extends DOM
             }
         }
         if (empty($selector)) {
-            return $this->inst($found, NULL, $this->options);
+            return $this->inst($found, NULL);
         } else {
-            return $this->inst($found, NULL, $this->options)->filter($selector);
+            return $this->inst($found, NULL)->filter($selector);
         }
     }
 
@@ -2123,7 +2123,7 @@ class DOMQuery extends DOM
         }
 
         // XXX: Should this be an in-place modification?
-        return $this->inst($found, NULL, $this->options);
+        return $this->inst($found, NULL);
         //$this->setMatches($found);
         //return $this;
     }
@@ -2163,7 +2163,7 @@ class DOMQuery extends DOM
             }
         }
 
-        return $this->inst($found, NULL, $this->options);
+        return $this->inst($found, NULL);
     }
 
     /**
@@ -2198,7 +2198,7 @@ class DOMQuery extends DOM
             }
         }
 
-        return $this->inst($found, NULL, $this->options);
+        return $this->inst($found, NULL);
     }
 
     /**
@@ -2944,7 +2944,7 @@ class DOMQuery extends DOM
             }
         }
 
-        return $this->inst($found, NULL, $this->options);
+        return $this->inst($found, NULL);
     }
 
     /**
@@ -2981,7 +2981,7 @@ class DOMQuery extends DOM
             }
         }
 
-        return $this->inst($found, NULL, $this->options);
+        return $this->inst($found, NULL);
     }
 
     /**
@@ -3021,7 +3021,7 @@ class DOMQuery extends DOM
             }
         }
 
-        return $this->inst($found, NULL, $this->options);
+        return $this->inst($found, NULL);
     }
 
     /**
@@ -3058,7 +3058,7 @@ class DOMQuery extends DOM
             }
         }
 
-        return $this->inst($found, NULL, $this->options);
+        return $this->inst($found, NULL);
     }
 
     /**
@@ -3260,11 +3260,10 @@ class DOMQuery extends DOM
     /**
      * @param $matches
      * @param $selector
-     * @param $options
      * @return DOMQuery
      * @throws CSS\ParseException
      */
-    protected function inst($matches, $selector, $options): DOMQuery
+    protected function inst($matches, $selector): DOMQuery
     {
         $dolly = clone $this;
         $dolly->setMatches($matches);
@@ -3355,7 +3354,7 @@ class DOMQuery extends DOM
             $found->attach($item->parentNode->removeChild($item));
         }
 
-        return $this->inst($found, NULL, $this->options);
+        return $this->inst($found, NULL);
     }
 
     /**
@@ -3437,7 +3436,7 @@ class DOMQuery extends DOM
             }
         }
 
-        return $this->inst($found, NULL, $this->options);
+        return $this->inst($found, NULL);
     }
 
     /**
@@ -3487,7 +3486,7 @@ class DOMQuery extends DOM
             $even = $even ? false : true;
         }
 
-        return $this->inst($found, NULL, $this->options);
+        return $this->inst($found, NULL);
     }
 
     /**
@@ -3516,7 +3515,7 @@ class DOMQuery extends DOM
             $odd = $odd ? false : true;
         }
 
-        return $this->inst($found, NULL, $this->options);
+        return $this->inst($found, NULL);
     }
 
     /**
@@ -3540,7 +3539,7 @@ class DOMQuery extends DOM
             }
         }
 
-        return $this->inst($found, NULL, $this->options);
+        return $this->inst($found, NULL);
     }
 
     /**
@@ -3572,7 +3571,7 @@ class DOMQuery extends DOM
             }
         }
 
-        return $this->inst($found, NULL, $this->options);
+        return $this->inst($found, NULL);
     }
 
     /**
@@ -3599,7 +3598,7 @@ class DOMQuery extends DOM
             $found->attach($item);
         }
 
-        return $this->inst($found, NULL, $this->options);
+        return $this->inst($found, NULL);
     }
 
     /**
@@ -3629,7 +3628,7 @@ class DOMQuery extends DOM
             }
         }
 
-        return $this->inst($found, NULL, $this->options);
+        return $this->inst($found, NULL);
     }
 
     /**
@@ -3666,7 +3665,7 @@ class DOMQuery extends DOM
             }
         }
 
-        return $this->inst($found, NULL, $this->options);
+        return $this->inst($found, NULL);
     }
 
     /**
@@ -3705,7 +3704,7 @@ class DOMQuery extends DOM
             }
         }
 
-        return $this->inst($found, NULL, $this->options);
+        return $this->inst($found, NULL);
     }
 
     /**
@@ -3744,7 +3743,7 @@ class DOMQuery extends DOM
             }
         }
 
-        return $this->inst($found, NULL, $this->options);
+        return $this->inst($found, NULL);
     }
 
     /////// INTERNAL FUNCTIONS ////////
