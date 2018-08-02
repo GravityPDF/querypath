@@ -4,6 +4,7 @@ namespace QueryPath;
 
 
 use DOMNode;
+use QueryPath\CSS\DOMTraverser;
 
 /**
  * Class DOM
@@ -147,7 +148,7 @@ abstract class DOM implements Query, \IteratorAggregate, \Countable
 
         // Globally set the output option.
         $this->document->formatOutput = true;
-        if (isset($this->options['format_output']) && $this->options['format_output'] == false) {
+        if (isset($this->options['format_output']) && $this->options['format_output'] === false) {
             $this->document->formatOutput = false;
         }
 
@@ -156,7 +157,7 @@ abstract class DOM implements Query, \IteratorAggregate, \Countable
             // We don't issue a find because that creates a new DOMQuery.
             //$this->find($string);
 
-            $query = new \QueryPath\CSS\DOMTraverser($this->matches);
+            $query = new DOMTraverser($this->matches);
             $query->find($string);
             $this->setMatches($query->matches());
         }

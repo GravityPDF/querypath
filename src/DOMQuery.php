@@ -3243,6 +3243,7 @@ class DOMQuery extends DOM
      * @since 1.1
      * @see   cloneAll()
      * @see   find()
+     * @throws CSS\ParseException
      */
     public function branch($selector = NULL)
     {
@@ -3256,9 +3257,15 @@ class DOMQuery extends DOM
         return $temp;
     }
 
-    protected function inst($matches, $selector, $options)
+    /**
+     * @param $matches
+     * @param $selector
+     * @param $options
+     * @return DOMQuery
+     * @throws CSS\ParseException
+     */
+    protected function inst($matches, $selector, $options): DOMQuery
     {
-        // https://en.wikipedia.org/wiki/Dolly_(sheep)
         $dolly = clone $this;
         $dolly->setMatches($matches);
 
@@ -3286,13 +3293,12 @@ class DOMQuery extends DOM
      * @see qp()
      * @return \QueryPath\DOMQuery
      */
-    public function cloneAll()
+    public function cloneAll(): DOMQuery
     {
         $found = new \SplObjectStorage();
         foreach ($this->matches as $m) {
             $found->attach($m->cloneNode(true));
         }
-        //return $this->inst($found, NULL, $this->options);
         $this->setMatches($found);
 
         return $this;
@@ -3333,10 +3339,10 @@ class DOMQuery extends DOM
      * @see    removeChildren()
      * @since  2.1
      * @author eabrand
+     * @throws CSS\ParseException
      */
     public function detach($selector = NULL)
     {
-
         if (!empty($selector)) {
             $this->find($selector);
         }
@@ -3367,8 +3373,9 @@ class DOMQuery extends DOM
      * @see    removeChildren()
      * @since  2.1
      * @author eabrand
+     * @throws QueryPath
      */
-    public function attach(DOMQuery $dest)
+    public function attach(DOMQuery $dest): DOMQuery
     {
         foreach ($this->last as $m) {
             $dest->append($m);
@@ -3396,8 +3403,9 @@ class DOMQuery extends DOM
      * @since  2.1
      * @author eabrand
      * @todo   It would be trivially easy to add support for iterating over an array or Iterable of DOMNodes.
+     * @return DOMQuery
      */
-    public function has($contained)
+    public function has($contained): DOMQuery
     {
         /*
     if (count($this->matches) == 0) {
@@ -3473,10 +3481,10 @@ class DOMQuery extends DOM
         $found = new \SplObjectStorage();
         $even = false;
         foreach ($this->matches as $m) {
-            if ($even && $m->nodeType == XML_ELEMENT_NODE) {
+            if ($even && $m->nodeType === XML_ELEMENT_NODE) {
                 $found->attach($m);
             }
-            $even = ($even) ? false : true;
+            $even = $even ? false : true;
         }
 
         return $this->inst($found, NULL, $this->options);
@@ -3497,15 +3505,15 @@ class DOMQuery extends DOM
      * @since  2.1
      * @author eabrand
      */
-    public function odd()
+    public function odd(): DOMQuery
     {
         $found = new \SplObjectStorage();
         $odd = true;
         foreach ($this->matches as $m) {
-            if ($odd && $m->nodeType == XML_ELEMENT_NODE) {
+            if ($odd && $m->nodeType === XML_ELEMENT_NODE) {
                 $found->attach($m);
             }
-            $odd = ($odd) ? false : true;
+            $odd = $odd ? false : true;
         }
 
         return $this->inst($found, NULL, $this->options);
@@ -3522,11 +3530,11 @@ class DOMQuery extends DOM
      * @since  2.1
      * @author eabrand
      */
-    public function first()
+    public function first(): DOMQuery
     {
         $found = new \SplObjectStorage();
         foreach ($this->matches as $m) {
-            if ($m->nodeType == XML_ELEMENT_NODE) {
+            if ($m->nodeType === XML_ELEMENT_NODE) {
                 $found->attach($m);
                 break;
             }
@@ -3546,14 +3554,14 @@ class DOMQuery extends DOM
      * @since  2.1
      * @author eabrand
      */
-    public function firstChild()
+    public function firstChild(): DOMQuery
     {
         // Could possibly use $m->firstChild http://theserverpages.com/php/manual/en/ref.dom.php
         $found = new \SplObjectStorage();
         $flag = false;
         foreach ($this->matches as $m) {
             foreach ($m->childNodes as $c) {
-                if ($c->nodeType == XML_ELEMENT_NODE) {
+                if ($c->nodeType === XML_ELEMENT_NODE) {
                     $found->attach($c);
                     $flag = true;
                     break;
@@ -3578,12 +3586,12 @@ class DOMQuery extends DOM
      * @since  2.1
      * @author eabrand
      */
-    public function last()
+    public function last(): DOMQuery
     {
         $found = new \SplObjectStorage();
         $item = NULL;
         foreach ($this->matches as $m) {
-            if ($m->nodeType == XML_ELEMENT_NODE) {
+            if ($m->nodeType === XML_ELEMENT_NODE) {
                 $item = $m;
             }
         }
@@ -3605,13 +3613,13 @@ class DOMQuery extends DOM
      * @since  2.1
      * @author eabrand
      */
-    public function lastChild()
+    public function lastChild(): DOMQuery
     {
         $found = new \SplObjectStorage();
         $item = NULL;
         foreach ($this->matches as $m) {
             foreach ($m->childNodes as $c) {
-                if ($c->nodeType == XML_ELEMENT_NODE) {
+                if ($c->nodeType === XML_ELEMENT_NODE) {
                     $item = $c;
                 }
             }
@@ -3641,8 +3649,9 @@ class DOMQuery extends DOM
      * @see    siblings()
      * @since  2.1
      * @author eabrand
+     * @throws Exception
      */
-    public function nextUntil($selector = NULL)
+    public function nextUntil($selector = NULL): DOMQuery
     {
         $found = new \SplObjectStorage();
         foreach ($this->matches as $m) {
@@ -3678,8 +3687,9 @@ class DOMQuery extends DOM
      * @see    children()
      * @since  2.1
      * @author eabrand
+     * @throws Exception
      */
-    public function prevUntil($selector = NULL)
+    public function prevUntil($selector = NULL): DOMQuery
     {
         $found = new \SplObjectStorage();
         foreach ($this->matches as $m) {
@@ -3712,8 +3722,9 @@ class DOMQuery extends DOM
      * @see    children()
      * @since  2.1
      * @author eabrand
+     * @throws Exception
      */
-    public function parentsUntil($selector = NULL)
+    public function parentsUntil($selector = NULL): DOMQuery
     {
         $found = new \SplObjectStorage();
         foreach ($this->matches as $m) {
@@ -3724,9 +3735,8 @@ class DOMQuery extends DOM
                     if (!empty($selector)) {
                         if (QueryPath::with($m, NULL, $this->options)->is($selector) > 0) {
                             break;
-                        } else {
-                            $found->attach($m);
                         }
+                        $found->attach($m);
                     } else {
                         $found->attach($m);
                     }
