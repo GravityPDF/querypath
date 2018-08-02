@@ -14,6 +14,7 @@ namespace QueryPath\CSS\DOMTraverser;
 
 use \QueryPath\CSS\NotImplementedException;
 use \QueryPath\CSS\EventHandler;
+use QueryPath\CSS\ParseException;
 
 /**
  *  The PseudoClass handler.
@@ -186,7 +187,7 @@ class PseudoClass
             case 'contains-exactly':
                 return $this->containsExactly($node, $value);
             default:
-                throw new \QueryPath\CSS\ParseException('Unknown Pseudo-Class: ' . $name);
+                throw new ParseException('Unknown Pseudo-Class: ' . $name);
         }
     }
 
@@ -208,16 +209,14 @@ class PseudoClass
         foreach ($node->attributes as $attrNode) {
             if ($attrNode->localName === 'lang') {
 
-                if ($attrNode->nodeName == $attrNode->localName) {
+                if ($attrNode->nodeName === $attrNode->localName) {
                     // fprintf(STDOUT, "%s in NS %s\n", $attrNode->name, $attrNode->nodeName);
                     return Util::matchesAttribute($node, 'lang', $value, $operator);
-                } else {
-                    $nsuri = $attrNode->namespaceURI;
-
-                    // fprintf(STDOUT, "%s in NS %s\n", $attrNode->name, $nsuri);
-                    return Util::matchesAttributeNS($node, 'lang', $nsuri, $value, $operator);
                 }
 
+                $nsuri = $attrNode->namespaceURI;
+                // fprintf(STDOUT, "%s in NS %s\n", $attrNode->name, $nsuri);
+                return Util::matchesAttributeNS($node, 'lang', $nsuri, $value, $operator);
             }
         }
 
@@ -226,21 +225,24 @@ class PseudoClass
 
     /**
      * Provides jQuery pseudoclass ':header'.
+     *
+     * @param $node
+     * @return bool
      */
-    protected function header($node)
+    protected function header($node): bool
     {
-        return preg_match('/^h[1-9]$/i', $node->tagName) == 1;
+        return preg_match('/^h[1-9]$/i', $node->tagName) === 1;
     }
 
     /**
      * Provides pseudoclass :empty.
      */
-    protected function isEmpty($node)
+    protected function isEmpty($node): bool
     {
         foreach ($node->childNodes as $kid) {
             // We don't want to count PIs and comments. From the spec, it
             // appears that CDATA is also not counted.
-            if ($kid->nodeType == XML_ELEMENT_NODE || $kid->nodeType == XML_TEXT_NODE) {
+            if ($kid->nodeType === XML_ELEMENT_NODE || $kid->nodeType === XML_TEXT_NODE) {
                 // As soon as we hit a FALSE, return.
                 return false;
             }
@@ -255,11 +257,11 @@ class PseudoClass
      * @todo
      *   This can be replaced by isNthChild().
      */
-    protected function isFirst($node)
+    protected function isFirst($node): bool
     {
         while (isset($node->previousSibling)) {
             $node = $node->previousSibling;
-            if ($node->nodeType == XML_ELEMENT_NODE) {
+            if ($node->nodeType === XML_ELEMENT_NODE) {
                 return false;
             }
         }
@@ -275,7 +277,7 @@ class PseudoClass
         $type = $node->tagName;
         while (isset($node->previousSibling)) {
             $node = $node->previousSibling;
-            if ($node->nodeType == XML_ELEMENT_NODE && $node->tagName == $type) {
+            if ($node->nodeType === XML_ELEMENT_NODE && $node->tagName === $type) {
                 return false;
             }
         }
@@ -290,7 +292,7 @@ class PseudoClass
     {
         while (isset($node->nextSibling)) {
             $node = $node->nextSibling;
-            if ($node->nodeType == XML_ELEMENT_NODE) {
+            if ($node->nodeType === XML_ELEMENT_NODE) {
                 return false;
             }
         }
@@ -306,7 +308,7 @@ class PseudoClass
         $type = $node->tagName;
         while (isset($node->nextSibling)) {
             $node = $node->nextSibling;
-            if ($node->nodeType == XML_ELEMENT_NODE && $node->tagName == $type) {
+            if ($node->nodeType === XML_ELEMENT_NODE && $node->tagName === $type) {
                 return false;
             }
         }
@@ -319,7 +321,7 @@ class PseudoClass
      *
      * This is an INEXACT match.
      */
-    protected function contains($node, $value)
+    protected function contains($node, $value): bool
     {
         $text = $node->textContent;
         $value = Util::removeQuotes($value);
@@ -332,7 +334,7 @@ class PseudoClass
      *
      * This is an EXACT match.
      */
-    protected function containsExactly($node, $value)
+    protected function containsExactly($node, $value): bool
     {
         $text = $node->textContent;
         $value = Util::removeQuotes($value);
@@ -342,8 +344,10 @@ class PseudoClass
 
     /**
      * Provides :has pseudoclass.
+     *
+     * @throws ParseException
      */
-    protected function has($node, $selector)
+    protected function has($node, $selector): bool
     {
         $splos = new \SPLObjectStorage();
         $splos->attach($node);
@@ -355,8 +359,10 @@ class PseudoClass
 
     /**
      * Provides :not pseudoclass.
+     *
+     * @throws ParseException
      */
-    protected function isNot($node, $selector)
+    protected function isNot($node, $selector): bool
     {
         return !$this->has($node, $selector);
     }
@@ -364,13 +370,13 @@ class PseudoClass
     /**
      * Get the relative position of a node in its sibling set.
      */
-    protected function nodePositionFromStart($node, $byType = false)
+    protected function nodePositionFromStart($node, $byType = false): int
     {
         $i = 1;
         $tag = $node->tagName;
         while (isset($node->previousSibling)) {
             $node = $node->previousSibling;
-            if ($node->nodeType == XML_ELEMENT_NODE && (!$byType || $node->tagName == $tag)) {
+            if ($node->nodeType === XML_ELEMENT_NODE && (!$byType || $node->tagName === $tag)) {
                 ++$i;
             }
         }
@@ -380,14 +386,18 @@ class PseudoClass
 
     /**
      * Get the relative position of a node in its sibling set.
+     *
+     * @param $node
+     * @param bool $byType
+     * @return int
      */
-    protected function nodePositionFromEnd($node, $byType = false)
+    protected function nodePositionFromEnd($node, $byType = false): int
     {
         $i = 1;
         $tag = $node->tagName;
         while (isset($node->nextSibling)) {
             $node = $node->nextSibling;
-            if ($node->nodeType == XML_ELEMENT_NODE && (!$byType || $node->tagName == $tag)) {
+            if ($node->nodeType === XML_ELEMENT_NODE && (!$byType || $node->tagName === $tag)) {
                 ++$i;
             }
         }
@@ -412,13 +422,19 @@ class PseudoClass
      *- nth-last-of-type
      *
      * See also QueryPath::CSS::DOMTraverser::Util::parseAnB().
+     *
+     * @param $node
+     * @param $value
+     * @param bool $reverse
+     * @param bool $byType
+     * @return bool
      */
-    protected function isNthChild($node, $value, $reverse = false, $byType = false)
+    protected function isNthChild($node, $value, $reverse = false, $byType = false): bool
     {
         list($groupSize, $elementInGroup) = Util::parseAnB($value);
         $parent = $node->parentNode;
         if (empty($parent)
-            || ($groupSize == 0 && $elementInGroup == 0)
+            || ($groupSize === 0 && $elementInGroup === 0)
             || ($groupSize > 0 && $elementInGroup > $groupSize)
         ) {
             return false;
@@ -433,19 +449,15 @@ class PseudoClass
 
         // If group size is 0, we just check to see if this
         // is the nth element:
-        if ($groupSize == 0) {
-            return $pos == $elementInGroup;
+        if ($groupSize === 0) {
+            return $pos === $elementInGroup;
         }
 
         // Next, we normalize $elementInGroup
         if ($elementInGroup < 0) {
             $elementInGroup = $groupSize + $elementInGroup;
         }
-
-
         $prod = ($pos - $elementInGroup) / $groupSize;
-
-        // fprintf(STDOUT, "%d n + %d on %d is %3.5f\n", $groupSize, $elementInGroup, $pos, $prod);
 
         return is_int($prod) && $prod >= 0;
     }
@@ -458,7 +470,7 @@ class PseudoClass
         $url = $node->getAttribute('href');
         $scheme = parse_url($url, PHP_URL_SCHEME);
 
-        return empty($scheme) || $scheme == 'file';
+        return empty($scheme) || $scheme === 'file';
     }
 
 }
