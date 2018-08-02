@@ -45,10 +45,10 @@ final class Scanner
     /**
      * See the next char without removing it from the stack.
      *
-     * @return char
-     *  Returns the next character on the stack.
+     * @return string
+     * Returns the next character on the stack.
      */
-    public function peek()
+    public function peek(): string
     {
         return $this->is->peek();
     }
@@ -66,7 +66,7 @@ final class Scanner
      * @throws ParseException
      * @throws \QueryPath\Exception
      */
-    public function nextToken()
+    public function nextToken(): int
     {
         $tok = -1;
         ++$this->it;

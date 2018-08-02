@@ -69,11 +69,16 @@ final class Token
             'dollar',
             'at',
         ];
+
         if (isset($a[$const_int]) && is_numeric($const_int)) {
             return $a[$const_int];
-        } elseif ($const_int === self::STRING_LEGAL) {
+        }
+
+        if ($const_int === self::STRING_LEGAL) {
             return 'a legal non-alphanumeric character';
-        } elseif ($const_int === false) {
+        }
+
+        if ($const_int === false) {
             return 'end of file';
         }
 

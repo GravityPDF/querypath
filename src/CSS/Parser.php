@@ -25,11 +25,10 @@ use QueryPath\Exception;
  */
 class Parser
 {
-
     protected $scanner;
     protected $buffer = '';
     protected $handler;
-    private   $strict = false;
+    private $strict = false;
 
     protected $DEBUG = false;
 
@@ -37,15 +36,16 @@ class Parser
      * Construct a new CSS parser object. This will attempt to
      * parse the string as a CSS selector. As it parses, it will
      * send events to the EventHandler implementation.
+     *
      * @param string $string
      * @param EventHandler $handler
      */
     public function __construct(string $string, EventHandler $handler)
     {
         $this->originalString = $string;
-        $is                   = new InputStream($string);
-        $this->scanner        = new Scanner($is);
-        $this->handler        = $handler;
+        $is = new InputStream($string);
+        $this->scanner = new Scanner($is);
+        $this->handler = $handler;
     }
 
     /**
@@ -58,7 +58,7 @@ class Parser
      * @throws ParseException
      * @throws Exception
      */
-    public function parse() : void
+    public function parse(): void
     {
         $this->scanner->nextToken();
 
@@ -107,12 +107,16 @@ class Parser
 
     /**
      * Handle an entire CSS selector.
+     *
+     * @throws ParseException
+     * @throws Exception
      */
-    private function selector() : void
+    private function selector(): void
     {
         if ($this->DEBUG) {
-            print "SELECTOR{$this->scanner->position()}\n";
+            print 'SELECTOR' . $this->scanner->position() . PHP_EOL;
         }
+
         $this->consumeWhitespace(); // Remove leading whitespace
         $this->simpleSelectors();
         $this->combinator();
@@ -120,14 +124,18 @@ class Parser
 
     /**
      * Consume whitespace and return a count of the number of whitespace consumed.
+     *
+     * @throws \QueryPath\CSS\ParseException
+     * @throws Exception
      */
-    private function consumeWhitespace() : int
+    private function consumeWhitespace(): int
     {
         if ($this->DEBUG) {
-            print "CONSUME WHITESPACE\n";
+            echo 'CONSUME WHITESPACE' . PHP_EOL;
         }
+
         $white = 0;
-        while ($this->scanner->token == Token::WHITE) {
+        while ($this->scanner->token === Token::WHITE) {
             $this->scanner->nextToken();
             ++$white;
         }
@@ -146,7 +154,7 @@ class Parser
      * @throws ParseException
      * @throws \QueryPath\Exception
      */
-    private function combinator() : void
+    private function combinator(): void
     {
         if ($this->DEBUG) {
             echo 'COMBINATOR' . PHP_EOL;
@@ -160,8 +168,8 @@ class Parser
 
         // Flag to indicate that post-checks need doing
         $inCombinator = false;
-        $white        = $this->consumeWhitespace();
-        $t            = $this->scanner->token;
+        $white = $this->consumeWhitespace();
+        $t = $this->scanner->token;
 
         if ($t === Token::RANGLE) {
             $this->handler->directDescendant();
@@ -208,19 +216,21 @@ class Parser
 
     /**
      * Check if the token is a combinator.
+     *
      * @param int $tok
      * @return bool
      */
-    private function isCombinator(int $tok) : bool
+    private function isCombinator(int $tok): bool
     {
         return in_array($tok, [Token::PLUS, Token::RANGLE, Token::COMMA, Token::TILDE], true);
     }
 
     /**
      * Handle a simple selector.
+     *
      * @throws ParseException
      */
-    private function simpleSelectors() : void
+    private function simpleSelectors(): void
     {
         if ($this->DEBUG) {
             print 'SIMPLE SELECTOR' . PHP_EOL;
@@ -236,13 +246,17 @@ class Parser
     /**
      * Handles CSS ID selectors.
      * This will call EventHandler::elementID().
+     *
+     * @throws \QueryPath\CSS\ParseException
+     * @throws Exception
      */
-    private function elementID() : void
+    private function elementID(): void
     {
         if ($this->DEBUG) {
-            print "ELEMENT ID\n";
+            echo 'ELEMENT ID' . PHP_EOL;
         }
-        if ($this->scanner->token == Token::OCTO) {
+
+        if ($this->scanner->token === Token::OCTO) {
             $this->scanner->nextToken();
             if ($this->scanner->token !== Token::CHAR) {
                 throw new ParseException("Expected string after #");
@@ -256,7 +270,7 @@ class Parser
      * Handles CSS class selectors.
      * This will call the EventHandler::elementClass() method.
      */
-    private function elementClass() : void
+    private function elementClass(): void
     {
         if ($this->DEBUG) {
             print 'ELEMENT CLASS' . PHP_EOL;
@@ -278,10 +292,11 @@ class Parser
      *
      * This will call EventHandler::pseudoClass() when a
      * pseudo-class is parsed.
+     *
      * @throws ParseException
      * @throws Exception
      */
-    private function pseudoClass($restricted = false) : void
+    private function pseudoClass($restricted = false): void
     {
         if ($this->DEBUG) {
             echo 'PSEUDO-CLASS' . PHP_EOL;
@@ -468,10 +483,13 @@ class Parser
      * <code>[attrName="AttrValue"]</code>
      *
      * This may call the following event handlers: EventHandler::attribute().
+     *
+     * @throws \QueryPath\CSS\ParseException
+     * @throws Exception
      */
     private function attribute()
     {
-        if ($this->scanner->token == Token::LSQUARE) {
+        if ($this->scanner->token === Token::LSQUARE) {
             $attrVal = $op = $ns = NULL;
 
             $this->scanner->nextToken();
@@ -480,10 +498,10 @@ class Parser
             if ($this->scanner->token === Token::AT) {
                 if ($this->strict) {
                     throw new ParseException('The @ is illegal in attributes.');
-                } else {
-                    $this->scanner->nextToken();
-                    $this->consumeWhitespace();
                 }
+
+                $this->scanner->nextToken();
+                $this->consumeWhitespace();
             }
 
             if ($this->scanner->token === Token::STAR) {
@@ -579,7 +597,7 @@ class Parser
 
             $this->consumeWhitespace();
 
-            if ($this->scanner->token != Token::RSQUARE) {
+            if ($this->scanner->token !== Token::RSQUARE) {
                 $this->throwError(Token::RSQUARE, $this->scanner->token);
             }
 
@@ -606,7 +624,7 @@ class Parser
     /**
      * @return Scanner
      */
-    public function getScanner() : Scanner
+    public function getScanner(): Scanner
     {
         return $this->scanner;
     }
