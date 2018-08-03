@@ -23,7 +23,7 @@ class Util
      * @param int $operation
      * @return bool
      */
-    public static function matchesAttribute($node, $name, $value = NULL, $operation = EventHandler::isExactly)
+    public static function matchesAttribute($node, $name, $value = NULL, $operation = EventHandler::isExactly): bool
     {
         if (!$node->hasAttribute($name)) {
             return false;
@@ -55,7 +55,7 @@ class Util
     /**
      * Check for attr value matches based on an operation.
      */
-    public static function matchesAttributeValue($needle, $haystack, $operation)
+    public static function matchesAttributeValue($needle, $haystack, $operation): bool
     {
 
         if (strlen($haystack) < strlen($needle)) {
@@ -90,12 +90,12 @@ class Util
     /**
      * Remove leading and trailing quotes.
      */
-    public static function removeQuotes($str)
+    public static function removeQuotes(string $str)
     {
-        $f = substr($str, 0, 1);
-        $l = substr($str, -1);
-        if ($f === $l && ($f == '"' || $f == "'")) {
-            $str = substr($str, 1, -1);
+        $f = mb_substr($str, 0, 1);
+        $l = mb_substr($str, -1);
+        if ($f === $l && ($f === '"' || $f === "'")) {
+            $str = mb_substr($str, 1, -1);
         }
 
         return $str;
@@ -112,7 +112,7 @@ class Util
      *  `array($aVal, $bVal)` of the two values.
      * @return array
      */
-    public static function parseAnB($rule)
+    public static function parseAnB($rule): array
     {
         if ($rule === 'even') {
             return [2, 0];
@@ -139,7 +139,7 @@ class Util
             return [0, 0];
         }
 
-        $aVal = isset($matches[1]) ? $matches[1] : 1;
+        $aVal = $matches[1] ?? 1;
         if ($aVal === '-') {
             $aVal = -1;
         } else {
