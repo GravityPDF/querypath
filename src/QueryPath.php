@@ -184,16 +184,14 @@ class QueryPath
      * @param array $options
      * @return mixed|\QueryPath\DOMQuery
      */
-    public static function with($document = NULL, $selector = NULL, $options = [])
+    public static function with($document = NULL, $selector = NULL, array $options = [])
     {
         $qpClass = $options['QueryPath_class'] ?? '\QueryPath\DOMQuery';
 
-        $qp = new $qpClass($document, $selector, $options);
-
-        return $qp;
+        return new $qpClass($document, $selector, $options);
     }
 
-    public static function withXML($source = NULL, $selector = NULL, $options = [])
+    public static function withXML($source = NULL, $selector = NULL, array $options = [])
     {
         $options += [
             'use_parser' => 'xml',
@@ -202,7 +200,7 @@ class QueryPath
         return self::with($source, $selector, $options);
     }
 
-    public static function withHTML($source = NULL, $selector = NULL, $options = [])
+    public static function withHTML($source = NULL, $selector = NULL, array $options = [])
     {
         // Need a way to force an HTML parse instead of an XML parse when the
         // doctype is XHTML, since many XHTML documents are not valid XML
@@ -302,9 +300,8 @@ class QueryPath
      *   QueryPath assumes that these are extension class names,
      *   and attempts to register these as QueryPath extensions.
      */
-    public static function enable($extensionNames)
+    public static function enable($extensionNames): void
     {
-
         if (is_array($extensionNames)) {
             foreach ($extensionNames as $extension) {
                 ExtensionRegistry::extend($extension);

@@ -56,6 +56,7 @@ use QueryPath\QueryPath;
  * as a factory.
  *
  * Example:
+ *
  * @code
  * <?php
  * qp(); // New empty QueryPath
@@ -151,7 +152,8 @@ use QueryPath\QueryPath;
  * @return \QueryPath\DOMQuery
  *  Or possibly another QueryPath-like object if you overrode QueryPath_class.
  */
-function qp($document = NULL, $string = NULL, $options = array()) {
+function qp($document = NULL, $string = NULL, array $options = [])
+{
     return QueryPath::with($document, $string, $options);
 }
 
@@ -177,11 +179,16 @@ function qp($document = NULL, $string = NULL, $options = array()) {
  * is installed and enabled. This is usually enabled, but not always.
  *
  * @ingroup querypath_core
- * @see qp()
+ * @see     qp()
+ * @param null $document
+ * @param null $selector
+ * @param array $options
+ * @return mixed|\QueryPath\DOMQuery
  */
-function htmlqp($document = NULL, $selector = NULL, $options = array()) {
+function htmlqp($document = NULL, $selector = NULL, $options = [])
+{
 
-  return QueryPath::withHTML($document, $selector, $options);
+    return QueryPath::withHTML($document, $selector, $options);
 }
 
 /**
@@ -197,22 +204,18 @@ function htmlqp($document = NULL, $selector = NULL, $options = array()) {
  * - QueryPath_class
  *
  *
- * @param mixed $source
- *  A document as an HTML string, or a path/URL. For compatibility with
- *  existing functions, a DOMDocument, SimpleXMLElement, DOMNode or array
- *  of DOMNodes will be passed through as well. However, these types are not
- *  validated in any way.
- *
+ * @param null $document
  * @param string $selector
- *  A CSS3 selector.
+ *   A CSS3 selector.
  *
  * @param array $options
  *   An associative array of options, which is passed on into HTML5-PHP. Note
  *   that the standard QueryPath options may be ignored for this function,
  *   since it uses a different parser.
  *
- * @return \QueryPath\DOMQuery
+ * @return QueryPath
  */
-function html5qp($document = NULL, $selector = NULL, $options = array()) {
-  return QueryPath::withHTML5($document, $selector, $options);
+function html5qp($document = NULL, $selector = NULL, array $options = [])
+{
+    return QueryPath::withHTML5($document, $selector, $options);
 }
