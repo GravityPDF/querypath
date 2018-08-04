@@ -26,7 +26,7 @@ use \Masterminds\HTML5;
  * If you are new to these documents, start at the QueryPath.php page.
  * There you will find a quick guide to the tools contained in this project.
  *
- * A note on serialization: DOMQuery uses DOM classes internally, and those
+ * A note on serialization: Query uses DOM classes internally, and those
  * do not serialize well at all. In addition, DOMQuery may contain many
  * extensions, and there is no guarantee that extensions can serialize. The
  * moral of the story: Don't serialize DOMQuery.
@@ -104,7 +104,7 @@ class DOMQuery extends DOM
      *  for the current document.
      * @throws CSS\ParseException
      */
-    public function top($selector = NULL): DOMQuery
+    public function top($selector = NULL): Query
     {
         return $this->inst($this->document->documentElement, $selector);
     }
@@ -125,7 +125,7 @@ class DOMQuery extends DOM
      *   {@link top()} to select the root element again.
      * @throws CSS\ParseException
      */
-    public function find($selector): DOMQuery
+    public function find($selector): Query
     {
         $query = new DOMTraverser($this->matches);
         $query->find($selector);
@@ -598,7 +598,7 @@ class DOMQuery extends DOM
      *  The DOMQuery object with the same elements.
      * @see attr()
      */
-    public function removeAttr($name)
+    public function removeAttr($name): Query
     {
         foreach ($this->matches as $m) {
             //if ($m->hasAttribute($name))
@@ -622,13 +622,11 @@ class DOMQuery extends DOM
      * @see get()
      * @see is()
      * @see end()
+     * @throws CSS\ParseException
      */
-    public function eq($index)
+    public function eq($index): Query
     {
         return $this->inst($this->getNthMatch($index), NULL);
-        // XXX: Might there be a more efficient way of doing this?
-        //$this->setMatches($this->getNthMatch($index));
-        //return $this;
     }
 
     /**
@@ -636,22 +634,25 @@ class DOMQuery extends DOM
      *
      * Unlike jQuery's version, this supports full selectors (not just simple ones).
      *
-     * @param string $selector
+     * @param string|\DOMNode $selector
      *   The selector to search for. As of QueryPath 2.1.1, this also supports passing a
      *   DOMNode object.
      * @return boolean
      *   TRUE if one or more elements match. FALSE if no match is found.
      * @see get()
      * @see eq()
+     * @throws CSS\ParseException
+     * @throws Exception
      */
-    public function is($selector)
+    public function is($selector): bool
     {
-
         if (is_object($selector)) {
             if ($selector instanceof \DOMNode) {
                 return count($this->matches) == 1 && $selector->isSameNode($this->get(0));
-            } elseif ($selector instanceof \Traversable) {
-                if (count($selector) != count($this->matches)) {
+            }
+
+            if ($selector instanceof \Traversable) {
+                if (count($selector) !== count($this->matches)) {
                     return false;
                 }
                 // Without $seen, there is an edge case here if $selector contains the same object
@@ -668,22 +669,9 @@ class DOMQuery extends DOM
                 return true;
             }
             throw new \QueryPath\Exception('Cannot compare an object to a DOMQuery.');
-
-            return false;
         }
 
-        // Testing based on Issue #70.
-        //fprintf(STDOUT, __FUNCTION__  .' found %d', $this->find($selector)->count());
         return $this->branch($selector)->count() > 0;
-
-        // Old version:
-        //foreach ($this->matches as $m) {
-        //$q = new \QueryPath\CSS\QueryPathEventHandler($m);
-        //if ($q->find($selector)->getMatches()->count()) {
-        //return TRUE;
-        //}
-        //}
-        //return FALSE;
     }
 
     /**
@@ -700,10 +688,10 @@ class DOMQuery extends DOM
      * @see map()
      * @see find()
      * @see is()
+     * @throws CSS\ParseException
      */
-    public function filter($selector)
+    public function filter($selector): Query
     {
-
         $found = new \SplObjectStorage();
         $tmp = new \SplObjectStorage();
         foreach ($this->matches as $m) {
@@ -779,8 +767,9 @@ class DOMQuery extends DOM
      *   the DOM at the position of the original first element.
      * @return \QueryPath\DOMQuery
      *   This object.
+     * @throws CSS\ParseException
      */
-    public function sort($comparator, $modifyDOM = false)
+    public function sort($comparator, $modifyDOM = false): Query
     {
         // Sort as an array.
         $list = iterator_to_array($this->matches);
@@ -843,8 +832,9 @@ class DOMQuery extends DOM
      * @see map()
      * @see mapLambda()
      * @see filterCallback()
+     * @throws CSS\ParseException
      */
-    public function filterLambda($fn)
+    public function filterLambda($fn): Query
     {
         $function = create_function('$index, $item', $fn);
         $found = new \SplObjectStorage();
@@ -877,7 +867,7 @@ class DOMQuery extends DOM
      * @code
      *  <?php
      *    // This will be 1.
-     *    qp($xml, 'div')->filterPreg('/World/')->size();
+     *    qp($xml, 'div')->filterPreg('/World/')->matches->count();
      *  ?>
      * @endcode
      *
@@ -892,8 +882,9 @@ class DOMQuery extends DOM
      * @see       filter()
      * @see       filterCallback()
      * @see       preg_match()
+     * @throws CSS\ParseException
      */
-    public function filterPreg($regex)
+    public function filterPreg($regex): Query
     {
 
         $found = new \SplObjectStorage();
@@ -936,7 +927,7 @@ class DOMQuery extends DOM
      * @throws CSS\ParseException
      * @throws Exception
      */
-    public function filterCallback($callback): DOMQuery
+    public function filterCallback($callback): Query
     {
         $found = new \SplObjectStorage();
         $i = 0;
@@ -965,7 +956,7 @@ class DOMQuery extends DOM
      * @throws CSS\ParseException
      * @throws Exception
      */
-    public function not($selector): DOMQuery
+    public function not($selector): Query
     {
         $found = new \SplObjectStorage();
         if ($selector instanceof \DOMElement) {
@@ -1056,7 +1047,7 @@ class DOMQuery extends DOM
      * @throws Exception
      * @throws CSS\ParseException
      */
-    public function map($callback): DOMQuery
+    public function map($callback): Query
     {
         $found = new \SplObjectStorage();
 
@@ -1105,7 +1096,7 @@ class DOMQuery extends DOM
      * @see array_slice()
      * @throws CSS\ParseException
      */
-    public function slice($start, $length = 0): DOMQuery
+    public function slice($start, $length = 0): Query
     {
         $end = $length;
         $found = new \SplObjectStorage();
@@ -1150,7 +1141,7 @@ class DOMQuery extends DOM
      * @see map()
      * @throws Exception
      */
-    public function each($callback): DOMQuery
+    public function each($callback): Query
     {
         if (is_callable($callback)) {
             $i = 0;
@@ -1359,7 +1350,7 @@ class DOMQuery extends DOM
      *  Thrown if $data is an unsupported object type.
      * @throws Exception
      */
-    public function before($data): DOMQuery
+    public function before($data): Query
     {
         $data = $this->prepareInsert($data);
         foreach ($this->matches as $m) {
@@ -1721,8 +1712,9 @@ class DOMQuery extends DOM
      *
      * @return \QueryPath\DOMQuery
      *  The DOMQuery wrapping the single deepest node.
+     * @throws CSS\ParseException
      */
-    public function deepest()
+    public function deepest(): Query
     {
         $deepest = 0;
         $winner = new \SplObjectStorage();
@@ -1761,7 +1753,7 @@ class DOMQuery extends DOM
      */
     public function tag()
     {
-        return ($this->size() > 0) ? $this->getFirstMatch()->tagName : '';
+        return ($this->matches->count() > 0) ? $this->getFirstMatch()->tagName : '';
     }
 
     /**
@@ -1781,6 +1773,7 @@ class DOMQuery extends DOM
      * @see replaceAll()
      * @see replaceWith()
      * @see removeChildren()
+     * @throws CSS\ParseException
      */
     public function remove($selector = NULL)
     {
@@ -1828,10 +1821,11 @@ class DOMQuery extends DOM
      *  considered deprecated.
      * @see        remove()
      * @see        replaceWith()
+     * @throws CSS\ParseException
      */
-    public function replaceAll($selector, \DOMDocument $document)
+    public function replaceAll($selector, \DOMDocument $document): Query
     {
-        $replacement = $this->size() > 0 ? $this->getFirstMatch() : $this->document->createTextNode('');
+        $replacement = $this->matches->count() > 0 ? $this->getFirstMatch() : $this->document->createTextNode('');
 
         $c = new QueryPathEventHandler($document);
         $c->find($selector);
@@ -2255,7 +2249,7 @@ class DOMQuery extends DOM
 
             return $this;
         }
-        $length = $this->size();
+        $length = $this->matches->count();
         if ($length == 0) {
             return NULL;
         }
@@ -2380,7 +2374,7 @@ class DOMQuery extends DOM
      */
     public function innerXHTML()
     {
-        $length = $this->size();
+        $length = $this->matches->count();
         if ($length == 0) {
             return NULL;
         }
@@ -2417,7 +2411,7 @@ class DOMQuery extends DOM
      */
     public function innerXML()
     {
-        $length = $this->size();
+        $length = $this->matches->count();
         if ($length == 0) {
             return NULL;
         }
@@ -2447,8 +2441,8 @@ class DOMQuery extends DOM
      */
     public function innerHTML5()
     {
-        $length = $this->size();
-        if ($length == 0) {
+        $length = $this->matches->count();
+        if ($length === 0) {
             return NULL;
         }
         // Only return the first item -- that's what JQ does.
@@ -2488,7 +2482,7 @@ class DOMQuery extends DOM
      * @see   text()
      * @since 2.0
      */
-    public function textImplode($sep = ', ', $filterEmpties = true)
+    public function textImplode($sep = ', ', $filterEmpties = true): string
     {
         $tmp = [];
         foreach ($this->matches as $m) {
@@ -2518,8 +2512,9 @@ class DOMQuery extends DOM
      *  The separator that will be inserted between found text content.
      * @return string
      *  The concatenated values of all children.
+     * @throws CSS\ParseException
      */
-    public function childrenText($separator = ' ')
+    public function childrenText($separator = ' '): string
     {
         // Branch makes it non-destructive.
         return $this->branch()->xpath('descendant::text()')->textImplode($separator);
@@ -2582,6 +2577,8 @@ class DOMQuery extends DOM
      * @return mixed
      *  Returns the DOMQuery object if $text was set, and returns a string (possibly empty)
      *  if no param is passed.
+     * @throws Exception
+     * @throws QueryPath
      */
     public function textBefore($text = NULL)
     {
@@ -2612,7 +2609,7 @@ class DOMQuery extends DOM
         $buffer = '';
         foreach ($this->matches as $m) {
             $n = $m;
-            while (isset($n->nextSibling) && $n->nextSibling->nodeType == XML_TEXT_NODE) {
+            while (isset($n->nextSibling) && $n->nextSibling->nodeType === XML_TEXT_NODE) {
                 $n = $n->nextSibling;
                 $buffer .= $n->textContent;
             }
@@ -2687,7 +2684,7 @@ class DOMQuery extends DOM
             return $this->xml($markup);
         }
 
-        $length = $this->size();
+        $length = $this->matches->count();
         if ($length == 0) {
             return NULL;
         }
@@ -2770,7 +2767,7 @@ class DOMQuery extends DOM
 
             return $this;
         }
-        $length = $this->size();
+        $length = $this->matches->count();
         if ($length == 0) {
             return NULL;
         }
@@ -3275,7 +3272,7 @@ class DOMQuery extends DOM
      * @return DOMQuery
      * @throws CSS\ParseException
      */
-    protected function inst($matches, $selector): DOMQuery
+    protected function inst($matches, $selector): Query
     {
         $dolly = clone $this;
         $dolly->setMatches($matches);
@@ -3304,7 +3301,7 @@ class DOMQuery extends DOM
      * @see qp()
      * @return \QueryPath\DOMQuery
      */
-    public function cloneAll(): DOMQuery
+    public function cloneAll(): Query
     {
         $found = new \SplObjectStorage();
         foreach ($this->matches as $m) {
@@ -3352,7 +3349,7 @@ class DOMQuery extends DOM
      * @author eabrand
      * @throws CSS\ParseException
      */
-    public function detach($selector = NULL): DOMQuery
+    public function detach($selector = NULL): Query
     {
         if (NULL !== $selector) {
             $this->find($selector);
@@ -3386,7 +3383,7 @@ class DOMQuery extends DOM
      * @author eabrand
      * @throws QueryPath
      */
-    public function attach(DOMQuery $dest): DOMQuery
+    public function attach(DOMQuery $dest): Query
     {
         foreach ($this->last as $m) {
             $dest->append($m);
@@ -3417,7 +3414,7 @@ class DOMQuery extends DOM
      * @return DOMQuery
      * @throws CSS\ParseException
      */
-    public function has($contained): DOMQuery
+    public function has($contained): Query
     {
         /*
     if (count($this->matches) == 0) {
@@ -3489,7 +3486,7 @@ class DOMQuery extends DOM
      * @author eabrand
      * @throws CSS\ParseException
      */
-    public function even(): DOMQuery
+    public function even(): Query
     {
         $found = new \SplObjectStorage();
         $even = false;
@@ -3519,7 +3516,7 @@ class DOMQuery extends DOM
      * @author eabrand
      * @throws CSS\ParseException
      */
-    public function odd(): DOMQuery
+    public function odd(): Query
     {
         $found = new \SplObjectStorage();
         $odd = true;
@@ -3545,7 +3542,7 @@ class DOMQuery extends DOM
      * @author eabrand
      * @throws CSS\ParseException
      */
-    public function first(): DOMQuery
+    public function first(): Query
     {
         $found = new \SplObjectStorage();
         foreach ($this->matches as $m) {
@@ -3570,7 +3567,7 @@ class DOMQuery extends DOM
      * @author eabrand
      * @throws CSS\ParseException
      */
-    public function firstChild(): DOMQuery
+    public function firstChild(): Query
     {
         // Could possibly use $m->firstChild http://theserverpages.com/php/manual/en/ref.dom.php
         $found = new \SplObjectStorage();
@@ -3602,7 +3599,7 @@ class DOMQuery extends DOM
      * @since  2.1
      * @author eabrand
      */
-    public function last(): DOMQuery
+    public function last(): Query
     {
         $found = new \SplObjectStorage();
         $item = NULL;
@@ -3630,7 +3627,7 @@ class DOMQuery extends DOM
      * @author eabrand
      * @throws CSS\ParseException
      */
-    public function lastChild(): DOMQuery
+    public function lastChild(): Query
     {
         $found = new \SplObjectStorage();
         $item = NULL;
@@ -3668,7 +3665,7 @@ class DOMQuery extends DOM
      * @author eabrand
      * @throws Exception
      */
-    public function nextUntil($selector = NULL): DOMQuery
+    public function nextUntil($selector = NULL): Query
     {
         $found = new \SplObjectStorage();
         foreach ($this->matches as $m) {
@@ -3706,7 +3703,7 @@ class DOMQuery extends DOM
      * @author eabrand
      * @throws Exception
      */
-    public function prevUntil($selector = NULL): DOMQuery
+    public function prevUntil($selector = NULL): Query
     {
         $found = new \SplObjectStorage();
         foreach ($this->matches as $m) {
@@ -3741,7 +3738,7 @@ class DOMQuery extends DOM
      * @author eabrand
      * @throws Exception
      */
-    public function parentsUntil($selector = NULL): DOMQuery
+    public function parentsUntil($selector = NULL): Query
     {
         $found = new \SplObjectStorage();
         foreach ($this->matches as $m) {
