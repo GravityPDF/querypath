@@ -32,12 +32,12 @@ class QueryPathExtensionTest extends TestCase
 
     public function testStubToe()
     {
-        $this->assertEquals(1, qp(self::DATA_FILE, 'unary')->stubToe()->top(':root > toe')->size());
+        $this->assertEquals(1, qp(self::DATA_FILE_XML, 'unary')->stubToe()->top(':root > toe')->size());
     }
 
     public function testStuble()
     {
-        $this->assertEquals('arg1arg2', qp(self::DATA_FILE)->stuble('arg1', 'arg2'));
+        $this->assertEquals('arg1arg2', qp(self::DATA_FILE_XML)->stuble('arg1', 'arg2'));
     }
 
     /**
@@ -47,7 +47,7 @@ class QueryPathExtensionTest extends TestCase
     {
         ExtensionRegistry::$useRegistry = false;
         try {
-            qp(self::DATA_FILE)->stuble('arg1', 'arg2');
+            qp(self::DATA_FILE_XML)->stuble('arg1', 'arg2');
         } catch (\QueryPath\Exception $e) {
             ExtensionRegistry::$useRegistry = true;
             throw $e;

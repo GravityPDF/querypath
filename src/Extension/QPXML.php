@@ -74,7 +74,7 @@ class QPXML implements Extension
         // Look for CDATA sections.
         foreach ($this->qp->get() as $ele) {
             foreach ($ele->childNodes as $node) {
-                if ($node->nodeType == XML_CDATA_SECTION_NODE) {
+                if ($node->nodeType === XML_CDATA_SECTION_NODE) {
                     // Return first match.
                     return $node->textContent;
                 }

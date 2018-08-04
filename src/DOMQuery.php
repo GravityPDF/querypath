@@ -102,6 +102,7 @@ class DOMQuery extends DOM
      * @return \QueryPath\DOMQuery
      *  The DOMQuery object, wrapping the root element (document element)
      *  for the current document.
+     * @throws CSS\ParseException
      */
     public function top($selector = NULL): DOMQuery
     {
@@ -170,6 +171,7 @@ class DOMQuery extends DOM
      * @see    find()
      * @author M Butcher
      * @author Xavier Prud'homme
+     * @throws CSS\ParseException
      */
     public function xpath($query, $options = [])
     {

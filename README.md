@@ -65,7 +65,7 @@ we can use QueryPath like this:
 qp($xml, 'td')->attr('foo', 'bar');
 
 // Print the contents of the third TD in the second row:
-print qp($xml, '#row2>td:nth(3)')->text();
+echo qp($xml, '#row2>td:nth(3)')->text();
 
 // Append another row to the XML and then write the
 // result to standard output:
@@ -81,5 +81,78 @@ accomplish sophisticated XML and HTML processing using QueryPath.
 
 From there, the main functions you will want to use are `qp()`
 (alias of `QueryPath::with()`) and `htmlqp()` (alias of
-`QueryPath::withHTML()`). Start with the
-[API docs](http://api.querypath.org/docs).
+`QueryPath::withHTML()`). 
+
+## QueryPath Format Extension
+
+### format()
+
+```php
+\QueryPath\DOMQuery format(callable $callback [, mixed $args [, $... ]])
+```
+
+A quick example:
+
+```php
+<?php
+QueryPath::enable(Format::class);
+$qp = qp('<?xml version="1.0"?><root><div>_apple_</div><div>_orange_</div></root>');
+
+$qp->find('div')
+        ->format('strtoupper')
+        ->format('trim', '_')
+        ->format(function ($text) {
+            return '*' . $text . '*';
+        });
+
+$qp->writeXML();
+```
+
+OUTPUT:
+
+```xml
+<?xml version="1.0"?>
+<root>
+  <div>*APPLE*</div>
+  <div>*ORANGE*</div>
+</root>
+```
+
+
+### formatAttr()
+
+```php
+\QueryPath\DOMQuery formatAttr(string $name, callable $callback [, mixed $args [, $... ]])
+```
+
+A quick example:
+
+```php
+<?php
+QueryPath::enable(Format::class);
+$qp = qp('<?xml version="1.0"?><root>' .
+        '<item label="_apple_" total="12,345,678" />' .
+        '<item label="_orange_" total="987,654,321" />' .
+        '</root>');
+
+$qp->find('item')
+        ->formatAttr('label', 'trim', '_')
+        ->formatAttr('total', 'str_replace[2]', ',', '');
+
+$qp->find('item')->formatAttr('label', function ($value) {
+    return ucfirst(strtolower($value));
+});
+
+$qp->writeXML();
+```
+
+OUTPUT:
+
+```xml
+<?xml version="1.0"?>
+<root>
+  <item label="Apple" total="12345678"/>
+  <item label="Orange" total="987654321"/>
+</root>
+```
+
