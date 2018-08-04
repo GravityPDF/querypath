@@ -933,14 +933,16 @@ class DOMQuery extends DOM
      * @see map()
      * @see is()
      * @see find()
+     * @throws CSS\ParseException
+     * @throws Exception
      */
-    public function filterCallback($callback)
+    public function filterCallback($callback): DOMQuery
     {
         $found = new \SplObjectStorage();
         $i = 0;
         if (is_callable($callback)) {
             foreach ($this->matches as $item) {
-                if (call_user_func($callback, $i++, $item) !== false) {
+                if ($callback($i++, $item) !== false) {
                     $found->attach($item);
                 }
             }
@@ -960,8 +962,10 @@ class DOMQuery extends DOM
      * @return \QueryPath\DOMQuery
      *  The DOMQuery object with matching items filtered out.
      * @see find()
+     * @throws CSS\ParseException
+     * @throws Exception
      */
-    public function not($selector)
+    public function not($selector): DOMQuery
     {
         $found = new \SplObjectStorage();
         if ($selector instanceof \DOMElement) {
@@ -1049,8 +1053,10 @@ class DOMQuery extends DOM
      * @see DOMQuery::get()
      * @see filter()
      * @see find()
+     * @throws Exception
+     * @throws CSS\ParseException
      */
-    public function map($callback)
+    public function map($callback): DOMQuery
     {
         $found = new \SplObjectStorage();
 
@@ -1097,12 +1103,13 @@ class DOMQuery extends DOM
      *  list.
      * @return \QueryPath\DOMQuery
      * @see array_slice()
+     * @throws CSS\ParseException
      */
-    public function slice($start, $length = 0)
+    public function slice($start, $length = 0): DOMQuery
     {
         $end = $length;
         $found = new \SplObjectStorage();
-        if ($start >= $this->size()) {
+        if ($start >= $this->count()) {
             return $this->inst($found, NULL);
         }
 
@@ -1141,8 +1148,9 @@ class DOMQuery extends DOM
      * @see eachLambda()
      * @see filter()
      * @see map()
+     * @throws Exception
      */
-    public function each($callback)
+    public function each($callback): DOMQuery
     {
         if (is_callable($callback)) {
             $i = 0;
@@ -1349,8 +1357,9 @@ class DOMQuery extends DOM
      * @see prepend()
      * @throws QueryPath::Exception
      *  Thrown if $data is an unsupported object type.
+     * @throws Exception
      */
-    public function before($data)
+    public function before($data): DOMQuery
     {
         $data = $this->prepareInsert($data);
         foreach ($this->matches as $m) {
@@ -1981,6 +1990,7 @@ class DOMQuery extends DOM
      * @see parents()
      * @see next()
      * @see prev()
+     * @throws CSS\ParseException
      */
     public function children($selector = NULL)
     {
@@ -3342,9 +3352,9 @@ class DOMQuery extends DOM
      * @author eabrand
      * @throws CSS\ParseException
      */
-    public function detach($selector = NULL)
+    public function detach($selector = NULL): DOMQuery
     {
-        if (!empty($selector)) {
+        if (NULL !== $selector) {
             $this->find($selector);
         }
 
@@ -3405,6 +3415,7 @@ class DOMQuery extends DOM
      * @author eabrand
      * @todo   It would be trivially easy to add support for iterating over an array or Iterable of DOMNodes.
      * @return DOMQuery
+     * @throws CSS\ParseException
      */
     public function has($contained): DOMQuery
     {
@@ -3476,8 +3487,9 @@ class DOMQuery extends DOM
      * @see    prev()
      * @since  2.1
      * @author eabrand
+     * @throws CSS\ParseException
      */
-    public function even()
+    public function even(): DOMQuery
     {
         $found = new \SplObjectStorage();
         $even = false;
@@ -3505,6 +3517,7 @@ class DOMQuery extends DOM
      * @see    prev()
      * @since  2.1
      * @author eabrand
+     * @throws CSS\ParseException
      */
     public function odd(): DOMQuery
     {
@@ -3530,6 +3543,7 @@ class DOMQuery extends DOM
      * @see    prev()
      * @since  2.1
      * @author eabrand
+     * @throws CSS\ParseException
      */
     public function first(): DOMQuery
     {
@@ -3554,6 +3568,7 @@ class DOMQuery extends DOM
      * @see    prev()
      * @since  2.1
      * @author eabrand
+     * @throws CSS\ParseException
      */
     public function firstChild(): DOMQuery
     {
@@ -3613,6 +3628,7 @@ class DOMQuery extends DOM
      * @see    prev()
      * @since  2.1
      * @author eabrand
+     * @throws CSS\ParseException
      */
     public function lastChild(): DOMQuery
     {
@@ -3659,7 +3675,7 @@ class DOMQuery extends DOM
             while (isset($m->nextSibling)) {
                 $m = $m->nextSibling;
                 if ($m->nodeType === XML_ELEMENT_NODE) {
-                    if (!empty($selector) && QueryPath::with($m, NULL, $this->options)->is($selector) > 0) {
+                    if (NULL !== $selector && QueryPath::with($m, NULL, $this->options)->is($selector) > 0) {
                         break;
                     }
                     $found->attach($m);
@@ -3697,7 +3713,7 @@ class DOMQuery extends DOM
             while (isset($m->previousSibling)) {
                 $m = $m->previousSibling;
                 if ($m->nodeType === XML_ELEMENT_NODE) {
-                    if (!empty($selector) && QueryPath::with($m, NULL, $this->options)->is($selector)) {
+                    if (NULL !== $selector && QueryPath::with($m, NULL, $this->options)->is($selector)) {
                         break;
                     }
 
@@ -3759,6 +3775,7 @@ class DOMQuery extends DOM
      *
      * @throws QueryPath::Exception
      *  An exception is thrown if a non-existent method is called.
+     * @throws Exception
      */
     public function __call($name, $arguments)
     {
