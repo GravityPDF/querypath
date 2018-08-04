@@ -536,37 +536,37 @@ class Parser
             switch ($this->scanner->token) {
                 case Token::EQ:
                     $this->consumeWhitespace();
-                    $op = EventHandler::isExactly;
+                    $op = EventHandler::IS_EXACTLY;
                     break;
                 case Token::TILDE:
                     if ($this->scanner->nextToken() !== Token::EQ) {
                         $this->throwError(Token::EQ, $this->scanner->token);
                     }
-                    $op = EventHandler::containsWithSpace;
+                    $op = EventHandler::CONTAINS_WITH_SPACE;
                     break;
                 case Token::PIPE:
                     if ($this->scanner->nextToken() !== Token::EQ) {
                         $this->throwError(Token::EQ, $this->scanner->token);
                     }
-                    $op = EventHandler::containsWithHyphen;
+                    $op = EventHandler::CONTAINS_WITH_HYPHEN;
                     break;
                 case Token::STAR:
                     if ($this->scanner->nextToken() !== Token::EQ) {
                         $this->throwError(Token::EQ, $this->scanner->token);
                     }
-                    $op = EventHandler::containsInString;
+                    $op = EventHandler::CONTAINS_IN_STRING;
                     break;
                 case Token::DOLLAR;
                     if ($this->scanner->nextToken() !== Token::EQ) {
                         $this->throwError(Token::EQ, $this->scanner->token);
                     }
-                    $op = EventHandler::endsWith;
+                    $op = EventHandler::ENDS_WITH;
                     break;
                 case Token::CARAT:
                     if ($this->scanner->nextToken() !== Token::EQ) {
                         $this->throwError(Token::EQ, $this->scanner->token);
                     }
-                    $op = EventHandler::beginsWith;
+                    $op = EventHandler::BEGINS_WITH;
                     break;
             }
 

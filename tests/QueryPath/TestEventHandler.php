@@ -81,12 +81,12 @@ class TestEventHandler implements EventHandler
         $this->stack[] = new TestEvent(TestEvent::ELEMENT_CLASS, $name);
     }
 
-    public function attribute($name, $value = NULL, $operation = EventHandler::isExactly)
+    public function attribute($name, $value = NULL, $operation = EventHandler::IS_EXACTLY)
     {
         $this->stack[] = new TestEvent(TestEvent::ATTRIBUTE, $name, $value, $operation);
     }
 
-    public function attributeNS($name, $ns, $value = NULL, $operation = EventHandler::isExactly)
+    public function attributeNS($name, $ns, $value = NULL, $operation = EventHandler::IS_EXACTLY)
     {
         $this->stack[] = new TestEvent(TestEvent::ATTRIBUTE_NS, $name, $ns, $value, $operation);
     }

@@ -115,7 +115,7 @@ class Selector implements EventHandler, \IteratorAggregate, \Countable
         $this->currSelector->classes[] = $name;
     }
 
-    public function attribute($name, $value = NULL, $operation = EventHandler::isExactly)
+    public function attribute($name, $value = NULL, $operation = EventHandler::IS_EXACTLY)
     {
         $this->currSelector->attributes[] = [
             'name'  => $name,
@@ -124,7 +124,7 @@ class Selector implements EventHandler, \IteratorAggregate, \Countable
         ];
     }
 
-    public function attributeNS($name, $ns, $value = NULL, $operation = EventHandler::isExactly)
+    public function attributeNS($name, $ns, $value = NULL, $operation = EventHandler::IS_EXACTLY)
     {
         $this->currSelector->attributes[] = [
             'name'  => $name,

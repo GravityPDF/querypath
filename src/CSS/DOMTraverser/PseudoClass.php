@@ -203,7 +203,7 @@ class PseudoClass
         // TODO: This checks for cases where an explicit language is
         // set. The spec seems to indicate that an element should inherit
         // language from the parent... but this is unclear.
-        $operator = (strpos($value, '-') !== false) ? EventHandler::isExactly : EventHandler::containsWithHyphen;
+        $operator = (strpos($value, '-') !== false) ? EventHandler::IS_EXACTLY : EventHandler::CONTAINS_WITH_HYPHEN;
 
         $match = true;
         foreach ($node->attributes as $attrNode) {

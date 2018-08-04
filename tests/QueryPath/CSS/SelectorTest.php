@@ -67,7 +67,7 @@ class SelectorTest extends TestCase
 
         $attr = $attrs[0];
         $this->assertEquals('bar', $attr['name']);
-        $this->assertEquals(EventHandler::isExactly, $attr['op']);
+        $this->assertEquals(EventHandler::IS_EXACTLY, $attr['op']);
         $this->assertEquals('baz', $attr['value']);
 
         $selector = $this->parse('foo[bar=baz][size=one]')->toArray();

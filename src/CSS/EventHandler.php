@@ -44,19 +44,19 @@ namespace QueryPath\CSS;
 interface EventHandler
 {
     /** The is-exactly (=) operator. */
-    public const isExactly = 0; // =
+    public const IS_EXACTLY = 0; // =
     /** The contains-with-space operator (~=). */
-    public const containsWithSpace = 1; // ~=
+    public const CONTAINS_WITH_SPACE = 1; // ~=
     /** The contains-with-hyphen operator (!=). */
-    public const containsWithHyphen = 2; // |=
+    public const CONTAINS_WITH_HYPHEN = 2; // |=
     /** The contains-in-string operator (*=). */
-    public const containsInString = 3; // *=
+    public const CONTAINS_IN_STRING = 3; // *=
     /** The begins-with operator (^=). */
-    public const beginsWith = 4; // ^=
+    public const BEGINS_WITH = 4; // ^=
     /** The ends-with operator ($=). */
-    public const endsWith = 5; // $=
+    public const ENDS_WITH = 5; // $=
     /** The any-element operator (*). */
-    public const anyElement = '*';
+    public const ANY_ELEMENT = '*';
 
     /**
      * This event is fired when a CSS ID is encountered.
@@ -124,7 +124,7 @@ interface EventHandler
      *  The operation to be used for matching. See {@link EventHandler}
      *  constants for a list of supported operations.
      */
-    public function attribute($name, $value = NULL, $operation = EventHandler::isExactly); // [name=attr]
+    public function attribute($name, $value = NULL, $operation = EventHandler::IS_EXACTLY); // [name=attr]
 
     /**
      * Handle an attribute selector bound to a specific namespace.
@@ -141,7 +141,7 @@ interface EventHandler
      *  The operation to be used for matching. See {@link EventHandler}
      *  constants for a list of supported operations.
      */
-    public function attributeNS($name, $ns, $value = NULL, $operation = EventHandler::isExactly);
+    public function attributeNS($name, $ns, $value = NULL, $operation = EventHandler::IS_EXACTLY);
 
     /**
      * Handle a pseudo-class.

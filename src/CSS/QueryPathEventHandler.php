@@ -322,7 +322,7 @@ class QueryPathEventHandler implements EventHandler, Traverser
         $this->findAnyElement = false;
     }
 
-    public function attribute($name, $value = NULL, $operation = EventHandler::isExactly)
+    public function attribute($name, $value = NULL, $operation = EventHandler::IS_EXACTLY)
     {
         $found = new \SplObjectStorage();
         $matches = $this->candidateList();
@@ -367,7 +367,7 @@ class QueryPathEventHandler implements EventHandler, Traverser
         $this->matches = $found;
     }
 
-    public function attributeNS($lname, $ns, $value = NULL, $operation = EventHandler::isExactly)
+    public function attributeNS($lname, $ns, $value = NULL, $operation = EventHandler::IS_EXACTLY)
     {
         $matches = $this->candidateList();
         $found = new \SplObjectStorage();
@@ -1016,7 +1016,7 @@ class QueryPathEventHandler implements EventHandler, Traverser
         // TODO: This checks for cases where an explicit language is
         // set. The spec seems to indicate that an element should inherit
         // language from the parent... but this is unclear.
-        $operator = (strpos($value, '-') !== false) ? self::isExactly : self::containsWithHyphen;
+        $operator = (strpos($value, '-') !== false) ? self::IS_EXACTLY : self::CONTAINS_WITH_HYPHEN;
 
         $orig = $this->matches;
         $origDepth = $this->findAnyElement;
@@ -1232,17 +1232,17 @@ class QueryPathEventHandler implements EventHandler, Traverser
         // (6.3.2)
         // To which I say, "huh?". We assume case sensitivity.
         switch ($operation) {
-            case EventHandler::isExactly:
+            case EventHandler::IS_EXACTLY:
                 return $needle == $haystack;
-            case EventHandler::containsWithSpace:
+            case EventHandler::CONTAINS_WITH_SPACE:
                 return in_array($needle, explode(' ', $haystack));
-            case EventHandler::containsWithHyphen:
+            case EventHandler::CONTAINS_WITH_HYPHEN:
                 return in_array($needle, explode('-', $haystack));
-            case EventHandler::containsInString:
+            case EventHandler::CONTAINS_IN_STRING:
                 return strpos($haystack, $needle) !== false;
-            case EventHandler::beginsWith:
+            case EventHandler::BEGINS_WITH:
                 return strpos($haystack, $needle) === 0;
-            case EventHandler::endsWith:
+            case EventHandler::ENDS_WITH:
                 //return strrpos($haystack, $needle) === strlen($needle) - 1;
                 return preg_match('/' . $needle . '$/', $haystack) == 1;
         }

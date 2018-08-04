@@ -52,15 +52,15 @@ class SimpleSelector
     public static function attributeOperator($code): string
     {
         switch ($code) {
-            case EventHandler::containsWithSpace:
+            case EventHandler::CONTAINS_WITH_SPACE:
                 return '~=';
-            case EventHandler::containsWithHyphen:
+            case EventHandler::CONTAINS_WITH_HYPHEN:
                 return '|=';
-            case EventHandler::containsInString:
+            case EventHandler::CONTAINS_IN_STRING:
                 return '*=';
-            case EventHandler::beginsWith:
+            case EventHandler::BEGINS_WITH:
                 return '^=';
-            case EventHandler::endsWith:
+            case EventHandler::ENDS_WITH:
                 return '$=';
             default:
                 return '=';

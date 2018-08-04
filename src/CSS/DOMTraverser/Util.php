@@ -23,7 +23,7 @@ class Util
      * @param int $operation
      * @return bool
      */
-    public static function matchesAttribute($node, $name, $value = NULL, $operation = EventHandler::isExactly): bool
+    public static function matchesAttribute($node, $name, $value = NULL, $operation = EventHandler::IS_EXACTLY): bool
     {
         if (!$node->hasAttribute($name)) {
             return false;
@@ -39,7 +39,7 @@ class Util
     /**
      * Check whether the given DOMElement has the given namespaced attribute.
      */
-    public static function matchesAttributeNS($node, $name, $nsuri, $value = NULL, $operation = EventHandler::isExactly)
+    public static function matchesAttributeNS($node, $name, $nsuri, $value = NULL, $operation = EventHandler::IS_EXACTLY)
     {
         if (!$node->hasAttributeNS($nsuri, $name)) {
             return false;
@@ -67,19 +67,19 @@ class Util
         // (6.3.2)
         // To which I say, "huh?". We assume case sensitivity.
         switch ($operation) {
-            case EventHandler::isExactly:
+            case EventHandler::IS_EXACTLY:
                 return $needle == $haystack;
-            case EventHandler::containsWithSpace:
+            case EventHandler::CONTAINS_WITH_SPACE:
                 // XXX: This needs testing!
                 return preg_match('/\b/', $haystack) == 1;
             //return in_array($needle, explode(' ', $haystack));
-            case EventHandler::containsWithHyphen:
+            case EventHandler::CONTAINS_WITH_HYPHEN:
                 return in_array($needle, explode('-', $haystack));
-            case EventHandler::containsInString:
+            case EventHandler::CONTAINS_IN_STRING:
                 return strpos($haystack, $needle) !== false;
-            case EventHandler::beginsWith:
+            case EventHandler::BEGINS_WITH:
                 return strpos($haystack, $needle) === 0;
-            case EventHandler::endsWith:
+            case EventHandler::ENDS_WITH:
                 //return strrpos($haystack, $needle) === strlen($needle) - 1;
                 return preg_match('/' . $needle . '$/', $haystack) == 1;
         }

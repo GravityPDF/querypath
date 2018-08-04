@@ -247,30 +247,30 @@ class ParserTest extends TestCase
         }
 
         $selectors = [
-            '*[attr="value"]'    => ['attr', 'value', EventHandler::isExactly],
-            '*[attr^="value"]'   => ['attr', 'value', EventHandler::beginsWith],
-            '*[attr$="value"]'   => ['attr', 'value', EventHandler::endsWith],
-            '*[attr*="value"]'   => ['attr', 'value', EventHandler::containsInString],
-            '*[attr~="value"]'   => ['attr', 'value', EventHandler::containsWithSpace],
-            '*[attr|="value"]'   => ['attr', 'value', EventHandler::containsWithHyphen],
+            '*[attr="value"]'    => ['attr', 'value', EventHandler::IS_EXACTLY],
+            '*[attr^="value"]'   => ['attr', 'value', EventHandler::BEGINS_WITH],
+            '*[attr$="value"]'   => ['attr', 'value', EventHandler::ENDS_WITH],
+            '*[attr*="value"]'   => ['attr', 'value', EventHandler::CONTAINS_IN_STRING],
+            '*[attr~="value"]'   => ['attr', 'value', EventHandler::CONTAINS_WITH_SPACE],
+            '*[attr|="value"]'   => ['attr', 'value', EventHandler::CONTAINS_WITH_HYPHEN],
 
             // This should act like [attr="value"]
-            '*[|attr="value"]'   => ['attr', 'value', EventHandler::isExactly],
+            '*[|attr="value"]'   => ['attr', 'value', EventHandler::IS_EXACTLY],
 
             // This behavior is displayed in the spec, but not accounted for in the
             // grammar:
-            '*[attr=value]'      => ['attr', 'value', EventHandler::isExactly],
+            '*[attr=value]'      => ['attr', 'value', EventHandler::IS_EXACTLY],
 
             // Should be able to escape chars using backslash.
-            '*[attr="\.value"]'  => ['attr', '.value', EventHandler::isExactly],
-            '*[attr="\.\]\]\]"]' => ['attr', '.]]]', EventHandler::isExactly],
+            '*[attr="\.value"]'  => ['attr', '.value', EventHandler::IS_EXACTLY],
+            '*[attr="\.\]\]\]"]' => ['attr', '.]]]', EventHandler::IS_EXACTLY],
 
             // Backslash-backslash should resolve to single backslash.
-            '*[attr="\\\c"]'     => ['attr', '\\c', EventHandler::isExactly],
+            '*[attr="\\\c"]'     => ['attr', '\\c', EventHandler::IS_EXACTLY],
 
             // Should return an empty value. It seems, though, that a value should be
             // passed here.
-            '*[attr=""]'         => ['attr', '', EventHandler::isExactly],
+            '*[attr=""]'         => ['attr', '', EventHandler::IS_EXACTLY],
         ];
         foreach ($selectors as $filter => $expected) {
             $mock = $this->createMock(TestEventHandler::class);
@@ -286,9 +286,9 @@ class ParserTest extends TestCase
     public function testAttributeNS()
     {
         $selectors = [
-            '*[ns|attr="value"]' => ['attr', 'ns', 'value', EventHandler::isExactly],
-            '*[*|attr^="value"]' => ['attr', '*', 'value', EventHandler::beginsWith],
-            '*[*|attr|="value"]' => ['attr', '*', 'value', EventHandler::containsWithHyphen],
+            '*[ns|attr="value"]' => ['attr', 'ns', 'value', EventHandler::IS_EXACTLY],
+            '*[*|attr^="value"]' => ['attr', '*', 'value', EventHandler::BEGINS_WITH],
+            '*[*|attr|="value"]' => ['attr', '*', 'value', EventHandler::CONTAINS_WITH_HYPHEN],
         ];
 
         foreach ($selectors as $filter => $expected) {
@@ -343,7 +343,7 @@ class ParserTest extends TestCase
         $expect = [
             new TestEvent(TestEvent::ELEMENT_NS, 'element', 'ns'),
             new TestEvent(TestEvent::ELEMENT_CLASS, 'class'),
-            new TestEvent(TestEvent::ATTRIBUTE, 'name', 'value', EventHandler::isExactly),
+            new TestEvent(TestEvent::ATTRIBUTE, 'name', 'value', EventHandler::IS_EXACTLY),
         ];
         $selector = 'ns|element.class[name="value"]';
 
@@ -379,10 +379,10 @@ class ParserTest extends TestCase
             new TestEvent(TestEvent::ADJACENT),
             new TestEvent(TestEvent::ELEMENT_NS, 'ele3', 'ns1'),
             new TestEvent(TestEvent::ELEMENT_CLASS, 'class2'),
-            new TestEvent(TestEvent::ATTRIBUTE, 'attr', 'simple', EventHandler::isExactly),
+            new TestEvent(TestEvent::ATTRIBUTE, 'attr', 'simple', EventHandler::IS_EXACTLY),
             new TestEvent(TestEvent::SIBLING),
             new TestEvent(TestEvent::ELEMENT_CLASS, 'class2'),
-            new TestEvent(TestEvent::ATTRIBUTE, 'attr2', 'longer string of text.', EventHandler::containsWithSpace),
+            new TestEvent(TestEvent::ATTRIBUTE, 'attr2', 'longer string of text.', EventHandler::CONTAINS_WITH_SPACE),
             new TestEvent(TestEvent::PSEUDO_CLASS, 'pseudoClass', 'value'),
             new TestEvent(TestEvent::ANY_DESCENDANT),
             new TestEvent(TestEvent::ELEMENT_CLASS, 'class3'),
