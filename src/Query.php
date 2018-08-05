@@ -2,6 +2,14 @@
 
 namespace QueryPath;
 
+/**
+ * Interface Query
+ *
+ * @package QueryPath
+ *
+ * @method after($data)
+ * @method before($data)
+ */
 interface Query
 {
 

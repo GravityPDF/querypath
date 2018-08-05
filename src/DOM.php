@@ -5,6 +5,7 @@ namespace QueryPath;
 
 use DOMNode;
 use QueryPath\CSS\DOMTraverser;
+use QueryPath\Entities;
 
 /**
  * Class DOM
@@ -168,12 +169,12 @@ abstract class DOM implements Query, \IteratorAggregate, \Countable
         $document = new \DOMDocument('1.0');
         $lead = strtolower(substr($string, 0, 5)); // <?xml
         try {
-            set_error_handler(['\QueryPath\ParseException', 'initializeFromError'], $this->errTypes);
+            set_error_handler([ParseException::class, 'initializeFromError'], $this->errTypes);
 
             if (isset($this->options['convert_to_encoding'])) {
                 // Is there another way to do this?
 
-                $from_enc = isset($this->options['convert_from_encoding']) ? $this->options['convert_from_encoding'] : 'auto';
+                $from_enc = $this->options['convert_from_encoding'] ?? 'auto';
                 $to_enc = $this->options['convert_to_encoding'];
 
                 if (function_exists('mb_convert_encoding')) {
@@ -189,19 +190,18 @@ abstract class DOM implements Query, \IteratorAggregate, \Countable
             }
 
             // Allow users to override parser settings.
-            if (empty($this->options['use_parser'])) {
-                $useParser = '';
-            } else {
+            $useParser = '';
+            if (!empty($this->options['use_parser'])) {
                 $useParser = strtolower($this->options['use_parser']);
             }
 
             // If HTML parser is requested, we use it.
-            if ($useParser == 'html') {
+            if ($useParser === 'html') {
                 $document->loadHTML($string);
             } // Parse as XML if it looks like XML, or if XML parser is requested.
-            elseif ($lead == '<?xml' || $useParser == 'xml') {
+            elseif ($lead === '<?xml' || $useParser === 'xml') {
                 if ($this->options['replace_entities']) {
-                    $string = \QueryPath\Entities::replaceAllEntities($string);
+                    $string = Entities::replaceAllEntities($string);
                 }
                 $document->loadXML($string, $flags);
             } // In all other cases, we try the HTML parser.
@@ -332,7 +332,7 @@ abstract class DOM implements Query, \IteratorAggregate, \Countable
         if (is_string($item)) {
             // If configured to do so, replace all entities.
             if ($this->options['replace_entities']) {
-                $item = \QueryPath\Entities::replaceAllEntities($item);
+                $item = Entities::replaceAllEntities($item);
             }
 
             $frag = $this->document->createDocumentFragment();
