@@ -12,7 +12,13 @@ QueryPath is a jQuery-like library for working with XML and HTML
 documents in PHP. It now contains support for HTML5 via the
 [HTML5-PHP project](https://github.com/Masterminds/html5-php).
 
-Requires PHP>=7.1
+### Why this lib was forked and recoded
+
+- Legacy code (repo was left for > 3 years) didn't allow to support new features of PHP>=7.1
+- A lot of DeaDBeaF code like: unused params, unused local variables etc
+- A lot of needless flow structures 
+- DRY/KISS/SOLID rules were thrown away when it was developed
+- Minor bugs and fragile functionality 
 
 ### Installation
 ``` 
