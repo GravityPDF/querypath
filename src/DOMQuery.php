@@ -1528,7 +1528,7 @@ class DOMQuery extends DOM
      * @return Iterable
      *  Returns an iterator.
      */
-    public function getIterator()
+    public function getIterator(): \Traversable
     {
         $i = new QueryPathIterator($this->matches);
         $i->options = $this->options;
