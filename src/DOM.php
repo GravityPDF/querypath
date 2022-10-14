@@ -66,8 +66,13 @@ abstract class DOM implements Query, \IteratorAggregate, \Countable
      * @see qp()
      * @throws Exception
      */
-    public function __construct($document = NULL, $string = NULL, $options = [])
+    public function __construct($document = NULL, $string = '', $options = [])
     {
+		// Backwards compatibility fix for PHP8+
+		if (is_null($string)) {
+			$string = '';
+		}
+
         $string = trim($string);
         $this->options = $options + Options::get() + $this->options;
 
@@ -164,7 +169,7 @@ abstract class DOM implements Query, \IteratorAggregate, \Countable
         }
     }
 
-    private function parseXMLString($string, $flags = NULL)
+    private function parseXMLString($string, $flags = 0)
     {
         $document = new \DOMDocument('1.0');
         $lead = strtolower(substr($string, 0, 5)); // <?xml
@@ -409,8 +414,12 @@ abstract class DOM implements Query, \IteratorAggregate, \Countable
      * @throws \QueryPath\ParseException
      *  Thrown when a file cannot be loaded or parsed.
      */
-    private function parseXMLFile($filename, $flags = NULL, $context = NULL)
+    private function parseXMLFile($filename, $flags = 0, $context = NULL)
     {
+	    // Backwards compatibility fix for PHP8+
+		if (is_null($flags)) {
+			$flags = 0;
+		}
 
         // If a context is specified, we basically have to do the reading in
         // two steps:

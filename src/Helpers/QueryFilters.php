@@ -82,6 +82,10 @@ trait QueryFilters
      * @see mapLambda()
      * @see filterCallback()
      * @throws ParseException
+     *
+     * @deprecated
+     *   Since PHP 5.3 supports anonymous functions -- REAL Lambdas -- this
+     *   method is not necessary and should be avoided.
      */
     public function filterLambda($fn): Query
     {
@@ -1013,7 +1017,7 @@ trait QueryFilters
     public function children($selector = NULL): Query
     {
         $found = new \SplObjectStorage();
-        $filter = strlen($selector) > 0;
+        $filter = is_string($selector) && strlen($selector) > 0;
 
         if ($filter) {
             $tmp = new \SplObjectStorage();

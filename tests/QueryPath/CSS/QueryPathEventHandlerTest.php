@@ -106,11 +106,12 @@ class QueryPathEventHandlerTest extends TestCase
     }
 
     /**
-     * @expectedException \QueryPath\CSS\ParseException
      * @throws \QueryPath\CSS\ParseException
      */
     public function testEmptySelector()
     {
+	    $this->expectException(\QueryPath\CSS\ParseException::class);
+
         $xml = '<?xml version="1.0" ?><t:test xmlns:t="urn:foo/bar"><t:inside id="first"/>Text<t:inside/><inside/></t:test>';
         $doc = new \DomDocument();
         $doc->loadXML($xml);
@@ -146,11 +147,10 @@ class QueryPathEventHandlerTest extends TestCase
     }
 
 
-    /**
-     * @expectedException \QueryPath\CSS\ParseException
-     */
     public function testFailedElementNS()
     {
+	    $this->expectException(\QueryPath\CSS\ParseException::class);
+
         $xml = '<?xml version="1.0" ?><t:test xmlns:t="urn:foo/bar"><t:inside id="first"/>Text<t:inside/><inside/></t:test>';
         $doc = new \DomDocument();
         $doc->loadXML($xml);
