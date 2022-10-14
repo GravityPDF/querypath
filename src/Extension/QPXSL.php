@@ -17,7 +17,10 @@
 
 namespace QueryPath\Extension;
 
+use QueryPath\Extension;
+use QueryPath\Query;
 use QueryPath\QueryPath;
+use XSLTProcessor;
 
 /**
  * Provide tools for running XSL Transformation (XSLT) on a document.
@@ -42,41 +45,42 @@ use QueryPath\QueryPath;
  *
  * @ingroup querypath_extensions
  */
-class QPXSL implements \QueryPath\Extension
+class QPXSL implements Extension
 {
 
-    protected $src;
+	protected $src;
 
-    public function __construct(\QueryPath\Query $qp)
-    {
-        $this->src = $qp;
-    }
+	public function __construct(Query $qp)
+	{
+		$this->src = $qp;
+	}
 
-    /**
-     * Given an XSLT stylesheet, run a transformation.
-     *
-     * This will attempt to read the provided stylesheet and then
-     * execute it on the current source document.
-     *
-     * @param mixed $style
-     *  This takes a QueryPath object or <em>any</em> of the types that the
-     *  {@link qp()} function can take.
-     * @return QueryPath
-     *  A QueryPath object wrapping the transformed document. Note that this is a
-     *  <i>different</em> document than the original. As such, it has no history.
-     *  You cannot call {@link QueryPath::end()} to undo a transformation. (However,
-     *  the original source document will remain unchanged.)
-     */
-    public function xslt($style)
-    {
-        if (!($style instanceof QueryPath)) {
-            $style = QueryPath::with($style);
-        }
-        $sourceDoc = $this->src->top()->get(0)->ownerDocument;
-        $styleDoc = $style->get(0)->ownerDocument;
-        $processor = new \XSLTProcessor();
-        $processor->importStylesheet($styleDoc);
+	/**
+	 * Given an XSLT stylesheet, run a transformation.
+	 *
+	 * This will attempt to read the provided stylesheet and then
+	 * execute it on the current source document.
+	 *
+	 * @param mixed $style
+	 *  This takes a QueryPath object or <em>any</em> of the types that the
+	 *  {@link qp()} function can take.
+	 *
+	 * @return QueryPath
+	 *  A QueryPath object wrapping the transformed document. Note that this is a
+	 *  <i>different</em> document than the original. As such, it has no history.
+	 *  You cannot call {@link QueryPath::end()} to undo a transformation. (However,
+	 *  the original source document will remain unchanged.)
+	 */
+	public function xslt($style)
+	{
+		if (! ($style instanceof QueryPath)) {
+			$style = QueryPath::with($style);
+		}
+		$sourceDoc = $this->src->top()->get(0)->ownerDocument;
+		$styleDoc  = $style->get(0)->ownerDocument;
+		$processor = new XSLTProcessor();
+		$processor->importStylesheet($styleDoc);
 
-        return QueryPath::with($processor->transformToDoc($sourceDoc));
-    }
+		return QueryPath::with($processor->transformToDoc($sourceDoc));
+	}
 }

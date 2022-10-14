@@ -2,132 +2,133 @@
 
 namespace QueryPathTests\CSS;
 
+use QueryPath\CSS\Parser;
+use QueryPath\CSS\Selector;
 use QueryPath\CSS\SimpleSelector;
-use \QueryPath\CSS\EventHandler;
+use QueryPath\CSS\EventHandler;
 use QueryPathTests\TestCase;
 
 class SelectorTest extends TestCase
 {
 
-    protected function parse($selector)
-    {
-        $handler = new \QueryPath\CSS\Selector();
-        $parser = new \QueryPath\CSS\Parser($selector, $handler);
-        $parser->parse();
+	protected function parse($selector)
+	{
+		$handler = new Selector();
+		$parser  = new Parser($selector, $handler);
+		$parser->parse();
 
-        return $handler;
-    }
+		return $handler;
+	}
 
-    public function testElement()
-    {
-        $selector = $this->parse('test')->toArray();
+	public function testElement()
+	{
+		$selector = $this->parse('test')->toArray();
 
-        $this->assertEquals(1, count($selector));
-        $this->assertEquals('test', $selector[0]['0']->element);
-    }
+		$this->assertEquals(1, count($selector));
+		$this->assertEquals('test', $selector[0]['0']->element);
+	}
 
-    public function testElementNS()
-    {
-        $selector = $this->parse('foo|test')->toArray();
+	public function testElementNS()
+	{
+		$selector = $this->parse('foo|test')->toArray();
 
-        $this->assertEquals(1, count($selector));
-        $this->assertEquals('test', $selector[0]['0']->element);
-        $this->assertEquals('foo', $selector[0]['0']->ns);
-    }
+		$this->assertEquals(1, count($selector));
+		$this->assertEquals('test', $selector[0]['0']->element);
+		$this->assertEquals('foo', $selector[0]['0']->ns);
+	}
 
-    public function testId()
-    {
-        $selector = $this->parse('#test')->toArray();
+	public function testId()
+	{
+		$selector = $this->parse('#test')->toArray();
 
-        $this->assertEquals(1, count($selector));
-        $this->assertEquals('test', $selector[0][0]->id);
-    }
+		$this->assertEquals(1, count($selector));
+		$this->assertEquals('test', $selector[0][0]->id);
+	}
 
-    public function testClasses()
-    {
-        $selector = $this->parse('.test')->toArray();
+	public function testClasses()
+	{
+		$selector = $this->parse('.test')->toArray();
 
-        $this->assertEquals(1, count($selector));
-        $this->assertEquals('test', $selector[0][0]->classes[0]);
+		$this->assertEquals(1, count($selector));
+		$this->assertEquals('test', $selector[0][0]->classes[0]);
 
-        $selector = $this->parse('.test.foo.bar')->toArray();
-        $this->assertEquals('test', $selector[0][0]->classes[0]);
-        $this->assertEquals('foo', $selector[0][0]->classes[1]);
-        $this->assertEquals('bar', $selector[0][0]->classes[2]);
+		$selector = $this->parse('.test.foo.bar')->toArray();
+		$this->assertEquals('test', $selector[0][0]->classes[0]);
+		$this->assertEquals('foo', $selector[0][0]->classes[1]);
+		$this->assertEquals('bar', $selector[0][0]->classes[2]);
+	}
 
-    }
+	public function testAttributes()
+	{
+		$selector = $this->parse('foo[bar=baz]')->toArray();
+		$this->assertEquals(1, count($selector));
+		$attrs = $selector[0][0]->attributes;
 
-    public function testAttributes()
-    {
-        $selector = $this->parse('foo[bar=baz]')->toArray();
-        $this->assertEquals(1, count($selector));
-        $attrs = $selector[0][0]->attributes;
+		$this->assertEquals(1, count($attrs));
 
-        $this->assertEquals(1, count($attrs));
+		$attr = $attrs[0];
+		$this->assertEquals('bar', $attr['name']);
+		$this->assertEquals(EventHandler::IS_EXACTLY, $attr['op']);
+		$this->assertEquals('baz', $attr['value']);
 
-        $attr = $attrs[0];
-        $this->assertEquals('bar', $attr['name']);
-        $this->assertEquals(EventHandler::IS_EXACTLY, $attr['op']);
-        $this->assertEquals('baz', $attr['value']);
+		$selector = $this->parse('foo[bar=baz][size=one]')->toArray();
+		$attrs    = $selector[0][0]->attributes;
 
-        $selector = $this->parse('foo[bar=baz][size=one]')->toArray();
-        $attrs = $selector[0][0]->attributes;
+		$this->assertEquals('one', $attrs[1]['value']);
+	}
 
-        $this->assertEquals('one', $attrs[1]['value']);
-    }
+	public function testAttributesNS()
+	{
+		$selector = $this->parse('[myns|foo=bar]')->toArray();
 
-    public function testAttributesNS()
-    {
-        $selector = $this->parse('[myns|foo=bar]')->toArray();
+		$attr = $selector[0][0]->attributes[0];
 
-        $attr = $selector[0][0]->attributes[0];
+		$this->assertEquals('myns', $attr['ns']);
+		$this->assertEquals('foo', $attr['name']);
+	}
 
-        $this->assertEquals('myns', $attr['ns']);
-        $this->assertEquals('foo', $attr['name']);
-    }
+	public function testPseudoClasses()
+	{
+		$selector = $this->parse('foo:first')->toArray();
+		$pseudo   = $selector[0][0]->pseudoClasses;
 
-    public function testPseudoClasses()
-    {
-        $selector = $this->parse('foo:first')->toArray();
-        $pseudo = $selector[0][0]->pseudoClasses;
+		$this->assertEquals(1, count($pseudo));
 
-        $this->assertEquals(1, count($pseudo));
+		$this->assertEquals('first', $pseudo[0]['name']);
+	}
 
-        $this->assertEquals('first', $pseudo[0]['name']);
-    }
+	public function testPseudoElements()
+	{
+		$selector = $this->parse('foo::bar')->toArray();
+		$pseudo   = $selector[0][0]->pseudoElements;
 
-    public function testPseudoElements()
-    {
-        $selector = $this->parse('foo::bar')->toArray();
-        $pseudo = $selector[0][0]->pseudoElements;
+		$this->assertEquals(1, count($pseudo));
 
-        $this->assertEquals(1, count($pseudo));
+		$this->assertEquals('bar', $pseudo[0]);
+	}
 
-        $this->assertEquals('bar', $pseudo[0]);
-    }
+	public function testCombinators()
+	{
+		// This implies *>foo
+		$selector = $this->parse('>foo')->toArray();
 
-    public function testCombinators()
-    {
-        // This implies *>foo
-        $selector = $this->parse('>foo')->toArray();
+		$this->assertEquals(SimpleSelector::DIRECT_DESCENDANT, $selector[0][1]->combinator);
 
-        $this->assertEquals(SimpleSelector::DIRECT_DESCENDANT, $selector[0][1]->combinator);
+		// This will be a selector with three samples:
+		// 'bar'
+		// 'foo '
+		// '*>'
+		$selector = $this->parse('>foo bar')->toArray();
+		$this->assertNull($selector[0][0]->combinator);
+		$this->assertEquals(SimpleSelector::ANY_DESCENDANT, $selector[0][1]->combinator);
+		$this->assertEquals(SimpleSelector::DIRECT_DESCENDANT, $selector[0][2]->combinator);
+	}
 
-        // This will be a selector with three samples:
-        // 'bar'
-        // 'foo '
-        // '*>'
-        $selector = $this->parse('>foo bar')->toArray();
-        $this->assertNull($selector[0][0]->combinator);
-        $this->assertEquals(SimpleSelector::ANY_DESCENDANT, $selector[0][1]->combinator);
-        $this->assertEquals(SimpleSelector::DIRECT_DESCENDANT, $selector[0][2]->combinator);
-    }
+	public function testIterator()
+	{
+		$selector = $this->parse('foo::bar');
 
-    public function testIterator()
-    {
-        $selector = $this->parse('foo::bar');
-
-        $iterator = $selector->getIterator();
-        $this->assertInstanceOf('\Iterator', $iterator);
-    }
+		$iterator = $selector->getIterator();
+		$this->assertInstanceOf('\Iterator', $iterator);
+	}
 }

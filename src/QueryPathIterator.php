@@ -7,7 +7,9 @@
 
 namespace QueryPath;
 
+use IteratorIterator;
 use QueryPath\QueryPath;
+use SplObjectStorage;
 
 /**
  * An iterator for QueryPath.
@@ -18,22 +20,22 @@ use QueryPath\QueryPath;
  *
  * @ingroup querypath_util
  */
-class QueryPathIterator extends \IteratorIterator
+class QueryPathIterator extends IteratorIterator
 {
 
-    public $options = [];
-    private $qp;
+	public $options = [];
+	private $qp;
 
-    public function current()
-    {
-        if (!isset($this->qp)) {
-            $this->qp = QueryPath::with(parent::current(), NULL, $this->options);
-        } else {
-            $splos = new \SplObjectStorage();
-            $splos->attach(parent::current());
-            $this->qp->setMatches($splos);
-        }
+	public function current()
+	{
+		if (! isset($this->qp)) {
+			$this->qp = QueryPath::with(parent::current(), null, $this->options);
+		} else {
+			$splos = new SplObjectStorage();
+			$splos->attach(parent::current());
+			$this->qp->setMatches($splos);
+		}
 
-        return $this->qp;
-    }
+		return $this->qp;
+	}
 }

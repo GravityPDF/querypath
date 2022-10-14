@@ -6,6 +6,8 @@
 namespace QueryPath\Extension;
 
 use QueryPath\DOMQuery;
+use QueryPath\Exception;
+use QueryPath\Query;
 use QueryPath\QueryPath;
 use QueryPath\Extension;
 
@@ -23,211 +25,214 @@ use QueryPath\Extension;
 class QPXML implements Extension
 {
 
-    protected $qp;
+	protected $qp;
 
-    public function __construct(\QueryPath\Query $qp)
-    {
-        $this->qp = $qp;
-    }
+	public function __construct(Query $qp)
+	{
+		$this->qp = $qp;
+	}
 
-    public function schema($file)
-    {
-        $doc = $this->qp->branch()->top()->get(0)->ownerDocument;
+	public function schema($file)
+	{
+		$doc = $this->qp->branch()->top()->get(0)->ownerDocument;
 
-        if (!$doc->schemaValidate($file)) {
-            throw new \QueryPath\Exception('Document did not validate against the schema.');
-        }
-    }
+		if (! $doc->schemaValidate($file)) {
+			throw new Exception('Document did not validate against the schema.');
+		}
+	}
 
-    /**
-     * Get or set a CDATA section.
-     *
-     * If this is given text, it will create a CDATA section in each matched element,
-     * setting that item's value to $text.
-     *
-     * If no parameter is passed in, this will return the first CDATA section that it
-     * finds in the matched elements.
-     *
-     * @param string $text
-     *  The text data to insert into the current matches. If this is NULL, then the first
-     *  CDATA will be returned.
-     *
-     * @return mixed
-     *  If $text is not NULL, this will return a {@link QueryPath}. Otherwise, it will
-     *  return a string. If no CDATA is found, this will return NULL.
-     * @see comment()
-     * @see QueryPath::text()
-     * @see QueryPath::html()
-     */
-    public function cdata($text = NULL)
-    {
-        if (isset($text)) {
-            // Add this text as CDATA in the current elements.
-            foreach ($this->qp->get() as $element) {
-                $cdata = $element->ownerDocument->createCDATASection($text);
-                $element->appendChild($cdata);
-            }
+	/**
+	 * Get or set a CDATA section.
+	 *
+	 * If this is given text, it will create a CDATA section in each matched element,
+	 * setting that item's value to $text.
+	 *
+	 * If no parameter is passed in, this will return the first CDATA section that it
+	 * finds in the matched elements.
+	 *
+	 * @param string $text
+	 *  The text data to insert into the current matches. If this is NULL, then the first
+	 *  CDATA will be returned.
+	 *
+	 * @return mixed
+	 *  If $text is not NULL, this will return a {@link QueryPath}. Otherwise, it will
+	 *  return a string. If no CDATA is found, this will return NULL.
+	 * @see comment()
+	 * @see QueryPath::text()
+	 * @see QueryPath::html()
+	 */
+	public function cdata($text = null)
+	{
+		if (isset($text)) {
+			// Add this text as CDATA in the current elements.
+			foreach ($this->qp->get() as $element) {
+				$cdata = $element->ownerDocument->createCDATASection($text);
+				$element->appendChild($cdata);
+			}
 
-            return $this->qp;;
-        }
+			return $this->qp;
+		}
 
-        // Look for CDATA sections.
-        foreach ($this->qp->get() as $ele) {
-            foreach ($ele->childNodes as $node) {
-                if ($node->nodeType === XML_CDATA_SECTION_NODE) {
-                    // Return first match.
-                    return $node->textContent;
-                }
-            }
-        }
+		// Look for CDATA sections.
+		foreach ($this->qp->get() as $ele) {
+			foreach ($ele->childNodes as $node) {
+				if ($node->nodeType === XML_CDATA_SECTION_NODE) {
+					// Return first match.
+					return $node->textContent;
+				}
+			}
+		}
 
-        return NULL;
-        // Nothing found
-    }
+		return null;
+		// Nothing found
+	}
 
-    /**
-     * Get or set a comment.
-     *
-     * This function is used to get or set comments in an XML or HTML document.
-     * If a $text value is passed in (and is not NULL), then this will add a comment
-     * (with the value $text) to every match in the set.
-     *
-     * If no text is passed in, this will return the first comment in the set of matches.
-     * If no comments are found, NULL will be returned.
-     *
-     * @param string $text
-     *  The text of the comment. If set, a new comment will be created in every item
-     *  wrapped by the current {@link QueryPath}.
-     * @return mixed
-     *  If $text is set, this will return a {@link QueryPath}. If no text is set, this
-     *  will search for a comment and attempt to return the string value of the first
-     *  comment it finds. If no comment is found, NULL will be returned.
-     * @see cdata()
-     */
-    public function comment($text = NULL)
-    {
-        if (isset($text)) {
-            foreach ($this->qp->get() as $element) {
-                $comment = $element->ownerDocument->createComment($text);
-                $element->appendChild($comment);
-            }
+	/**
+	 * Get or set a comment.
+	 *
+	 * This function is used to get or set comments in an XML or HTML document.
+	 * If a $text value is passed in (and is not NULL), then this will add a comment
+	 * (with the value $text) to every match in the set.
+	 *
+	 * If no text is passed in, this will return the first comment in the set of matches.
+	 * If no comments are found, NULL will be returned.
+	 *
+	 * @param string $text
+	 *  The text of the comment. If set, a new comment will be created in every item
+	 *  wrapped by the current {@link QueryPath}.
+	 *
+	 * @return mixed
+	 *  If $text is set, this will return a {@link QueryPath}. If no text is set, this
+	 *  will search for a comment and attempt to return the string value of the first
+	 *  comment it finds. If no comment is found, NULL will be returned.
+	 * @see cdata()
+	 */
+	public function comment($text = null)
+	{
+		if (isset($text)) {
+			foreach ($this->qp->get() as $element) {
+				$comment = $element->ownerDocument->createComment($text);
+				$element->appendChild($comment);
+			}
 
-            return $this->qp;
-        }
-        foreach ($this->qp->get() as $ele) {
-            foreach ($ele->childNodes as $node) {
-                if ($node->nodeType == XML_COMMENT_NODE) {
-                    // Return first match.
-                    return $node->textContent;
-                }
-            }
-        }
-    }
+			return $this->qp;
+		}
+		foreach ($this->qp->get() as $ele) {
+			foreach ($ele->childNodes as $node) {
+				if ($node->nodeType == XML_COMMENT_NODE) {
+					// Return first match.
+					return $node->textContent;
+				}
+			}
+		}
+	}
 
-    /**
-     * Get or set a processor instruction.
-     */
-    public function pi($prefix = NULL, $text = NULL)
-    {
-        if (isset($text)) {
-            foreach ($this->qp->get() as $element) {
-                $comment = $element->ownerDocument->createProcessingInstruction($prefix, $text);
-                $element->appendChild($comment);
-            }
+	/**
+	 * Get or set a processor instruction.
+	 */
+	public function pi($prefix = null, $text = null)
+	{
+		if (isset($text)) {
+			foreach ($this->qp->get() as $element) {
+				$comment = $element->ownerDocument->createProcessingInstruction($prefix, $text);
+				$element->appendChild($comment);
+			}
 
-            return $this->qp;
-        }
-        foreach ($this->qp->get() as $ele) {
-            foreach ($ele->childNodes as $node) {
-                if ($node->nodeType == XML_PI_NODE) {
+			return $this->qp;
+		}
+		foreach ($this->qp->get() as $ele) {
+			foreach ($ele->childNodes as $node) {
+				if ($node->nodeType == XML_PI_NODE) {
+					if (isset($prefix)) {
+						if ($node->tagName == $prefix) {
+							return $node->textContent;
+						}
+					} else {
+						// Return first match.
+						return $node->textContent;
+					}
+				}
+			} // foreach
+		} // foreach
+	}
 
-                    if (isset($prefix)) {
-                        if ($node->tagName == $prefix) {
-                            return $node->textContent;
-                        }
-                    } else {
-                        // Return first match.
-                        return $node->textContent;
-                    }
-                }
-            } // foreach
-        } // foreach
-    }
+	public function toXml()
+	{
+		return $this->qp->document()->saveXml();
+	}
 
-    public function toXml()
-    {
-        return $this->qp->document()->saveXml();
-    }
+	/**
+	 * Create a NIL element.
+	 *
+	 * @param string $text
+	 * @param string $value
+	 *
+	 * @reval object $element
+	 */
+	public function createNilElement($text, $value)
+	{
+		$value   = ($value) ? 'true' : 'false';
+		$element = $this->qp->createElement($text);
+		$element->attr('xsi:nil', $value);
 
-    /**
-     * Create a NIL element.
-     *
-     * @param string $text
-     * @param string $value
-     * @reval object $element
-     */
-    public function createNilElement($text, $value)
-    {
-        $value = ($value) ? 'true' : 'false';
-        $element = $this->qp->createElement($text);
-        $element->attr('xsi:nil', $value);
+		return $element;
+	}
 
-        return $element;
-    }
+	/**
+	 * Create an element with the given namespace.
+	 *
+	 * @param string $text
+	 * @param string $nsUri
+	 *   The namespace URI for the given element.
+	 *
+	 * @return DOMQuery
+	 */
+	public function createElement($text, $nsUri = null)
+	{
+		if (isset($text)) {
+			foreach ($this->qp->get() as $element) {
+				if ($nsUri === null && strpos($text, ':') !== false) {
+					$ns    = array_shift(explode(':', $text));
+					$nsUri = $element->ownerDocument->lookupNamespaceURI($ns);
 
-    /**
-     * Create an element with the given namespace.
-     *
-     * @param string $text
-     * @param string $nsUri
-     *   The namespace URI for the given element.
-     * @return \QueryPath\DOMQuery
-     */
-    public function createElement($text, $nsUri = NULL)
-    {
-        if (isset ($text)) {
-            foreach ($this->qp->get() as $element) {
-                if ($nsUri === NULL && strpos($text, ':') !== false) {
-                    $ns = array_shift(explode(':', $text));
-                    $nsUri = $element->ownerDocument->lookupNamespaceURI($ns);
+					if ($nsUri === null) {
+						throw new Exception("Undefined namespace for: " . $text);
+					}
+				}
 
-                    if ($nsUri === NULL) {
-                        throw new \QueryPath\Exception("Undefined namespace for: " . $text);
-                    }
-                }
+				$node = null;
+				if ($nsUri !== null) {
+					$node = $element->ownerDocument->createElementNS(
+						$nsUri,
+						$text
+					);
+				} else {
+					$node = $element->ownerDocument->createElement($text);
+				}
 
-                $node = NULL;
-                if ($nsUri !== NULL) {
-                    $node = $element->ownerDocument->createElementNS(
-                        $nsUri,
-                        $text
-                    );
-                } else {
-                    $node = $element->ownerDocument->createElement($text);
-                }
+				return QueryPath::with($node);
+			}
+		}
 
-                return QueryPath::with($node);
-            }
-        }
+		return new DOMQuery();
+	}
 
-        return new DOMQuery();
-    }
+	/**
+	 * Append an element.
+	 *
+	 * @param string $text
+	 *
+	 * @return DOMQuery
+	 */
+	public function appendElement($text)
+	{
+		if (isset($text)) {
+			foreach ($this->qp->get() as $element) {
+				$node = $this->qp->createElement($text);
+				QueryPath::with($element)->append($node);
+			}
+		}
 
-    /**
-     * Append an element.
-     *
-     * @param string $text
-     * @return \QueryPath\DOMQuery
-     */
-    public function appendElement($text)
-    {
-        if (isset ($text)) {
-            foreach ($this->qp->get() as $element) {
-                $node = $this->qp->createElement($text);
-                QueryPath::with($element)->append($node);
-            }
-        }
-
-        return $this->qp;
-    }
+		return $this->qp;
+	}
 }

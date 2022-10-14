@@ -2,8 +2,10 @@
 
 namespace QueryPathTests;
 
-use \QueryPath\Extension;
-use \QueryPath\ExtensionRegistry;
+use QueryPath\Exception;
+use QueryPath\Extension;
+use QueryPath\ExtensionRegistry;
+use QueryPath\Query;
 
 /**
  * Run all of the usual tests, plus some extras, with some extensions loaded.
@@ -14,87 +16,85 @@ use \QueryPath\ExtensionRegistry;
 class QueryPathExtensionTest extends TestCase
 {
 
-    public static function set_up_before_class()
-    {
-        ExtensionRegistry::extend(StubExtensionOne::class);
-        ExtensionRegistry::extend(StubExtensionTwo::class);
-    }
+	public static function set_up_before_class()
+	{
+		ExtensionRegistry::extend(StubExtensionOne::class);
+		ExtensionRegistry::extend(StubExtensionTwo::class);
+	}
 
-    public function testExtensions()
-    {
-        $this->assertNotNull(qp());
-    }
+	public function testExtensions()
+	{
+		$this->assertNotNull(qp());
+	}
 
-    public function testHasExtension()
-    {
-        $this->assertTrue(ExtensionRegistry::hasExtension(StubExtensionOne::class));
-    }
+	public function testHasExtension()
+	{
+		$this->assertTrue(ExtensionRegistry::hasExtension(StubExtensionOne::class));
+	}
 
-    public function testStubToe()
-    {
-        $this->assertEquals(1, qp(self::DATA_FILE_XML, 'unary')->stubToe()->top(':root > toe')->size());
-    }
+	public function testStubToe()
+	{
+		$this->assertEquals(1, qp(self::DATA_FILE_XML, 'unary')->stubToe()->top(':root > toe')->size());
+	}
 
-    public function testStuble()
-    {
-        $this->assertEquals('arg1arg2', qp(self::DATA_FILE_XML)->stuble('arg1', 'arg2'));
-    }
+	public function testStuble()
+	{
+		$this->assertEquals('arg1arg2', qp(self::DATA_FILE_XML)->stuble('arg1', 'arg2'));
+	}
 
-    public function testNoRegistry()
-    {
-	    $this->expectException(\QueryPath\Exception::class);
+	public function testNoRegistry()
+	{
+		$this->expectException(Exception::class);
 
-        ExtensionRegistry::$useRegistry = false;
-        try {
-            qp(self::DATA_FILE_XML)->stuble('arg1', 'arg2');
-        } catch (\QueryPath\Exception $e) {
-            ExtensionRegistry::$useRegistry = true;
-            throw $e;
-        }
+		ExtensionRegistry::$useRegistry = false;
+		try {
+			qp(self::DATA_FILE_XML)->stuble('arg1', 'arg2');
+		} catch (Exception $e) {
+			ExtensionRegistry::$useRegistry = true;
+			throw $e;
+		}
+	}
 
-    }
+	public function testExtend()
+	{
+		$this->assertFalse(ExtensionRegistry::hasExtension(StubExtensionThree::class));
+		ExtensionRegistry::extend(StubExtensionThree::class);
+		$this->assertTrue(ExtensionRegistry::hasExtension(StubExtensionThree::class));
+	}
 
-    public function testExtend()
-    {
-        $this->assertFalse(ExtensionRegistry::hasExtension(StubExtensionThree::class));
-        ExtensionRegistry::extend(StubExtensionThree::class);
-        $this->assertTrue(ExtensionRegistry::hasExtension(StubExtensionThree::class));
-    }
+	public function tear_down()
+	{
+		ExtensionRegistry::$useRegistry = true;
+	}
 
-    public function tear_down()
-    {
-        ExtensionRegistry::$useRegistry = true;
-    }
+	public function testAutoloadExtensions()
+	{
+		$this->expectException(Exception::class);
 
-    public function testAutoloadExtensions()
-    {
-	    $this->expectException(\QueryPath\Exception::class);
+		// FIXME: This isn't really much of a test.
+		ExtensionRegistry::autoloadExtensions(false);
+		try {
+			qp()->stubToe();
+		} catch (Exception $e) {
+			ExtensionRegistry::autoloadExtensions(true);
+			throw $e;
+		}
+	}
 
-        // FIXME: This isn't really much of a test.
-        ExtensionRegistry::autoloadExtensions(false);
-        try {
-            qp()->stubToe();
-        } catch (Exception $e) {
-            ExtensionRegistry::autoloadExtensions(true);
-            throw $e;
-        }
-    }
+	public function testCallFailure()
+	{
+		$this->expectException(Exception::class);
 
-    public function testCallFailure()
-    {
-	    $this->expectException(\QueryPath\Exception::class);
+		qp()->foo();
+	}
 
-        qp()->foo();
-    }
-
-    // This does not (and will not) throw an exception.
-    // /**
-    //   * @expectedException QueryPathException
-    //   */
-    //  public function testExtendNoSuchClass() {
-    //    ExtensionRegistry::extend('StubExtensionFour');
-    //  }
-
+	// This does not (and will not) throw an exception.
+	// /**
+	//   * @expectedException QueryPathException
+	//   */
+	//  public function testExtendNoSuchClass() {
+	//    ExtensionRegistry::extend('StubExtensionFour');
+	//  }
 }
 
 // Create a stub extension:
@@ -107,19 +107,19 @@ class QueryPathExtensionTest extends TestCase
 class StubExtensionOne implements Extension
 {
 
-    private $qp = NULL;
+	private $qp = null;
 
-    public function __construct(\QueryPath\Query $qp)
-    {
-        $this->qp = $qp;
-    }
+	public function __construct(Query $qp)
+	{
+		$this->qp = $qp;
+	}
 
-    public function stubToe()
-    {
-        $this->qp->top()->append('<toe/>')->end();
+	public function stubToe()
+	{
+		$this->qp->top()->append('<toe/>')->end();
 
-        return $this->qp;
-    }
+		return $this->qp;
+	}
 }
 
 /**
@@ -130,17 +130,17 @@ class StubExtensionOne implements Extension
 class StubExtensionTwo implements Extension
 {
 
-    private $qp = NULL;
+	private $qp = null;
 
-    public function __construct(\QueryPath\Query $qp)
-    {
-        $this->qp = $qp;
-    }
+	public function __construct(Query $qp)
+	{
+		$this->qp = $qp;
+	}
 
-    public function stuble($arg1, $arg2)
-    {
-        return $arg1 . $arg2;
-    }
+	public function stuble($arg1, $arg2)
+	{
+		return $arg1 . $arg2;
+	}
 }
 
 /**
@@ -151,17 +151,17 @@ class StubExtensionTwo implements Extension
 class StubExtensionThree implements Extension
 {
 
-    private $qp;
+	private $qp;
 
-    public function __construct(\QueryPath\Query $qp)
-    {
-        $this->qp = $qp;
-    }
+	public function __construct(Query $qp)
+	{
+		$this->qp = $qp;
+	}
 
-    public function stuble($arg1, $arg2)
-    {
-        return $arg1 . $arg2;
-    }
+	public function stuble($arg1, $arg2)
+	{
+		return $arg1 . $arg2;
+	}
 }
 
 //ExtensionRegistry::extend('StubExtensionOne');

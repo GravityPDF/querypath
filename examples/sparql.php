@@ -3,23 +3,23 @@
  * Use QueryPath to query SPARQL endpoints on semantic web servers.
  *
  * This example runs a SPARQL query against a remote database server
- * ({@link http://dbpedia.org}) and then parses the returned XML data, 
+ * ({@link http://dbpedia.org}) and then parses the returned XML data,
  * displaying it as an HTML table.
  *
- * This demo shows how a more complex GET query can be built up in 
+ * This demo shows how a more complex GET query can be built up in
  * QueryPath. POST queries are supported, too. Use a stream context
  * to create those.
  *
- * 
- * @author M Butcher <matt@aleph-null.tv>
+ *
+ * @author  M Butcher <matt@aleph-null.tv>
  * @license LGPL The GNU Lesser GPL (LGPL) or an MIT-like license.
- * @see http://www.w3.org/2009/sparql/wiki/Main_Page
- * @see http://dbpedia.org
- * @see dbpedia.php
- * @see musicbrainz.php
- * @see http://drupal.org/project/querypath
+ * @see     http://www.w3.org/2009/sparql/wiki/Main_Page
+ * @see     http://dbpedia.org
+ * @see     dbpedia.php
+ * @see     musicbrainz.php
+ * @see     http://drupal.org/project/querypath
  */
- 
+
 require '../src/QueryPath/QueryPath.php';
 
 // We are using the dbpedia database to execute a SPARQL query.
@@ -41,42 +41,42 @@ $sparql = '
 ';
 
 // We first set up the parameters that will be sent.
-$params = array(
-  'query' => $sparql,
-  'format' => 'application/sparql-results+xml',
-);
+$params = [
+	'query'  => $sparql,
+	'format' => 'application/sparql-results+xml',
+];
 
 // DB Pedia wants a GET query, so we create one.
 $data = http_build_query($params);
-$url .= '?' . $data;
+$url  .= '?' . $data;
 
 // Next, we simply retrieve, parse, and output the contents.
 $qp = qp($url, 'head');
 
 // Get the headers from the resulting XML.
-$headers = array();
+$headers = [];
 foreach ($qp->children('variable') as $col) {
-  $headers[] = $col->attr('name');
+	$headers[] = $col->attr('name');
 }
 
 // Get rows of data from result.
-$rows = array();
+$rows      = [];
 $col_count = count($headers);
 foreach ($qp->top()->find('results>result') as $row) {
-  $cols = array();
-  $row->children();
-  for ($i = 0; $i < $col_count; ++$i) {
-    $cols[$i] = $row->branch()->eq($i)->text();
-  }
-  $rows[] = $cols;
+	$cols = [];
+	$row->children();
+	for ($i = 0; $i < $col_count; ++$i) {
+		$cols[$i] = $row->branch()->eq($i)->text();
+	}
+	$rows[] = $cols;
 }
 
 // Turn data into table.
 $table = '<table><tr><th>' . implode('</th><th>', $headers) . '</th></tr>';
 foreach ($rows as $row) {
-  $table .= '<tr><td>';
-  $table .= implode('</td><td>', $row);
-  $table .= '</td></tr>';
+	$table .= '<tr><td>';
+	$table .= implode('</td><td>', $row);
+	$table .= '</td></tr>';
 }
 $table .= '</table>';
 

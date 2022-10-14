@@ -6,7 +6,6 @@ use QueryPath\QueryPath;
 use QueryPath\Extension\QPXML;
 use QueryPathTests\TestCase;
 
-
 /**
  * @ingroup querypath_tests
  * @group   extension
@@ -14,32 +13,32 @@ use QueryPathTests\TestCase;
 class QPXMLTest extends TestCase
 {
 
-    protected $file = './tests/advanced.xml';
+	protected $file = './tests/advanced.xml';
 
-    public static function set_up_before_class()
-    {
-        QueryPath::enable(QPXML::class);
-    }
+	public static function set_up_before_class()
+	{
+		QueryPath::enable(QPXML::class);
+	}
 
-    public function testCDATA()
-    {
-        $this->assertEquals('This is a CDATA section.', qp($this->file, 'first')->cdata());
+	public function testCDATA()
+	{
+		$this->assertEquals('This is a CDATA section.', qp($this->file, 'first')->cdata());
 
-        $msg = 'Another CDATA Section';
-        $this->assertEquals($msg, qp($this->file, 'second')->cdata($msg)->top()->find('second')->cdata());
-    }
+		$msg = 'Another CDATA Section';
+		$this->assertEquals($msg, qp($this->file, 'second')->cdata($msg)->top()->find('second')->cdata());
+	}
 
-    public function testComment()
-    {
-        $this->assertEquals('This is a comment.', trim(qp($this->file, 'root')->comment()));
-        $msg = "Message";
-        $this->assertEquals($msg, qp($this->file, 'second')->comment($msg)->top()->find('second')->comment());
-    }
+	public function testComment()
+	{
+		$this->assertEquals('This is a comment.', trim(qp($this->file, 'root')->comment()));
+		$msg = "Message";
+		$this->assertEquals($msg, qp($this->file, 'second')->comment($msg)->top()->find('second')->comment());
+	}
 
-    public function testProcessingInstruction()
-    {
-        $this->assertEquals('This is a processing instruction.', trim(qp($this->file, 'third')->pi()));
-        $msg = "Message";
-        $this->assertEquals($msg, qp($this->file, 'second')->pi('qp', $msg)->top()->find('second')->pi());
-    }
+	public function testProcessingInstruction()
+	{
+		$this->assertEquals('This is a processing instruction.', trim(qp($this->file, 'third')->pi()));
+		$msg = "Message";
+		$this->assertEquals($msg, qp($this->file, 'second')->pi('qp', $msg)->top()->find('second')->pi());
+	}
 }

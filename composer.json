@@ -27,6 +27,18 @@
     },
     "require-dev": {
         "mockery/mockery": "^1.1",
-        "yoast/phpunit-polyfills": "^1.0"
+        "yoast/phpunit-polyfills": "^1.0",
+        "dealerdirect/phpcodesniffer-composer-installer": "^0.7.0",
+        "phpcompatibility/php-compatibility": "*"
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    },
+    "scripts": {
+        "lint": "@php ./vendor/squizlabs/php_codesniffer/bin/phpcs",
+        "lint:fix": "@php ./vendor/squizlabs/php_codesniffer/bin/phpcbf",
+        "lint:min-php": "@lint --standard=phpcompat.xml"
     }
 }
