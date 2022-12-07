@@ -1,7 +1,7 @@
 QueryPath Changelog
 ===========================
 
-# 3.1.0
+# 3.2.0
 
 - Fixes a number of type-related errors on PHP 8.1
 - Update PHPUnit Test Suite to pass from PHP7.1 to 8.1
@@ -10,6 +10,36 @@ QueryPath Changelog
 - Removed the Faker dependency (it didn't appear to be used in the codebase and has been sunset).
 - Apply PSR-2 Linter to Codebase, using tabs instead of spaces
 - Rename QueryPath fork and prepare for publishing on Packagist
+
+# 3.1.4
+
+- Added return types to getIterator() and count() for compatibility with PHP 8.1
+
+# 3.1.3
+
+- Add DOMQuery traits - dividing mutators, filters, checks
+
+# 3.1.2
+
+- Add format extension + test coverage + readme
+
+# 3.1.1
+
+- Fix juggling equations, return types in Utils
+
+# 3.1.0
+
+Transform library for PHP>=7.1 support + essential bug-fixes
+
+- Add strict types passed for parameters
+- Add return types scalar/boxed
+- Refactor code to OOP (DRY/KISS/SOLID/YAGNI) style - minor to be continued...
+- Remove redundant code
+- Remove redundant ops
+- Fix bugs with equations
+- Fix juggling equations
+- Fix priority ops in flow structs
+- Remove unused vars from stack
 
 # 3.0.4
 - Addition of namespace fetching method ns().
