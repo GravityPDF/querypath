@@ -152,7 +152,7 @@ use QueryPath\QueryPath;
  * @return \QueryPath\DOMQuery
  *  Or possibly another QueryPath-like object if you overrode QueryPath_class.
  */
-function qp($document = NULL, $string = NULL, array $options = [])
+function qp($document = NULL, $string = '', array $options = [])
 {
     return QueryPath::with($document, $string, $options);
 }
@@ -181,11 +181,11 @@ function qp($document = NULL, $string = NULL, array $options = [])
  * @ingroup querypath_core
  * @see     qp()
  * @param null $document
- * @param null $selector
+ * @param string $selector
  * @param array $options
  * @return mixed|\QueryPath\DOMQuery
  */
-function htmlqp($document = NULL, $selector = NULL, $options = [])
+function htmlqp($document = NULL, $selector = '', $options = [])
 {
 
     return QueryPath::withHTML($document, $selector, $options);

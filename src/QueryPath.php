@@ -184,14 +184,14 @@ class QueryPath
      * @param array $options
      * @return mixed|\QueryPath\DOMQuery
      */
-    public static function with($document = NULL, $selector = NULL, array $options = [])
+    public static function with($document = NULL, $selector = '', array $options = [])
     {
         $qpClass = $options['QueryPath_class'] ?? '\QueryPath\DOMQuery';
 
         return new $qpClass($document, $selector, $options);
     }
 
-    public static function withXML($source = NULL, $selector = NULL, array $options = [])
+    public static function withXML($source = NULL, $selector = '', array $options = [])
     {
         $options += [
             'use_parser' => 'xml',
@@ -200,7 +200,7 @@ class QueryPath
         return self::with($source, $selector, $options);
     }
 
-    public static function withHTML($source = NULL, $selector = NULL, array $options = [])
+    public static function withHTML($source = NULL, $selector = '', array $options = [])
     {
         // Need a way to force an HTML parse instead of an XML parse when the
         // doctype is XHTML, since many XHTML documents are not valid XML
@@ -248,7 +248,7 @@ class QueryPath
      *
      * @return QueryPath
      */
-    public static function withHTML5($source = NULL, $selector = NULL, $options = [])
+    public static function withHTML5($source = NULL, $selector = '', $options = [])
     {
         $qpClass = $options['QueryPath_class'] ?? '\QueryPath\DOMQuery';
 

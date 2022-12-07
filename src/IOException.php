@@ -15,9 +15,9 @@ namespace QueryPath;
 class IOException extends \QueryPath\ParseException
 {
 
-    public static function initializeFromError($code, $str, $file, $line, $cxt)
+    public static function initializeFromError($errno, $errstr, $errfile, $errline, $context = null)
     {
         $class = __CLASS__;
-        throw new $class($str, $code, $file, $line);
+        throw new $class($errno, (int) $errstr, $errfile, $errline);
     }
 }

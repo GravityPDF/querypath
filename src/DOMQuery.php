@@ -1229,8 +1229,13 @@ class DOMQuery extends DOM
      * @throws Exception
      *  In the event that a file cannot be written, an Exception will be thrown.
      */
-    public function writeXML($path = NULL, $options = NULL)
+    public function writeXML($path = NULL, $options = 0)
     {
+	    // Backwards compatibility fix for PHP8+
+		if (is_null($options)) {
+			$options = 0;
+		}
+
         if ($path === NULL) {
             print $this->document->saveXML(NULL, $options);
         } else {

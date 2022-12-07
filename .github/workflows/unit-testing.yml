@@ -1,0 +1,33 @@
+name: Unit Testing
+
+on: [ pull_request ]
+
+jobs:
+  phpunit:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-versions: [ '7.1', '7.2', '7.3', '7.4', '8.0', '8.1' ]
+    name: PHP ${{ matrix.php-versions }} PHPUnit Test
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-versions }}
+          tools: composer, cs2pr
+
+      - name: Log debug information
+        run: |
+          php --version
+          composer --version
+
+      - name: Install Composer dependencies
+        run: |
+          composer install --prefer-dist --no-suggest --no-progress --no-ansi --no-interaction
+          echo "${PWD}/vendor/bin" >> $GITHUB_PATH
+
+      - name: Run PHPUnit
+        run: vendor/bin/phpunit
