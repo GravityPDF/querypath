@@ -20,12 +20,13 @@ class InputStream
 	/**
 	 * Build a new CSS input stream from a string.
 	 *
-	 * @param string
-	 *  String to turn into an input stream.
+	 * @param string $string String to turn into an input stream.
+	 *
+	 * @internal PHP8.2 changed how str_split() processes empty strings, so the empty() check maintains the pre8.2 status quo
 	 */
 	public function __construct($string)
 	{
-		$this->stream = str_split($string);
+		$this->stream = !empty($string) ? str_split($string) : [''];
 	}
 
 	/**

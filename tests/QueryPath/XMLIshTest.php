@@ -12,7 +12,7 @@ use QueryPath\DOMQuery;
  *
  * @ingroup querypath_test
  */
-class XMLishTest extends TestCase
+class XMLIshTest extends TestCase
 {
 
 	public function testXMLishMock()

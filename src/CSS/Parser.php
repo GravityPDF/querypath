@@ -25,6 +25,11 @@ use QueryPath\Exception;
  */
 class Parser
 {
+	/**
+	 * @var string
+	 */
+	protected $originalString;
+
 	protected $scanner;
 	protected $buffer = '';
 	protected $handler;
