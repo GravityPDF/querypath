@@ -54,7 +54,7 @@
     },
     "replace": {
         "arthurkushman/query-path": "3.1.4",
-        "querypath/QueryPath": "3.0.5"
+        "querypath/querypath": "3.0.5"
     }
 
 }
