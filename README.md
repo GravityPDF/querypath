@@ -1,164 +1,119 @@
 # QueryPath: Find the better way
 
-[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/arthurkushman/querypath/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/arthurkushman/querypath/?branch=master)
-[![Build Status](https://scrutinizer-ci.com/g/arthurkushman/querypath/badges/build.png?b=master)](https://scrutinizer-ci.com/g/arthurkushman/querypath/build-status/master)
-[![Code Intelligence Status](https://scrutinizer-ci.com/g/arthurkushman/querypath/badges/code-intelligence.svg?b=master)](https://scrutinizer-ci.com/code-intelligence)
-[![codecov](https://codecov.io/gh/arthurkushman/querypath/branch/master/graph/badge.svg)](https://codecov.io/gh/arthurkushman/querypath)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+QueryPath is a jQuery-like library for working with XML and HTML(5) documents in PHP. It is stable software, [with the original library garnering 4M+ downloads](https://packagist.org/packages/querypath/querypath) since first published in 2009.
 
-## At A Glance
+**⚠️ This is a fork of a fork. The [original library](https://github.com/technosophos/querypath), and [subsequent fork](https://github.com/arthurkushman/querypath), are no longer being maintained. The aim of `gravitypdf/querypath` is to ensure the library remains compatible with the latest version of PHP, and bug free. 🧑‍💻There is still a lot of legacy code to clean up + modernize, and any assistance given is appreciated.** 
 
-QueryPath is a jQuery-like library for working with XML and HTML
-documents in PHP. It now contains support for HTML5 via the
-[HTML5-PHP project](https://github.com/Masterminds/html5-php).
+[![Latest Stable Version](https://poser.pugx.org/gravitypdf/querypath/v/stable)](https://packagist.org/packages/gravitypdf/querypath)
+[![Total Downloads](https://poser.pugx.org/gravitypdf/querypath/downloads)](https://packagist.org/packages/gravitypdf/querypath)
+[![License](https://poser.pugx.org/gravitypdf/querypath/license)](https://packagist.org/packages/gravitypdf/querypath)
 
-### Why this lib was forked and recoded
+> ⚠ If you are viewing this file on QueryPath GitHub repository homepage or on Packagist, please note that the default repository branch is `main` which can differ from the last stable release.
 
-- Legacy code (repo was left for > 3 years) didn't allow to support new features of PHP>=7.1
-- A lot of DeaDBeaF code like: unused params, unused local variables etc
-- A lot of needless flow structures 
-- DRY/KISS/SOLID rules were thrown away when it was developed
-- Minor bugs and fragile functionality 
-
-### Installation
+## Installation
 ``` 
-composer require arthurkushman/query-path 
+composer require gravitypdf/querypath 
 ```
 
-### Gettings Started
+## Basic Usage
 
-Assuming you have successfully installed QueryPath via Composer, you can
-parse documents like this:
+You can parse documents like this:
 
-```
-// HTML5 (new)
-$qp = html5qp("path/to/file.html");
+```php
+<?php
+// Assuming you installed from Composer:
+require 'vendor/autoload.php';
+
+// HTML5
+$qp = html5qp('path/to/file.html');
 
 // Legacy HTML via libxml
-$qp = htmlqp("path/to/file.html");
+$qp = htmlqp('path/to/file.html');
 
 // XML or XHTML
-$qp = qp("path/to/file.html");
+$qp = qp('path/to/file.html');
 
 // All of the above can take string markup instead of a file name:
-$qp = qp("<?xml version='1.0'?><hello><world/></hello>")
-
+$qp = qp('<?xml version='1.0'?><hello><world/></hello>')
 ```
 
-But the real power comes from chaining. Check out the example below.
-
-### Example Usage
-
-Say we have a document like this:
-```xml
-<?xml version="1.0"?>
-<table>
-  <tr id="row1">
-    <td>one</td><td>two</td><td>three</td>
-  </tr>
-  <tr id="row2">
-    <td>four</td><td>five</td><td>six</td>
-  </tr>
-</table>
-```
-
-And say that the above is stored in the variable `$xml`. Now
-we can use QueryPath like this:
+The real power of QueryPath comes from chaining methods together:
 
 ```php
-<?php
-// Add the attribute "foo=bar" to every "td" element.
-qp($xml, 'td')->attr('foo', 'bar');
+require 'vendor/autoload.php';
 
-// Print the contents of the third TD in the second row:
-echo qp($xml, '#row2>td:nth(3)')->text();
-
-// Append another row to the XML and then write the
-// result to standard output:
-qp($xml, 'tr:last')->after('<tr><td/><td/><td/></tr>')->writeXML();
-
-?>
+html5qp(\QueryPath\QueryPath::HTML5_STUB, 'title')
+  // Add some text to the title
+  ->text('Example of QueryPath.')
+  // Now look for the <body> element
+  ->top('body')
+  // Inside the body, add a title and paragraph.
+  ->append('<h1>This is a test page</h1><p>Test text</p>')
+  // Now we select the paragraph we just created inside the body
+  ->children('p')
+  // Add a 'class="some-class"' attribute to the paragraph
+  ->attr('class', 'some-class')
+  // And add a style attribute, too, setting the background color.
+  ->css('background-color', '#eee')
+  // Now go back to the paragraph again
+  ->parent()
+  // Before the paragraph and the title, add an empty table.
+  ->prepend('<table id="my-table"></table>')
+  // Now let's go to the table...
+  ->top('#my-table')
+  // Add a couple of empty rows
+  ->append('<tr></tr><tr></tr>')
+  // select the rows (both at once)
+  ->children()
+  // Add a CSS class to both rows
+  ->addClass('table-row')
+  // Now just get the first row (at position 0)
+  ->eq(0)
+  // Add a table header in the first row
+  ->append('<th>This is the header</th>')
+  // Now go to the next row
+  ->next()
+  // Add some data to this row
+  ->append('<td>This is the data</td>')
+  // Write it all out as HTML
+  ->writeHTML5();
 ```
 
-(This example is in `examples/at-a-glance.php`.)
-
-With over 60 functions and robust support for chaining, you can
-accomplish sophisticated XML and HTML processing using QueryPath.
-
-From there, the main functions you will want to use are `qp()`
-(alias of `QueryPath::with()`) and `htmlqp()` (alias of
-`QueryPath::withHTML()`). 
-
-## QueryPath Format Extension
-
-### format()
+You can also search for specific elements and loop over any matches:
 
 ```php
-\QueryPath\DOMQuery format(callable $callback [, mixed $args [, $... ]])
+$html = '
+<ul>
+    <li>Foo</li>
+    <li>Bar</li>
+    <li>FooBar</li>
+</ul>';
+
+$qp = html5qp($html);
+foreach ($qp->find('li') as $li) {
+    echo $li->text() .'<br>';
+}
 ```
 
-A quick example:
+See the [examples directory files](https://github.com/GravityPDF/querypath/tree/main/examples) for more usages of QueryPath.
 
-```php
-<?php
-QueryPath::enable(Format::class);
-$qp = qp('<?xml version="1.0"?><root><div>_apple_</div><div>_orange_</div></root>');
+## Online Manual
 
-$qp->find('div')
-        ->format('strtoupper')
-        ->format('trim', '_')
-        ->format(function ($text) {
-            return '*' . $text . '*';
-        });
+The legacy QueryPath manual has been automatically generated from inline DocBlocks using phpDocumentor, and can be found at [http://querypath.org](http://querypath.org/).
 
-$qp->writeXML();
-```
+> ⚠️ Note: The website querypath.org is not built or maintained by Gravity PDF, and we have no access to manage or change anything. [Help is wanted writing new documentation in the repo's Wiki](https://github.com/GravityPDF/querypath/wiki).
 
-OUTPUT:
+## General Troubleshooting
 
-```xml
-<?xml version="1.0"?>
-<root>
-  <div>*APPLE*</div>
-  <div>*ORANGE*</div>
-</root>
-```
+For general questions or troubleshooting please use [Discussions](https://github.com/gravitypdf/querypath/discussions).
 
+You can also use the [querypath tag](https://stackoverflow.com/questions/tagged/querypath) at Stack Overflow, as the StackOverflow user base is more likely to answer you in a timely manner.
 
-### formatAttr()
+## Contributing
 
-```php
-\QueryPath\DOMQuery formatAttr(string $name, callable $callback [, mixed $args [, $... ]])
-```
+Before submitting issues and pull requests please read [CONTRIBUTING.md](https://github.com/gravitypdf/querypath/blob/main/.github/CONTRIBUTING.md).
 
-A quick example:
+If opening a Pull Request ensure the linter and PHPUnit tests pass (and write a new test for the bug you are fixing):
 
-```php
-<?php
-QueryPath::enable(Format::class);
-$qp = qp('<?xml version="1.0"?><root>' .
-        '<item label="_apple_" total="12,345,678" />' .
-        '<item label="_orange_" total="987,654,321" />' .
-        '</root>');
-
-$qp->find('item')
-        ->formatAttr('label', 'trim', '_')
-        ->formatAttr('total', 'str_replace[2]', ',', '');
-
-$qp->find('item')->formatAttr('label', function ($value) {
-    return ucfirst(strtolower($value));
-});
-
-$qp->writeXML();
-```
-
-OUTPUT:
-
-```xml
-<?xml version="1.0"?>
-<root>
-  <item label="Apple" total="12345678"/>
-  <item label="Orange" total="987654321"/>
-</root>
-```
-
+* Lint: `composer run lint`
+* PHPUnit: `vendor/bin/phpunit`

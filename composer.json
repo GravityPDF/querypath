@@ -1,8 +1,8 @@
 {
-    "name": "arthurkushman/query-path",
+    "name": "gravitypdf/querypath",
     "type": "library",
     "description": "HTML/XML querying (CSS 4 or XPath) and processing (like jQuery)",
-    "homepage": "https://github.com/arthurkushman/querypath",
+    "homepage": "https://github.com/gravitypdf/querypath",
     "license": "MIT",
     "keywords": [
         "xml",
@@ -12,8 +12,19 @@
         "xslt",
         "php7"
     ],
+    "support": {
+        "issues": "https://github.com/gravitypdf/querypath/issues",
+        "source": "https://github.com/gravitypdf/querypath",
+        "forum": "https://github.com/gravitypdf/querypath/discussion"
+    },
+    "funding": [
+        {
+            "type": "paypal",
+            "url": "https://www.paypal.com/donate/?hosted_button_id=VRUVBVM6BZPKN"
+        }
+    ],
     "require": {
-        "php": ">=7.1",
+        "php": "^7.1 || ~8.0.0 || ~8.1.0",
         "masterminds/html5": "2.*"
     },
     "autoload": {
@@ -40,5 +51,10 @@
         "lint": "@php ./vendor/squizlabs/php_codesniffer/bin/phpcs",
         "lint:fix": "@php ./vendor/squizlabs/php_codesniffer/bin/phpcbf",
         "lint:min-php": "@lint --standard=phpcompat.xml"
+    },
+    "replace": {
+        "arthurkushman/query-path": "3.1.4",
+        "querypath/querypath": "3.0.5"
     }
+
 }
