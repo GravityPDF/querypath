@@ -43,153 +43,153 @@ namespace QueryPath\CSS;
  */
 interface EventHandler
 {
-    /** The is-exactly (=) operator. */
-    public const IS_EXACTLY = 0; // =
-    /** The contains-with-space operator (~=). */
-    public const CONTAINS_WITH_SPACE = 1; // ~=
-    /** The contains-with-hyphen operator (!=). */
-    public const CONTAINS_WITH_HYPHEN = 2; // |=
-    /** The contains-in-string operator (*=). */
-    public const CONTAINS_IN_STRING = 3; // *=
-    /** The begins-with operator (^=). */
-    public const BEGINS_WITH = 4; // ^=
-    /** The ends-with operator ($=). */
-    public const ENDS_WITH = 5; // $=
-    /** The any-element operator (*). */
-    public const ANY_ELEMENT = '*';
+	/** The is-exactly (=) operator. */
+	public const IS_EXACTLY = 0; // =
+	/** The contains-with-space operator (~=). */
+	public const CONTAINS_WITH_SPACE = 1; // ~=
+	/** The contains-with-hyphen operator (!=). */
+	public const CONTAINS_WITH_HYPHEN = 2; // |=
+	/** The contains-in-string operator (*=). */
+	public const CONTAINS_IN_STRING = 3; // *=
+	/** The begins-with operator (^=). */
+	public const BEGINS_WITH = 4; // ^=
+	/** The ends-with operator ($=). */
+	public const ENDS_WITH = 5; // $=
+	/** The any-element operator (*). */
+	public const ANY_ELEMENT = '*';
 
-    /**
-     * This event is fired when a CSS ID is encountered.
-     * An ID begins with an octothorp: #name.
-     *
-     * @param string $id
-     *  The ID passed in.
-     */
-    public function elementID($id); // #name
+	/**
+	 * This event is fired when a CSS ID is encountered.
+	 * An ID begins with an octothorp: #name.
+	 *
+	 * @param string $id
+	 *  The ID passed in.
+	 */
+	public function elementID($id); // #name
 
-    /**
-     * Handle an element name.
-     * Example: name
-     *
-     * @param string $name
-     *  The name of the element.
-     */
-    public function element($name); // name
+	/**
+	 * Handle an element name.
+	 * Example: name
+	 *
+	 * @param string $name
+	 *  The name of the element.
+	 */
+	public function element($name); // name
 
-    /**
-     * Handle a namespaced element name.
-     * example: namespace|name
-     *
-     * @param string $name
-     *  The tag name.
-     * @param string $namespace
-     *  The namespace identifier (Not the URI)
-     */
-    public function elementNS($name, $namespace = NULL);
+	/**
+	 * Handle a namespaced element name.
+	 * example: namespace|name
+	 *
+	 * @param string $name
+	 *  The tag name.
+	 * @param string $namespace
+	 *  The namespace identifier (Not the URI)
+	 */
+	public function elementNS($name, $namespace = null);
 
-    /**
-     * Handle an any-element (*) operator.
-     * Example: *
-     */
-    public function anyElement(); // *
+	/**
+	 * Handle an any-element (*) operator.
+	 * Example: *
+	 */
+	public function anyElement(); // *
 
-    /**
-     * Handle an any-element operator that is constrained to a namespace.
-     * Example: ns|*
-     *
-     * @param string $ns
-     *  The namespace identifier (not the URI).
-     */
-    public function anyElementInNS($ns); // ns|*
+	/**
+	 * Handle an any-element operator that is constrained to a namespace.
+	 * Example: ns|*
+	 *
+	 * @param string $ns
+	 *  The namespace identifier (not the URI).
+	 */
+	public function anyElementInNS($ns); // ns|*
 
-    /**
-     * Handle a CSS class selector.
-     * Example: .name
-     *
-     * @param string $name
-     *  The name of the class.
-     */
-    public function elementClass($name); // .name
+	/**
+	 * Handle a CSS class selector.
+	 * Example: .name
+	 *
+	 * @param string $name
+	 *  The name of the class.
+	 */
+	public function elementClass($name); // .name
 
-    /**
-     * Handle an attribute selector.
-     * Example: [name=attr]
-     * Example: [name~=attr]
-     *
-     * @param string $name
-     *  The attribute name.
-     * @param string $value
-     *  The value of the attribute, if given.
-     * @param int $operation
-     *  The operation to be used for matching. See {@link EventHandler}
-     *  constants for a list of supported operations.
-     */
-    public function attribute($name, $value = NULL, $operation = EventHandler::IS_EXACTLY); // [name=attr]
+	/**
+	 * Handle an attribute selector.
+	 * Example: [name=attr]
+	 * Example: [name~=attr]
+	 *
+	 * @param string $name
+	 *  The attribute name.
+	 * @param string $value
+	 *  The value of the attribute, if given.
+	 * @param int    $operation
+	 *  The operation to be used for matching. See {@link EventHandler}
+	 *  constants for a list of supported operations.
+	 */
+	public function attribute($name, $value = null, $operation = EventHandler::IS_EXACTLY); // [name=attr]
 
-    /**
-     * Handle an attribute selector bound to a specific namespace.
-     * Example: [ns|name=attr]
-     * Example: [ns|name~=attr]
-     *
-     * @param string $name
-     *  The attribute name.
-     * @param string $ns
-     *  The namespace identifier (not the URI).
-     * @param string $value
-     *  The value of the attribute, if given.
-     * @param int $operation
-     *  The operation to be used for matching. See {@link EventHandler}
-     *  constants for a list of supported operations.
-     */
-    public function attributeNS($name, $ns, $value = NULL, $operation = EventHandler::IS_EXACTLY);
+	/**
+	 * Handle an attribute selector bound to a specific namespace.
+	 * Example: [ns|name=attr]
+	 * Example: [ns|name~=attr]
+	 *
+	 * @param string $name
+	 *  The attribute name.
+	 * @param string $ns
+	 *  The namespace identifier (not the URI).
+	 * @param string $value
+	 *  The value of the attribute, if given.
+	 * @param int    $operation
+	 *  The operation to be used for matching. See {@link EventHandler}
+	 *  constants for a list of supported operations.
+	 */
+	public function attributeNS($name, $ns, $value = null, $operation = EventHandler::IS_EXACTLY);
 
-    /**
-     * Handle a pseudo-class.
-     * Example: :name(value)
-     *
-     * @param string $name
-     *  The pseudo-class name.
-     * @param string $value
-     *  The value, if one is found.
-     */
-    public function pseudoClass($name, $value = NULL); //:name(value)
+	/**
+	 * Handle a pseudo-class.
+	 * Example: :name(value)
+	 *
+	 * @param string $name
+	 *  The pseudo-class name.
+	 * @param string $value
+	 *  The value, if one is found.
+	 */
+	public function pseudoClass($name, $value = null); //:name(value)
 
-    /**
-     * Handle a pseudo-element.
-     * Example: ::name
-     *
-     * @param string $name
-     *  The pseudo-element name.
-     */
-    public function pseudoElement($name); // ::name
+	/**
+	 * Handle a pseudo-element.
+	 * Example: ::name
+	 *
+	 * @param string $name
+	 *  The pseudo-element name.
+	 */
+	public function pseudoElement($name); // ::name
 
-    /**
-     * Handle a direct descendant combinator.
-     * Example: >
-     */
-    public function directDescendant(); // >
+	/**
+	 * Handle a direct descendant combinator.
+	 * Example: >
+	 */
+	public function directDescendant(); // >
 
-    /**
-     * Handle a adjacent combinator.
-     * Example: +
-     */
-    public function adjacent(); // +
+	/**
+	 * Handle a adjacent combinator.
+	 * Example: +
+	 */
+	public function adjacent(); // +
 
-    /**
-     * Handle an another-selector combinator.
-     * Example: ,
-     */
-    public function anotherSelector(); // ,
+	/**
+	 * Handle an another-selector combinator.
+	 * Example: ,
+	 */
+	public function anotherSelector(); // ,
 
-    /**
-     * Handle a sibling combinator.
-     * Example: ~
-     */
-    public function sibling(); // ~ combinator
+	/**
+	 * Handle a sibling combinator.
+	 * Example: ~
+	 */
+	public function sibling(); // ~ combinator
 
-    /**
-     * Handle an any-descendant combinator.
-     * Example: ' '
-     */
-    public function anyDescendant(); // ' ' (space) operator.
+	/**
+	 * Handle an any-descendant combinator.
+	 * Example: ' '
+	 */
+	public function anyDescendant(); // ' ' (space) operator.
 }

@@ -12,12 +12,12 @@ namespace QueryPath;
  *
  * @ingroup querypath_core
  */
-class IOException extends \QueryPath\ParseException
+class IOException extends ParseException
 {
 
-    public static function initializeFromError($errno, $errstr, $errfile, $errline, $context = null)
-    {
-        $class = __CLASS__;
-        throw new $class($errno, (int) $errstr, $errfile, $errline);
-    }
+	public static function initializeFromError($errno, $errstr, $errfile, $errline, $context = null)
+	{
+		$class = __CLASS__;
+		throw new $class($errno, (int) $errstr, $errfile, $errline);
+	}
 }

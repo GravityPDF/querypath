@@ -2,63 +2,61 @@
 
 namespace QueryPathTests;
 
+use QueryPath\Extension;
+use QueryPath\Query;
 use QueryPath\QueryPath;
 
 class QueryPathTest extends TestCase
 {
 
-    public function testWith()
-    {
-        $qp = QueryPath::with(QueryPath::XHTML_STUB);
+	public function testWith()
+	{
+		$qp = QueryPath::with(QueryPath::XHTML_STUB);
 
-        $this->assertInstanceOf('\QueryPath\DOMQuery', $qp);
+		$this->assertInstanceOf('\QueryPath\DOMQuery', $qp);
+	}
 
-    }
+	public function testWithHTML()
+	{
+		$qp = QueryPath::with(QueryPath::HTML_STUB);
 
-    public function testWithHTML()
-    {
-        $qp = QueryPath::with(QueryPath::HTML_STUB);
+		$this->assertInstanceOf('\QueryPath\DOMQuery', $qp);
+	}
 
-        $this->assertInstanceOf('\QueryPath\DOMQuery', $qp);
-    }
+	public function testWithHTML5()
+	{
+		$qp = QueryPath::withHTML5(QueryPath::HTML5_STUB);
 
-    public function testWithHTML5()
-    {
-        $qp = QueryPath::withHTML5(QueryPath::HTML5_STUB);
+		$this->assertInstanceOf('\QueryPath\DOMQuery', $qp);
+	}
 
-        $this->assertInstanceOf('\QueryPath\DOMQuery', $qp);
-    }
+	public function testWithXML()
+	{
+		$qp = QueryPath::with(QueryPath::XHTML_STUB);
 
-    public function testWithXML()
-    {
-        $qp = QueryPath::with(QueryPath::XHTML_STUB);
+		$this->assertInstanceOf('\QueryPath\DOMQuery', $qp);
+	}
 
-        $this->assertInstanceOf('\QueryPath\DOMQuery', $qp);
-    }
+	public function testEnable()
+	{
+		QueryPath::enable(DummyExtension::class);
 
-    public function testEnable()
-    {
-        QueryPath::enable(DummyExtension::class);
+		$qp = QueryPath::with(QueryPath::XHTML_STUB);
 
-        $qp = QueryPath::with(QueryPath::XHTML_STUB);
-
-        $this->assertTrue($qp->grrrrrrr());
-
-    }
-
+		$this->assertTrue($qp->grrrrrrr());
+	}
 }
 
-class DummyExtension implements \QueryPath\Extension
+class DummyExtension implements Extension
 {
 
-    public function __construct(\QueryPath\Query $qp)
-    {
-        $this->qp = $qp;
-    }
+	public function __construct(Query $qp)
+	{
+		$this->qp = $qp;
+	}
 
-    public function grrrrrrr()
-    {
-        return true;
-    }
-
+	public function grrrrrrr()
+	{
+		return true;
+	}
 }

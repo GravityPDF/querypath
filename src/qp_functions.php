@@ -17,6 +17,7 @@
  * @endcode
  */
 
+use QueryPath\DOMQuery;
 use QueryPath\QueryPath;
 
 /** @addtogroup querypath_core Core API
@@ -143,18 +144,20 @@ use QueryPath\QueryPath;
  *    cases for an example.
  *
  * @ingroup querypath_core
- * @param mixed $document
+ *
+ * @param mixed  $document
  *  A document in one of the forms listed above.
  * @param string $string
  *  A CSS 3 selector.
- * @param array $options
+ * @param array  $options
  *  An associative array of options. Currently supported options are listed above.
- * @return \QueryPath\DOMQuery
+ *
+ * @return DOMQuery
  *  Or possibly another QueryPath-like object if you overrode QueryPath_class.
  */
-function qp($document = NULL, $string = '', array $options = [])
+function qp($document = null, $string = '', array $options = [])
 {
-    return QueryPath::with($document, $string, $options);
+	return QueryPath::with($document, $string, $options);
 }
 
 /**
@@ -179,16 +182,18 @@ function qp($document = NULL, $string = '', array $options = [])
  * is installed and enabled. This is usually enabled, but not always.
  *
  * @ingroup querypath_core
- * @see     qp()
- * @param null $document
+ *
+ * @param null   $document
  * @param string $selector
- * @param array $options
- * @return mixed|\QueryPath\DOMQuery
+ * @param array  $options
+ *
+ * @return mixed|DOMQuery
+ * @see     qp()
  */
-function htmlqp($document = NULL, $selector = '', $options = [])
+function htmlqp($document = null, $selector = '', $options = [])
 {
 
-    return QueryPath::withHTML($document, $selector, $options);
+	return QueryPath::withHTML($document, $selector, $options);
 }
 
 /**
@@ -204,18 +209,18 @@ function htmlqp($document = NULL, $selector = '', $options = [])
  * - QueryPath_class
  *
  *
- * @param null $document
+ * @param null   $document
  * @param string $selector
  *   A CSS3 selector.
  *
- * @param array $options
+ * @param array  $options
  *   An associative array of options, which is passed on into HTML5-PHP. Note
  *   that the standard QueryPath options may be ignored for this function,
  *   since it uses a different parser.
  *
  * @return QueryPath
  */
-function html5qp($document = NULL, $selector = NULL, array $options = [])
+function html5qp($document = null, $selector = null, array $options = [])
 {
-    return QueryPath::withHTML5($document, $selector, $options);
+	return QueryPath::withHTML5($document, $selector, $options);
 }

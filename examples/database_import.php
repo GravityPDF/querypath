@@ -2,8 +2,8 @@
 /**
  * Use QueryPath's database extension to import XML data into a database.
  *
- * 
- * @author M Butcher <matt@aleph-null.tv>
+ *
+ * @author  M Butcher <matt@aleph-null.tv>
  * @license LGPL The GNU Lesser GPL (LGPL) or an MIT-like license.
  */
 
@@ -38,7 +38,7 @@ $article = '<?xml version="1.0"?>
 $qp = qp($article);
 
 // We are going to store our insert params in here.
-$params = array();
+$params = [];
 
 // First, let's get the title
 $params[':title'] = $qp->find('title')->text();

@@ -11,11 +11,12 @@
  * If you are trying to load an extension you have downloaded, chances are good that
  * all you need to do is {@link require_once} the file that contains the extension.
  *
- * @author M Butcher <matt@aleph-null.tv>
+ * @author  M Butcher <matt@aleph-null.tv>
  * @license MIT
- * @see Extension
- * @see ExtensionRegistry::extend()
+ * @see     Extension
+ * @see     ExtensionRegistry::extend()
  */
+
 namespace QueryPath;
 
 /** @addtogroup querypath_extensions Extensions
@@ -34,6 +35,7 @@ namespace QueryPath;
  * Query object as a parameter.
  *
  * Here is an example QueryPath extension:
+ *
  * @code
  * <?php
  * class StubExtensionOne implements \QueryPath\Extension {
@@ -89,6 +91,7 @@ namespace QueryPath;
  *
  * @ingroup querypath_extensions
  */
-interface Extension {
-  public function __construct(\QueryPath\Query $qp);
+interface Extension
+{
+	public function __construct(Query $qp);
 }

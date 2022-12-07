@@ -5,6 +5,11 @@
 
 namespace QueryPath\CSS;
 
+use ArrayIterator;
+use Countable;
+use IteratorAggregate;
+use Traversable;
+
 /**
  * A CSS Selector.
  *
@@ -46,136 +51,136 @@ namespace QueryPath\CSS;
  *
  * @since QueryPath 3.0.0
  */
-class Selector implements EventHandler, \IteratorAggregate, \Countable
+class Selector implements EventHandler, IteratorAggregate, Countable
 {
 
-    protected $selectors = [];
-    protected $currSelector;
-    protected $selectorGroups = [];
-    protected $groupIndex = 0;
+	protected $selectors = [];
+	protected $currSelector;
+	protected $selectorGroups = [];
+	protected $groupIndex = 0;
 
-    public function __construct()
-    {
-        $this->currSelector = new SimpleSelector();
+	public function __construct()
+	{
+		$this->currSelector = new SimpleSelector();
 
-        $this->selectors[$this->groupIndex][] = $this->currSelector;
-    }
+		$this->selectors[$this->groupIndex][] = $this->currSelector;
+	}
 
-    public function getIterator(): \Traversable
-    {
-        return new \ArrayIterator($this->selectors);
-    }
+	public function getIterator(): Traversable
+	{
+		return new ArrayIterator($this->selectors);
+	}
 
-    /**
-     * Get the array of SimpleSelector objects.
-     *
-     * Normally, one iterates over a Selector. However, if it is
-     * necessary to get the selector array and manipulate it, this
-     * method can be used.
-     */
-    public function toArray()
-    {
-        return $this->selectors;
-    }
+	/**
+	 * Get the array of SimpleSelector objects.
+	 *
+	 * Normally, one iterates over a Selector. However, if it is
+	 * necessary to get the selector array and manipulate it, this
+	 * method can be used.
+	 */
+	public function toArray()
+	{
+		return $this->selectors;
+	}
 
-    public function count(): int
-    {
-        return count($this->selectors);
-    }
+	public function count(): int
+	{
+		return count($this->selectors);
+	}
 
-    public function elementID($id)
-    {
-        $this->currSelector->id = $id;
-    }
+	public function elementID($id)
+	{
+		$this->currSelector->id = $id;
+	}
 
-    public function element($name)
-    {
-        $this->currSelector->element = $name;
-    }
+	public function element($name)
+	{
+		$this->currSelector->element = $name;
+	}
 
-    public function elementNS($name, $namespace = NULL)
-    {
-        $this->currSelector->ns = $namespace;
-        $this->currSelector->element = $name;
-    }
+	public function elementNS($name, $namespace = null)
+	{
+		$this->currSelector->ns      = $namespace;
+		$this->currSelector->element = $name;
+	}
 
-    public function anyElement()
-    {
-        $this->currSelector->element = '*';
-    }
+	public function anyElement()
+	{
+		$this->currSelector->element = '*';
+	}
 
-    public function anyElementInNS($ns)
-    {
-        $this->currSelector->ns = $ns;
-        $this->currSelector->element = '*';
-    }
+	public function anyElementInNS($ns)
+	{
+		$this->currSelector->ns      = $ns;
+		$this->currSelector->element = '*';
+	}
 
-    public function elementClass($name)
-    {
-        $this->currSelector->classes[] = $name;
-    }
+	public function elementClass($name)
+	{
+		$this->currSelector->classes[] = $name;
+	}
 
-    public function attribute($name, $value = NULL, $operation = EventHandler::IS_EXACTLY)
-    {
-        $this->currSelector->attributes[] = [
-            'name'  => $name,
-            'value' => $value,
-            'op'    => $operation,
-        ];
-    }
+	public function attribute($name, $value = null, $operation = EventHandler::IS_EXACTLY)
+	{
+		$this->currSelector->attributes[] = [
+			'name'  => $name,
+			'value' => $value,
+			'op'    => $operation,
+		];
+	}
 
-    public function attributeNS($name, $ns, $value = NULL, $operation = EventHandler::IS_EXACTLY)
-    {
-        $this->currSelector->attributes[] = [
-            'name'  => $name,
-            'value' => $value,
-            'op'    => $operation,
-            'ns'    => $ns,
-        ];
-    }
+	public function attributeNS($name, $ns, $value = null, $operation = EventHandler::IS_EXACTLY)
+	{
+		$this->currSelector->attributes[] = [
+			'name'  => $name,
+			'value' => $value,
+			'op'    => $operation,
+			'ns'    => $ns,
+		];
+	}
 
-    public function pseudoClass($name, $value = NULL)
-    {
-        $this->currSelector->pseudoClasses[] = ['name' => $name, 'value' => $value];
-    }
+	public function pseudoClass($name, $value = null)
+	{
+		$this->currSelector->pseudoClasses[] = ['name' => $name, 'value' => $value];
+	}
 
-    public function pseudoElement($name)
-    {
-        $this->currSelector->pseudoElements[] = $name;
-    }
+	public function pseudoElement($name)
+	{
+		$this->currSelector->pseudoElements[] = $name;
+	}
 
-    public function combinator($combinatorName)
-    {
-        $this->currSelector->combinator = $combinatorName;
-        $this->currSelector = new SimpleSelector();
-        array_unshift($this->selectors[$this->groupIndex], $this->currSelector);
-        //$this->selectors[]= $this->currSelector;
-    }
+	public function combinator($combinatorName)
+	{
+		$this->currSelector->combinator = $combinatorName;
+		$this->currSelector             = new SimpleSelector();
+		array_unshift($this->selectors[$this->groupIndex], $this->currSelector);
+		//$this->selectors[]= $this->currSelector;
+	}
 
-    public function directDescendant()
-    {
-        $this->combinator(SimpleSelector::DIRECT_DESCENDANT);
-    }
+	public function directDescendant()
+	{
+		$this->combinator(SimpleSelector::DIRECT_DESCENDANT);
+	}
 
-    public function adjacent()
-    {
-        $this->combinator(SimpleSelector::ADJACENT);
-    }
+	public function adjacent()
+	{
+		$this->combinator(SimpleSelector::ADJACENT);
+	}
 
-    public function anotherSelector()
-    {
-        $this->groupIndex++;
-        $this->currSelector = new SimpleSelector();
-        $this->selectors[$this->groupIndex] = [$this->currSelector];
-    }
+	public function anotherSelector()
+	{
+		$this->groupIndex++;
+		$this->currSelector                 = new SimpleSelector();
+		$this->selectors[$this->groupIndex] = [$this->currSelector];
+	}
 
-    public function sibling()
-    {
-        $this->combinator(SimpleSelector::SIBLING);
-    }
+	public function sibling()
+	{
+		$this->combinator(SimpleSelector::SIBLING);
+	}
 
-    public function anyDescendant()
-    {
-        $this->combinator(SimpleSelector::ANY_DESCENDANT);
-    }
+	public function anyDescendant()
+	{
+		$this->combinator(SimpleSelector::ANY_DESCENDANT);
+	}
 }
