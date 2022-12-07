@@ -1,60 +1,58 @@
 {
-    "name": "gravitypdf/querypath",
-    "type": "library",
-    "description": "HTML/XML querying (CSS 4 or XPath) and processing (like jQuery)",
-    "homepage": "https://github.com/gravitypdf/querypath",
-    "license": "MIT",
-    "keywords": [
-        "xml",
-        "html",
-        "css",
-        "jquery",
-        "xslt",
-        "php7"
-    ],
-    "support": {
-        "issues": "https://github.com/gravitypdf/querypath/issues",
-        "source": "https://github.com/gravitypdf/querypath",
-        "forum": "https://github.com/gravitypdf/querypath/discussion"
-    },
-    "funding": [
-        {
-            "type": "paypal",
-            "url": "https://www.paypal.com/donate/?hosted_button_id=VRUVBVM6BZPKN"
-        }
-    ],
-    "require": {
-        "php": "^7.1 || ~8.0.0 || ~8.1.0",
-        "masterminds/html5": "2.*"
-    },
-    "autoload": {
-        "psr-4": {
-            "QueryPath\\": "src/",
-            "QueryPathTests\\": "tests/QueryPath/"
-        },
-        "files": [
-            "src/qp_functions.php"
-        ]
-    },
-    "require-dev": {
-        "mockery/mockery": "^1.1",
-        "yoast/phpunit-polyfills": "^1.0",
-        "dealerdirect/phpcodesniffer-composer-installer": "^0.7.0",
-        "phpcompatibility/php-compatibility": "*"
-    },
-    "config": {
-        "allow-plugins": {
-            "dealerdirect/phpcodesniffer-composer-installer": true
-        }
-    },
-    "scripts": {
-        "lint": "@php ./vendor/squizlabs/php_codesniffer/bin/phpcs",
-        "lint:fix": "@php ./vendor/squizlabs/php_codesniffer/bin/phpcbf",
-        "lint:min-php": "@lint --standard=phpcompat.xml"
-    },
-    "replace": {
-        "arthurkushman/query-path": "3.1.4",
-        "querypath/querypath": "3.0.5"
+  "name": "gravitypdf/querypath",
+  "type": "library",
+  "description": "PHP library for HTML(5)/XML querying (CSS 4 or XPath) and processing (like jQuery)",
+  "homepage": "https://github.com/gravitypdf/querypath",
+  "license": "MIT",
+  "keywords": [
+    "xml",
+    "html",
+    "css",
+    "jquery",
+    "php"
+  ],
+  "support": {
+    "issues": "https://github.com/gravitypdf/querypath/issues",
+    "source": "https://github.com/gravitypdf/querypath",
+    "forum": "https://github.com/gravitypdf/querypath/discussion"
+  },
+  "funding": [
+    {
+      "type": "paypal",
+      "url": "https://www.paypal.com/donate/?hosted_button_id=VRUVBVM6BZPKN"
     }
-
+  ],
+  "require": {
+    "php": "^7.1 || ~8.0.0 || ~8.1.0",
+    "masterminds/html5": "^2.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "QueryPath\\": "src/",
+      "QueryPathTests\\": "tests/QueryPath/"
+    },
+    "files": [
+      "src/qp_functions.php"
+    ]
+  },
+  "require-dev": {
+    "mockery/mockery": "^1.1",
+    "yoast/phpunit-polyfills": "^1.0",
+    "dealerdirect/phpcodesniffer-composer-installer": "^0.7.0",
+    "phpcompatibility/php-compatibility": "*"
+  },
+  "config": {
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true
+    }
+  },
+  "scripts": {
+    "lint": "@php ./vendor/squizlabs/php_codesniffer/bin/phpcs",
+    "lint:fix": "@php ./vendor/squizlabs/php_codesniffer/bin/phpcbf",
+    "lint:min-php": "@lint --standard=phpcompat.xml"
+  },
+  "replace": {
+    "arthurkushman/query-path": "3.1.4",
+    "querypath/querypath": "3.0.5"
+  }
 }
