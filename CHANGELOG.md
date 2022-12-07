@@ -2,6 +2,13 @@ QueryPath Changelog
 ===========================
 
 # 3.1.0
+
+- Fixes a number of type-related errors on PHP 8.1
+- Update PHPUnit Test Suite to pass from PHP7.1 to 8.1
+- Add GitHub Actions to run PHPUnit for all PRs
+- Removes composer.lock file to ensure the correct PHPUnit is installed in GitHub Actions. Since this is a library this is generally the accepted practice.
+- Removed the Faker dependency (it didn't appear to be used in the codebase and has been sunset).
+- Apply PSR-2 Linter to Codebase, using tabs instead of spaces
 - Rename QueryPath fork and prepare for publishing on Packagist
 
 # 3.0.4
