@@ -11,23 +11,21 @@ jobs:
     name: PHP ${{ matrix.php-versions }} PHPUnit Test
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-versions }}
-          tools: composer, cs2pr
+          ini-values: error_reporting=E_ALL
+
+      - name: Install Composer Dependencies
+        uses: "ramsey/composer-install@v2"
 
       - name: Log debug information
         run: |
           php --version
           composer --version
 
-      - name: Install Composer dependencies
-        run: |
-          composer install --prefer-dist --no-suggest --no-progress --no-ansi --no-interaction
-          echo "${PWD}/vendor/bin" >> $GITHUB_PATH
-
       - name: Run PHPUnit
-        run: vendor/bin/phpunit
+        run: ./vendor/bin/phpunit
