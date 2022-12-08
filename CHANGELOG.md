@@ -1,6 +1,9 @@
 QueryPath Changelog
 ===========================
 
+# 3.2.1
+- Fix QueryPath\QueryPathIterator::current() deprecation notice in PHP8.1
+
 # 3.2.0
 
 - Fixes a number of type-related errors on PHP 8.1
