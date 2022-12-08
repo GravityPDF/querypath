@@ -26,6 +26,7 @@ class QueryPathIterator extends IteratorIterator
 	public $options = [];
 	private $qp;
 
+	#[\ReturnTypeWillChange]
 	public function current()
 	{
 		if (! isset($this->qp)) {
