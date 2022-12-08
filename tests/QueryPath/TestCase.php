@@ -7,8 +7,6 @@
 
 namespace QueryPathTests;
 
-require_once __DIR__ . '/../../vendor/autoload.php';
-
 class TestCase extends \Yoast\PHPUnitPolyfills\TestCases\TestCase
 {
 	public const DATA_FILE_XML = 'tests/data.xml';

@@ -1,9 +1,19 @@
-<phpunit bootstrap="./tests/_bootstrap.php" colors="true">
+<phpunit
+        bootstrap="./tests/_bootstrap.php"
+        colors="true"
+        beStrictAboutTestsThatDoNotTestAnything="true"
+        beStrictAboutOutputDuringTests="true"
+        convertErrorsToExceptions="true"
+        convertWarningsToExceptions="true"
+        convertNoticesToExceptions="true"
+        verbose="true"
+>
     <testsuites>
-        <testsuite name="Words">
-            <directory suffix="Test.php" phpVersion="7.1" phpVersionOperator=">=">./tests/</directory>
+        <testsuite name="unit">
+            <directory>./tests/</directory>
         </testsuite>
     </testsuites>
+
     <filter>
         <whitelist addUncoveredFilesFromWhitelist="true">
             <directory>./src/</directory>
