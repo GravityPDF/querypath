@@ -10,6 +10,7 @@ namespace QueryPath;
 use IteratorIterator;
 use QueryPath\QueryPath;
 use SplObjectStorage;
+use Traversable;
 
 /**
  * An iterator for QueryPath.
@@ -26,7 +27,7 @@ class QueryPathIterator extends IteratorIterator
 	public $options = [];
 	private $qp;
 
-	public function current()
+	public function current(): Traversable
 	{
 		if (! isset($this->qp)) {
 			$this->qp = QueryPath::with(parent::current(), null, $this->options);
