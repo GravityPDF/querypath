@@ -147,12 +147,12 @@ use QueryPath\QueryPath;
  *
  * @param mixed  $document
  *  A document in one of the forms listed above.
- * @param string $string
+ * @param string|null $string
  *  A CSS 3 selector.
  * @param array  $options
  *  An associative array of options. Currently supported options are listed above.
  *
- * @return DOMQuery
+ * @return mixed|DOMQuery
  *  Or possibly another QueryPath-like object if you overrode QueryPath_class.
  */
 function qp($document = null, $string = '', array $options = [])
@@ -183,16 +183,15 @@ function qp($document = null, $string = '', array $options = [])
  *
  * @ingroup querypath_core
  *
- * @param null   $document
- * @param string $selector
- * @param array  $options
+ * @param mixed $document
+ * @param string|null $selector
+ * @param array $options
  *
  * @return mixed|DOMQuery
  * @see     qp()
  */
-function htmlqp($document = null, $selector = '', $options = [])
+function htmlqp($document = null, $selector = '', array $options = [])
 {
-
 	return QueryPath::withHTML($document, $selector, $options);
 }
 
@@ -209,8 +208,8 @@ function htmlqp($document = null, $selector = '', $options = [])
  * - QueryPath_class
  *
  *
- * @param null   $document
- * @param string $selector
+ * @param mixed $document
+ * @param string|null $selector
  *   A CSS3 selector.
  *
  * @param array  $options
@@ -218,9 +217,9 @@ function htmlqp($document = null, $selector = '', $options = [])
  *   that the standard QueryPath options may be ignored for this function,
  *   since it uses a different parser.
  *
- * @return QueryPath
+ * @return mixed|DOMQuery
  */
-function html5qp($document = null, $selector = null, array $options = [])
+function html5qp($document = null, $selector = '', array $options = [])
 {
 	return QueryPath::withHTML5($document, $selector, $options);
 }

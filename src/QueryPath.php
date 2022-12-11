@@ -180,11 +180,14 @@ class QueryPath
 
 
 	/**
-	 * @param null  $document
-	 * @param null  $selector
+	 * @param mixed $document
+	 * @param string|null $selector
 	 * @param array $options
 	 *
 	 * @return mixed|DOMQuery
+	 *
+	 * @see qp()
+	 * @see htmlqp()
 	 */
 	public static function with($document = null, $selector = '', array $options = [])
 	{
@@ -193,6 +196,15 @@ class QueryPath
 		return new $qpClass($document, $selector, $options);
 	}
 
+	/**
+	 * @param mixed $source
+	 * @param string|null $selector
+	 * @param array $options
+	 *
+	 * @return mixed|DOMQuery
+	 *
+	 * @see qp()
+	 */
 	public static function withXML($source = null, $selector = '', array $options = [])
 	{
 		$options += [
@@ -202,6 +214,15 @@ class QueryPath
 		return self::with($source, $selector, $options);
 	}
 
+	/**
+	 * @param mixed $source
+	 * @param string|null $selector
+	 * @param array $options
+	 *
+	 * @return mixed|DOMQuery
+	 *
+	 * @see htmlqp()
+	 */
 	public static function withHTML($source = null, $selector = '', array $options = [])
 	{
 		// Need a way to force an HTML parse instead of an XML parse when the
@@ -240,7 +261,7 @@ class QueryPath
 	 *   of DOMNodes will be passed through as well. However, these types are not
 	 *   validated in any way.
 	 *
-	 * @param string $selector
+	 * @param string|null $selector
 	 *   A CSS3 selector.
 	 *
 	 * @param array  $options
@@ -248,9 +269,11 @@ class QueryPath
 	 *   that the standard QueryPath options may be ignored for this function,
 	 *   since it uses a different parser.
 	 *
-	 * @return QueryPath
+	 * @return mixed|DOMQuery
+	 *
+	 * @see html5qp()
 	 */
-	public static function withHTML5($source = null, $selector = '', $options = [])
+	public static function withHTML5($source = null, $selector = '', array $options = [])
 	{
 		$qpClass = $options['QueryPath_class'] ?? '\QueryPath\DOMQuery';
 
@@ -263,9 +286,7 @@ class QueryPath
 			}
 		}
 
-		$qp = new $qpClass($source, $selector, $options);
-
-		return $qp;
+		return new $qpClass($source, $selector, $options);
 	}
 
 	/**
