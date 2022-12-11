@@ -20,7 +20,7 @@
  * @see     http://drupal.org/project/querypath
  */
 
-require '../src/QueryPath/QueryPath.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 // We are using the dbpedia database to execute a SPARQL query.
 

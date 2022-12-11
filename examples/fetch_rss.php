@@ -15,7 +15,7 @@
  * @author  M Butcher <matt@aleph-null.tv>
  * @license LGPL The GNU Lesser GPL (LGPL) or an MIT-like license.
  */
-require_once '../src/QueryPath/QueryPath.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 // The URL of the remote RSS feed.
 $remote = 'http://querypath.org/aggregator/rss/2/rss.xml';

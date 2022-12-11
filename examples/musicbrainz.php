@@ -15,7 +15,7 @@
  * @license LGPL The GNU Lesser GPL (LGPL) or an MIT-like license.
  * @see     http://musicbrainz.org
  */
-require_once '../src/QueryPath/QueryPath.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 $artist_url = 'http://musicbrainz.org/ws/1/artist/?type=xml&name=u2';
 $album_url  = 'http://musicbrainz.org/ws/1/release/?type=xml&artistid=';

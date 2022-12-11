@@ -18,7 +18,7 @@
  */
 
 /** Include QueryPath. */
-require_once '../src/QueryPath/QueryPath.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 /**
  * Check if the string 'Release' is in the text content of any matched nodes.

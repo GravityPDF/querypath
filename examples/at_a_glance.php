@@ -1,5 +1,6 @@
 <?php
-require '../src/qp.php';
+require_once __DIR__ . '/../vendor/autoload.php';
+
 $xml = <<<EOF
 <?xml version="1.0"?>
 <table>

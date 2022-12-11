@@ -9,7 +9,8 @@
  * @license LGPL The GNU Lesser GPL (LGPL) or an MIT-like license.
  * @see     http://www.urbandictionary.com/
  */
-require_once '../src/QueryPath/QueryPath.php';
+require_once __DIR__ . '/../vendor/autoload.php';
+
 $path = 'http://eabrand.com/images/test.docx';
 
 //$path = 'docx_document.xml';
