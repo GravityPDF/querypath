@@ -1,7 +1,12 @@
 QueryPath Changelog
 ===========================
 
+# 3.2.2
+
+- Add PHP 8.2 Support
+
 # 3.2.1
+
 - Fix QueryPath\QueryPathIterator::current() deprecation notice in PHP8.1
 
 # 3.2.0

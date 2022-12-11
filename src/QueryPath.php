@@ -110,7 +110,7 @@ class QueryPath
 	 *
 	 * @since 2.0
 	 */
-	public const VERSION = '3.0.x';
+	public const VERSION = '3.2.2';
 
 	/**
 	 * Major version number.
