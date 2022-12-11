@@ -1,9 +1,10 @@
 QueryPath Changelog
 ===========================
 
-# 3.2.4
+# 4.0.0
 
 - Reverse logic in DomQuery::html5() so that DomQuery::html5() returns the content of the current match, and DomQuery::html5('') replaces the content of the current matches. This matches the existing logic used in DomQuery::html().
+- Return DOMQuery object if QueryMutators::wrapAll() has no matches (instead of null). This aligns the method with the Docblock return type.
 
 # 3.2.3
 
