@@ -6,6 +6,8 @@ QueryPath is a jQuery-like library for working with XML and HTML(5) documents in
 
 > If you are viewing this file on QueryPath GitHub repository homepage or on Packagist, please note that the default repository branch is `main` which can differ from the last stable release.
 
+[![Latest Stable Version](http://poser.pugx.org/gravitypdf/querypath/v)](https://packagist.org/packages/gravitypdf/querypath) [![License](http://poser.pugx.org/gravitypdf/querypath/license)](https://packagist.org/packages/gravitypdf/querypath) [![codecov](https://codecov.io/gh/GravityPDF/querypath/branch/main/graph/badge.svg?token=Dsul7f36K4)](https://codecov.io/gh/GravityPDF/querypath) [![PHP Version Require](http://poser.pugx.org/gravitypdf/querypath/require/php)](https://packagist.org/packages/gravitypdf/querypath)
+
 ## Installation
 ``` 
 composer require gravitypdf/querypath 
