@@ -7,8 +7,7 @@
  * @license LGPL The GNU Lesser GPL (LGPL) or an MIT-like license.
  */
 
-require_once '../src/QueryPath/QueryPath.php';
-require_once '../src/QueryPath/Extension/QPDB.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 // Set the default database.
 QPDB::baseDB('sqlite:../test/db/qpTest.db');

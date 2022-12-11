@@ -19,8 +19,7 @@
  * @license LGPL The GNU Lesser GPL (LGPL) or an MIT-like license.
  */
 
-require_once '../src/QueryPath/QueryPath.php';
-
+require_once __DIR__ . '/../vendor/autoload.php';
 
 // Create a new XML document wrapped in a QueryPath.
 // By default, it will point to the root element,
