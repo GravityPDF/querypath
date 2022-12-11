@@ -50,6 +50,11 @@ class QueryPathTest extends TestCase
 class DummyExtension implements Extension
 {
 
+	/**
+	 * @var Query
+	 */
+	protected $qp;
+
 	public function __construct(Query $qp)
 	{
 		$this->qp = $qp;

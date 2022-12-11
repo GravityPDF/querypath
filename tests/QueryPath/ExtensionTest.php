@@ -13,7 +13,7 @@ use QueryPath\Query;
  * @ingroup querypath_tests
  * @group   extension
  */
-class QueryPathExtensionTest extends TestCase
+class ExtensionTest extends TestCase
 {
 
 	public static function set_up_before_class()

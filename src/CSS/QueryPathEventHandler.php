@@ -761,15 +761,15 @@ class QueryPathEventHandler implements EventHandler, Traverser
 		// though.
 		$parents = new SplObjectStorage();
 		$matches = new SplObjectStorage();
+		$index = new SplObjectStorage();
 
-		$i = 0;
 		foreach ($this->matches as $item) {
 			$parent = $item->parentNode;
 
 			// Build up an array of all of children of this parent, and store the
 			// index of each element for reference later. We only need to do this
 			// once per parent, though.
-			if (! $parents->contains($parent)) {
+			if (!$parents->contains($parent)) {
 				$c = 0;
 				foreach ($parent->childNodes as $child) {
 					// We only want nodes, and if this call is preceded by an element
@@ -777,28 +777,25 @@ class QueryPathEventHandler implements EventHandler, Traverser
 					// !!! This last part is a grey area in the CSS 3 Selector spec. It seems
 					// necessary to make the implementation match the examples in the spec. However,
 					// jQuery 1.2 does not do this.
-					if ($child->nodeType == XML_ELEMENT_NODE && ($this->findAnyElement || $child->tagName == $item->tagName)) {
-						// This may break E_STRICT.
-						$child->nodeIndex = ++$c;
+					if ($child->nodeType === XML_ELEMENT_NODE && ($this->findAnyElement || $child->tagName === $item->tagName)) {
+						$index->attach($child, ++$c);
 					}
 				}
-				// This may break E_STRICT.
-				$parent->numElements = $c;
-				$parents->attach($parent);
+				$parents->attach($parent, $c);
 			}
 
 			// If we are looking for the last child, we count from the end of a list.
 			// Note that we add 1 because CSS indices begin at 1, not 0.
 			if ($lastChild) {
-				$indexToMatch = $item->parentNode->numElements - $item->nodeIndex + 1;
+				$indexToMatch = $parents->offsetGet($item->parentNode) - $index->offsetGet($item) + 1;
 			} // Otherwise we count from the beginning of the list.
 			else {
-				$indexToMatch = $item->nodeIndex;
+				$indexToMatch = $index->offsetGet($item);
 			}
 
 			// If group size is 0, then we return element at the right index.
-			if ($groupSize == 0) {
-				if ($indexToMatch == $elementInGroup) {
+			if ($groupSize === 0) {
+				if ($indexToMatch === $elementInGroup) {
 					$matches->attach($item);
 				}
 			}
@@ -810,9 +807,6 @@ class QueryPathEventHandler implements EventHandler, Traverser
 					$matches->attach($item);
 				}
 			}
-
-			// Iterate.
-			++$i;
 		}
 		$this->matches = $matches;
 	}
@@ -950,45 +944,42 @@ class QueryPathEventHandler implements EventHandler, Traverser
 	protected function nthOfTypeChild($groupSize, $elementInGroup, $lastChild)
 	{
 		// EXPERIMENTAL: New in Quark. This should be substantially faster
-		// than the old (jQuery-ish) version. It still has E_STRICT violations
-		// though.
+		// than the old (jQuery-ish) version.
 		$parents = new SplObjectStorage();
 		$matches = new SplObjectStorage();
+		$index = new SplObjectStorage();
 
-		$i = 0;
 		foreach ($this->matches as $item) {
 			$parent = $item->parentNode;
 
 			// Build up an array of all of children of this parent, and store the
 			// index of each element for reference later. We only need to do this
 			// once per parent, though.
-			if (! $parents->contains($parent)) {
+			if (!$parents->contains($parent)) {
 				$c = 0;
 				foreach ($parent->childNodes as $child) {
 					// This doesn't totally make sense, since the CSS 3 spec does not require that
 					// this pseudo-class be adjoined to an element (e.g. ' :nth-of-type' is allowed).
-					if ($child->nodeType == XML_ELEMENT_NODE && $child->tagName == $item->tagName) {
-						// This may break E_STRICT.
-						$child->nodeIndex = ++$c;
+					if ($child->nodeType === XML_ELEMENT_NODE && $child->tagName === $item->tagName) {
+						$index->attach($child, ++$c);
 					}
 				}
-				// This may break E_STRICT.
-				$parent->numElements = $c;
-				$parents->attach($parent);
+
+				$parents->attach($parent, $c);
 			}
 
 			// If we are looking for the last child, we count from the end of a list.
 			// Note that we add 1 because CSS indices begin at 1, not 0.
 			if ($lastChild) {
-				$indexToMatch = $item->parentNode->numElements - $item->nodeIndex + 1;
+				$indexToMatch = $parents->offsetGet($item->parentNode) - $index->offsetGet($item) + 1;
 			} // Otherwise we count from the beginning of the list.
 			else {
-				$indexToMatch = $item->nodeIndex;
+				$indexToMatch = $index->offsetGet($item);
 			}
 
 			// If group size is 0, then we return element at the right index.
-			if ($groupSize == 0) {
-				if ($indexToMatch == $elementInGroup) {
+			if ($groupSize === 0) {
+				if ($indexToMatch === $elementInGroup) {
 					$matches->attach($item);
 				}
 			}
@@ -1000,9 +991,6 @@ class QueryPathEventHandler implements EventHandler, Traverser
 					$matches->attach($item);
 				}
 			}
-
-			// Iterate.
-			++$i;
 		}
 		$this->matches = $matches;
 	}
