@@ -8,6 +8,10 @@ jobs:
     strategy:
       matrix:
         php-versions: [ '7.1', '7.2', '7.3', '7.4', '8.0', '8.1', '8.2' ]
+        include:
+          - php: '8.2'
+            report: true
+
     name: PHP ${{ matrix.php-versions }} PHPUnit Test
     steps:
       - name: Checkout repository
@@ -27,5 +31,16 @@ jobs:
           php --version
           composer --version
 
-      - name: Run PHPUnit
+      - name: Run PHPUnit Tests without coverage
+        if: ${{ ! matrix.report }}
         run: ./vendor/bin/phpunit
+
+      - name: Run PHPUnit Tests with coverage
+        if: ${{ matrix.report }}
+        run: ./vendor/bin/phpunit --coverage-clover=./coverage/coverage1.xml
+
+      - name: Check Code Coverage
+        if: ${{ matrix.report }}
+        uses: codecov/codecov-action@v3
+        with:
+          directory: ./coverage/
