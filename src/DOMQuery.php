@@ -708,22 +708,22 @@ class DOMQuery extends DOM
 	}
 
 	/**
-	 * Write the QueryPath document to HTML5.
-	 *
-	 * See html()
+	 * Set or get the markup for an element using the HTML5 parser
 	 *
 	 * @param null|string $markup
 	 *
 	 * @return null|DOMQuery|string
 	 * @throws QueryPath
 	 * @throws \QueryPath\Exception
+	 *
+	 * @see html()
 	 */
 	public function html5($markup = null)
 	{
 		$html5 = new HTML5($this->options);
 
 		// append HTML to existing
-		if ($markup === null) {
+		if (isset($markup)) {
 			// Parse the HTML and insert it into the DOM
 			$doc = $html5->loadHTMLFragment($markup);
 			$this->removeChildren();

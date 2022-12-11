@@ -164,8 +164,45 @@ class DOMQueryTest extends TestCase
 
 	public function testHtml5()
 	{
-		$doc = qp(DATA_HTML_FILE);
-		$this->assertEquals('range', $doc->find('input')->attr('type'));
+		$file = DATA_FILE;
+		$qp   = qp($file, 'unary');
+		$html = '<b>test</b>';
+		$this->assertEquals($html, $qp->html5($html)->find('b')->html5());
+
+		$html = '<html><head><title>foo</title></head><body>bar</body></html>';
+		// We expect a DocType to be prepended:
+		$this->assertEquals('<!DOCTYPE', substr(qp($html)->html5(), 0, 9));
+
+		// Check that HTML is not added to empty finds. Note the # is for a special
+		// case.
+		$this->assertEquals('', qp($html, '#nonexistant')->html5('<p>Hello</p>')->html5());
+		$this->assertEquals('', qp($html, 'nonexistant')->html5('<p>Hello</p>')->html5());
+
+		// We expect NULL if the document is empty.
+		$this->assertNull(qp()->html5());
+
+		// Non-DOMNodes should not be rendered:
+		$fn = 'mapCallbackFunction';
+		$this->assertNull(qp($file, 'li')->map([$this, $fn])->html5());
+
+		// Check html5() getter works correctly
+		$this->assertSame('<span>Content</span>', qp('<span>Content</span>')->find('span')->html5());
+
+		// Check html5() gets the first match only
+		$this->assertSame('<td>Foo</td>', qp(DATA_HTML_FILE, 'td')->html5());
+
+		// Check html5() setter works correctly
+		$this->assertSame('', qp('<span>Content</span>')->html5('')->innerHTML5());
+
+		// Check html5() setter works on all matches
+		$this->assertSame('
+    <tr>
+        <td>FooBar</td>
+    </tr>
+    <tr>
+        <td>FooBar</td>
+    </tr>
+', qp(DATA_HTML_FILE, 'td')->html5('FooBar')->parent('table')->innerHTML5());
 	}
 
 	public function testInnerHtml5()
@@ -1189,6 +1226,25 @@ class DOMQueryTest extends TestCase
 		// Non-DOMNodes should not be rendered:
 		$fn = 'mapCallbackFunction';
 		$this->assertNull(qp($file, 'li')->map([$this, $fn])->html());
+
+		// Check html() getter works correctly
+		$this->assertSame('<span>Content</span>', qp('<span>Content</span>')->find('span')->html());
+
+		// Check html() gets the first match only
+		$this->assertSame('<td>Foo</td>', qp(DATA_HTML_FILE, 'td')->html());
+
+		// Check html() setter works correctly
+		$this->assertSame('', qp('<span>Content</span>')->html('')->innerHTML());
+
+		// Check html() setter works on all matches
+		$this->assertSame('
+    <tr>
+        <td>FooBar</td>
+    </tr>
+    <tr>
+        <td>FooBar</td>
+    </tr>
+', qp(DATA_HTML_FILE, 'td')->html('FooBar')->parent('table')->innerHTML());
 	}
 
 	public function testInnerHTML()
