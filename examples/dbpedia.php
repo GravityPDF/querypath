@@ -25,7 +25,7 @@
  * @see     musicbrainz.php
  */
 
-require_once '../src/QueryPath/QueryPath.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 // The URL to look up (any of these works):
 $url = 'http://dbpedia.org/data/The_Beatles.rdf';

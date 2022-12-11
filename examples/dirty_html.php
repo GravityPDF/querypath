@@ -7,7 +7,7 @@
  * @license LGPL The GNU Lesser GPL (LGPL) or an MIT-like license.
  * @see     http://www.urbandictionary.com/
  */
-require_once '../src/QueryPath/QueryPath.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 print '<h3>Urban Dictionary Random Word Generator</h3>';
 

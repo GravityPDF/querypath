@@ -16,7 +16,7 @@
  * @license LGPL The GNU Lesser GPL (LGPL) or an MIT-like license.
  */
 
-require_once '../src/qp.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 // Begin with an HTML stub document (XHTML, actually), and navigate to the title.
 qp(QueryPath::HTML_STUB, 'title')

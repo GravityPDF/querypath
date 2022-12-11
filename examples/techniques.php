@@ -19,7 +19,7 @@
  * @license LGPL (The GNU Lesser GPL) or an MIT-like license.
  */
 
-require '../src/QueryPath/QueryPath.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 $demo = '<?xml version="1.0" ?>
 <data>
