@@ -65,7 +65,7 @@ abstract class DOM implements Query, IteratorAggregate, Countable
 	 *
 	 * @param mixed  $document
 	 *   A document-like object.
-	 * @param string $string
+	 * @param string|null $string
 	 *   A CSS 3 Selector
 	 * @param array  $options
 	 *   An associative array of options.
@@ -73,14 +73,9 @@ abstract class DOM implements Query, IteratorAggregate, Countable
 	 * @throws Exception
 	 * @see qp()
 	 */
-	public function __construct($document = null, $string = '', $options = [])
+	public function __construct($document = null, $string = null, $options = [])
 	{
-		// Backwards compatibility fix for PHP8+
-		if (is_null($string)) {
-			$string = '';
-		}
-
-		$string        = trim($string);
+		$string        = is_string($string) ? trim($string) : '';
 		$this->options = $options + Options::get() + $this->options;
 
 		$parser_flags = $options['parser_flags'] ?? self::DEFAULT_PARSER_FLAGS;
