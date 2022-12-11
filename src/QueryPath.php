@@ -189,7 +189,7 @@ class QueryPath
 	 * @see qp()
 	 * @see htmlqp()
 	 */
-	public static function with($document = null, $selector = '', array $options = [])
+	public static function with($document = null, $selector = null, array $options = [])
 	{
 		$qpClass = $options['QueryPath_class'] ?? '\QueryPath\DOMQuery';
 
@@ -205,7 +205,7 @@ class QueryPath
 	 *
 	 * @see qp()
 	 */
-	public static function withXML($source = null, $selector = '', array $options = [])
+	public static function withXML($source = null, $selector = null, array $options = [])
 	{
 		$options += [
 			'use_parser' => 'xml',
@@ -223,7 +223,7 @@ class QueryPath
 	 *
 	 * @see htmlqp()
 	 */
-	public static function withHTML($source = null, $selector = '', array $options = [])
+	public static function withHTML($source = null, $selector = null, array $options = [])
 	{
 		// Need a way to force an HTML parse instead of an XML parse when the
 		// doctype is XHTML, since many XHTML documents are not valid XML
@@ -273,7 +273,7 @@ class QueryPath
 	 *
 	 * @see html5qp()
 	 */
-	public static function withHTML5($source = null, $selector = '', array $options = [])
+	public static function withHTML5($source = null, $selector = null, array $options = [])
 	{
 		$qpClass = $options['QueryPath_class'] ?? '\QueryPath\DOMQuery';
 

@@ -155,7 +155,7 @@ use QueryPath\QueryPath;
  * @return mixed|DOMQuery
  *  Or possibly another QueryPath-like object if you overrode QueryPath_class.
  */
-function qp($document = null, $string = '', array $options = [])
+function qp($document = null, $string = null, array $options = [])
 {
 	return QueryPath::with($document, $string, $options);
 }
@@ -190,7 +190,7 @@ function qp($document = null, $string = '', array $options = [])
  * @return mixed|DOMQuery
  * @see     qp()
  */
-function htmlqp($document = null, $selector = '', array $options = [])
+function htmlqp($document = null, $selector = null, array $options = [])
 {
 	return QueryPath::withHTML($document, $selector, $options);
 }
@@ -219,7 +219,7 @@ function htmlqp($document = null, $selector = '', array $options = [])
  *
  * @return mixed|DOMQuery
  */
-function html5qp($document = null, $selector = '', array $options = [])
+function html5qp($document = null, $selector = null, array $options = [])
 {
 	return QueryPath::withHTML5($document, $selector, $options);
 }
