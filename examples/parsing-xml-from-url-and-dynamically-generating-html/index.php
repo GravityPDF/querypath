@@ -33,18 +33,18 @@ $key = $_GET['key'] ?? '';
 
 // Only display jQuery methods from these categories
 $categories = [
-	'traversing/tree-traversal'          => 'Tree Traversal',
-	'selectors/child-filter-selectors'  => 'Child Filter',
-	'selectors/attribute-selectors'     => 'Attribute',
+	'traversing/tree-traversal' => 'Tree Traversal',
+	'selectors/child-filter-selectors' => 'Child Filter',
+	'selectors/attribute-selectors' => 'Attribute',
 	'selectors/content-filter-selector' => 'Content Filter',
-	'selectors/basic-filter-selectors'  => 'Basic Filter',
-	'selectors/hierarchy-selectors'     => 'Hierarchy',
-	'selectors/basic-css-selectors'     => 'Basic',
-	'traversing/filtering'               => 'Filtering',
+	'selectors/basic-filter-selectors' => 'Basic Filter',
+	'selectors/hierarchy-selectors' => 'Hierarchy',
+	'selectors/basic-css-selectors' => 'Basic',
+	'traversing/filtering' => 'Filtering',
 	'traversing/miscellaneous-traversal' => 'Miscellaneous Traversing',
-	'manipulation/dom-insertion-outside'   => 'DOM Insertion, Outside',
-	'manipulation/dom-insertion-inside'    => 'DOM Insertion, Inside',
-	'manipulation/style-properties'        => 'Style Properties',
+	'manipulation/dom-insertion-outside' => 'DOM Insertion, Outside',
+	'manipulation/dom-insertion-inside' => 'DOM Insertion, Inside',
+	'manipulation/style-properties' => 'Style Properties',
 ];
 
 $jquery = [];
@@ -53,11 +53,11 @@ try {
 	// Search through the xml file to find all entries of jQuery entities
 	foreach (qp('https://api.jquery.com/resources/api.xml', 'entry') as $entry) {
 		foreach ($entry->find('category') as $item) {
-			$category = $categories[ $item->attr('slug') ] ?? '';
+			$category = $categories[$item->attr('slug')] ?? '';
 			if ($category) {
-				$jquery[ $entry->attr('name') ] = [
+				$jquery[$entry->attr('name')] = [
 					'longdesc' => $entry->find('longdesc')->innerXML(),
-					'name'     => sprintf('%s: %s', $category, $entry->attr('name')),
+					'name' => sprintf('%s: %s', $category, $entry->attr('name')),
 				];
 
 				break;
@@ -82,7 +82,7 @@ try {
 	$qp->top()->find('#rightfunction')->text('Function: ' . ucfirst($key));
 	$qp->top()->find('#rightdesc')->remove();
 	$qp->top()->find('#righttitle')->text('jQuery Documentation');
-	$qp->top()->find('#righttext')->append($jquery[ $key ]['longdesc']);
+	$qp->top()->find('#righttext')->append($jquery[$key]['longdesc']);
 
 	$qp->top()->find('#current-year')->text(date('Y'));
 
