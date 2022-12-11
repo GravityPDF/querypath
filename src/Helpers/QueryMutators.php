@@ -788,7 +788,7 @@ trait QueryMutators
 	 *
 	 * @return DOMQuery
 	 *  The Query path wrapping a list of removed items.
-	 * @throws ParseException
+	 * @throws ParseException|Exception
 	 * @see replaceWith()
 	 * @see removeChildren()
 	 * @see replaceAll()
@@ -929,7 +929,7 @@ trait QueryMutators
 	 * @param string $value
 	 *   A value (used only when setting an individual property).
 	 *
-	 * @return mixed
+	 * @return DOMQuery|array|string|null
 	 *   If this was a setter request, return the DOMQuery object. If this was
 	 *   an access request (getter), return the string value.
 	 * @see removeAttr()
