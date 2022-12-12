@@ -50,28 +50,33 @@ $options = [
 // Create a stream context that will tell QueryPath how to load the file.
 $context = stream_context_create($options);
 
-// Fetch the URL and select all rdf:Description elements.
-// (Note that | is the CSS 3 equiv of colons for namespacing.)
-// To add the context, we pass it in as an option to QueryPath.
-$qp = qp($url, 'rdf|Description', ['context' => $context]);
+try {
+	// Fetch the URL and select all rdf:Description elements.
+	// (Note that | is the CSS 3 equiv of colons for namespacing.)
+	// To add the context, we pass it in as an option to QueryPath.
+	$qp = qp($url, 'rdf|Description', ['context' => $context]);
 
-printf('There are %d descriptions in this record.<br>' . PHP_EOL, $qp->count());
+	printf('There are %d descriptions in this record.<br>' . PHP_EOL, $qp->count());
 
-// Here, we use foaf|* to select all elements in the FOAF namespace.
-printf('There are %d DBO items in this record.<br><br>' . PHP_EOL, $qp->top()->find('dbo|*')->count());
+	// Here, we use foaf|* to select all elements in the FOAF namespace.
+	printf('There are %d DBO items in this record.<br><br>' . PHP_EOL, $qp->top()->find('dbo|*')->count());
 
-// Standard pseudo-classes that are not HTML specific can be used on namespaced elements, too.
-echo 'About (RDFS): ' . $qp->top()->find('rdfs|label:first-of-type')->text() . '<br>' . PHP_EOL;
-echo 'About (FOAF): ' . $qp->top()->find('foaf|name:first-of-type')->text() . '<br>' . PHP_EOL;
+	// Standard pseudo-classes that are not HTML specific can be used on namespaced elements, too.
+	echo 'About (RDFS): ' . $qp->top()->find('rdfs|label:first-of-type')->text() . '<br>' . PHP_EOL;
+	echo 'About (FOAF): ' . $qp->top()->find('foaf|name:first-of-type')->text() . '<br>' . PHP_EOL;
 
-// Namespaced attributes can be retrieved using the same sort of delimiting.
-echo PHP_EOL . '<br>Comment:<br>' . PHP_EOL;
-echo $qp->top()->find('rdfs|comment[xml|lang="en"]')->text();
-echo '<br>' . PHP_EOL;
+	// Namespaced attributes can be retrieved using the same sort of delimiting.
+	echo PHP_EOL . '<br>Comment:<br>' . PHP_EOL;
+	echo $qp->top()->find('rdfs|comment[xml|lang="en"]')->text();
+	echo '<br>' . PHP_EOL;
 
-$qp->top();
+	$qp->top();
 
-echo PHP_EOL . '<br>Other Sites:<br>' . PHP_EOL;
-foreach ($qp as $item) {
-	echo $item->attr('rdf:about') . '<br>' . PHP_EOL;
+	echo PHP_EOL . '<br>Other Sites:<br>' . PHP_EOL;
+	foreach ($qp as $item) {
+		echo $item->attr('rdf:about') . '<br>' . PHP_EOL;
+	}
+} catch (\QueryPath\Exception $e) {
+	// Handle QueryPath exceptions
+	die($e->getMessage());
 }
