@@ -2,8 +2,7 @@
 /**
  * Load XML from a URL, parse the data, and output into a HTML template
  *
- * @author  Original: Emily Brand
- * @author  Updated by: Jake Jackson
+ * @author  Emily Brand
  * @license LGPL The GNU Lesser GPL (LGPL) or an MIT-like license.
  *
  * @internal IMPORTANT: if you don't trust the source of the data being loaded make sure to sanitize the output
@@ -26,30 +25,31 @@ function addClasses(string $name): string
 	return '<a href="' . $_SERVER['PHP_SELF'] . '?key=' . htmlentities($name) . '"><span class="keyname">' . htmlentities($name) . '</span></a><br />';
 }
 
-// The document skeleton
-$qp = html5qp(__DIR__ . '/template.html', 'body');
-
-$key = $_GET['key'] ?? '';
-
-// Only display jQuery methods from these categories
-$categories = [
-	'traversing/tree-traversal' => 'Tree Traversal',
-	'selectors/child-filter-selectors' => 'Child Filter',
-	'selectors/attribute-selectors' => 'Attribute',
-	'selectors/content-filter-selector' => 'Content Filter',
-	'selectors/basic-filter-selectors' => 'Basic Filter',
-	'selectors/hierarchy-selectors' => 'Hierarchy',
-	'selectors/basic-css-selectors' => 'Basic',
-	'traversing/filtering' => 'Filtering',
-	'traversing/miscellaneous-traversal' => 'Miscellaneous Traversing',
-	'manipulation/dom-insertion-outside' => 'DOM Insertion, Outside',
-	'manipulation/dom-insertion-inside' => 'DOM Insertion, Inside',
-	'manipulation/style-properties' => 'Style Properties',
-];
-
-$jquery = [];
-
 try {
+	// The document skeleton
+	$qp = html5qp(__DIR__ . '/template.html', 'body');
+
+	$key = $_GET['key'] ?? '';
+
+	// Only display jQuery methods from these categories
+	$categories = [
+		'traversing/tree-traversal' => 'Tree Traversal',
+		'selectors/child-filter-selectors' => 'Child Filter',
+		'selectors/attribute-selectors' => 'Attribute',
+		'selectors/content-filter-selector' => 'Content Filter',
+		'selectors/basic-filter-selectors' => 'Basic Filter',
+		'selectors/hierarchy-selectors' => 'Hierarchy',
+		'selectors/basic-css-selectors' => 'Basic',
+		'traversing/filtering' => 'Filtering',
+		'traversing/miscellaneous-traversal' => 'Miscellaneous Traversing',
+		'manipulation/dom-insertion-outside' => 'DOM Insertion, Outside',
+		'manipulation/dom-insertion-inside' => 'DOM Insertion, Inside',
+		'manipulation/style-properties' => 'Style Properties',
+	];
+
+	$jquery = [];
+
+
 	// Search through the xml file to find all entries of jQuery entities
 	foreach (qp('https://api.jquery.com/resources/api.xml', 'entry') as $entry) {
 		foreach ($entry->find('category') as $item) {
@@ -89,5 +89,6 @@ try {
 	// Write the document
 	$qp->writeHTML5();
 } catch (\QueryPath\Exception $e) {
+	// Handle QueryPath exceptions
 	die($e->getMessage());
 }
