@@ -1,0 +1,15 @@
+---
+name: Flush README.md Image Cache
+
+on:
+  push:
+    tags: '*'
+
+jobs:
+  flush:
+    name: Cleanup GitHub Image Cache
+    runs-on: ubuntu-latest
+    steps:
+      - uses: b3b00/refreshBadgesAction@v1.0.7
+        with:
+          repository: 'gravitypdf/querypath'
