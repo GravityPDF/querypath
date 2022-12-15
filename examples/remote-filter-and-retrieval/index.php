@@ -5,10 +5,7 @@
  * @author  Emily Brand
  * @license LGPL The GNU Lesser GPL (LGPL) or an MIT-like license.
  *
- * @internal IMPORTANT: if you don't trust the source of the data being loaded make sure to sanitize the output
- *
  * @see https://www.urbandictionary.com/
- * @see https://github.com/symfony/html-sanitizer
  */
 require_once __DIR__ . '/../../vendor/autoload.php';
 
