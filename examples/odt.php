@@ -18,7 +18,7 @@
  */
 
 /** Include main QP library. */
-require_once '../src/QueryPath/QueryPath.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 // If you have the Zip lib combiled in:
 //$file = 'zip://openoffice.odt#content';

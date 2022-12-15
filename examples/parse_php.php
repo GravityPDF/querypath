@@ -14,6 +14,8 @@
  * @author  M Butcher <matt@aleph-null.tv>
  * @license LGPL The GNU Lesser GPL (LGPL) or an MIT-like license.
  */
+
+require_once __DIR__ . '/../vendor/autoload.php';
 ?>
 <html>
 <head>
@@ -21,8 +23,6 @@
 </head>
 <body>
 <?php
-require '../src/QueryPath/QueryPath.php';
-
 // Parse this file with QueryPath.
 print qp(__FILE__, 'title')->text();
 ?>
