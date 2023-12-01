@@ -65,7 +65,7 @@ abstract class DOM implements Query, IteratorAggregate, Countable
 	 *
 	 * @param mixed  $document
 	 *   A document-like object.
-	 * @param string|null $string
+	 * @param string|null $selector
 	 *   A CSS 3 Selector
 	 * @param array  $options
 	 *   An associative array of options.
@@ -73,9 +73,9 @@ abstract class DOM implements Query, IteratorAggregate, Countable
 	 * @throws Exception
 	 * @see qp()
 	 */
-	public function __construct($document = null, $string = null, $options = [])
+	public function __construct($document = null, $selector = null, $options = [])
 	{
-		$string        = is_string($string) ? trim($string) : '';
+		$selector        = is_string($selector) ? trim($selector) : '';
 		$this->options = $options + Options::get() + $this->options;
 
 		$parser_flags = $options['parser_flags'] ?? self::DEFAULT_PARSER_FLAGS;
@@ -163,12 +163,12 @@ abstract class DOM implements Query, IteratorAggregate, Countable
 		}
 
 		// Do a find if the second param was set.
-		if (strlen($string) > 0) {
+		if (strlen($selector) > 0) {
 			// We don't issue a find because that creates a new DOMQuery.
 			//$this->find($string);
 
 			$query = new DOMTraverser($this->matches);
-			$query->find($string);
+			$query->find($selector);
 			$this->setMatches($query->matches());
 		}
 	}
