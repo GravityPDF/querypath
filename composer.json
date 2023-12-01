@@ -1,7 +1,7 @@
 {
   "name": "gravitypdf/querypath",
   "type": "library",
-  "description": "PHP library for HTML(5)/XML querying (CSS 4 or XPath) and processing (like jQuery) with PHP8.2 support",
+  "description": "PHP library for HTML(5)/XML querying (CSS 4 or XPath) and processing (like jQuery) with PHP8.3 support",
   "homepage": "https://github.com/gravitypdf/querypath",
   "license": "MIT",
   "keywords": [
@@ -23,7 +23,7 @@
     }
   ],
   "require": {
-    "php": "^7.1 || ~8.0.0 || ~8.1.0 || ~8.2.0",
+    "php": "^7.1 || ~8.0.0 || ~8.1.0 || ~8.2.0 || ~8.3.0",
     "masterminds/html5": "^2.0"
   },
   "autoload": {
