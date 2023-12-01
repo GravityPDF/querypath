@@ -147,7 +147,7 @@ use QueryPath\QueryPath;
  *
  * @param mixed  $document
  *  A document in one of the forms listed above.
- * @param string|null $string
+ * @param string|null $selector
  *  A CSS 3 selector.
  * @param array  $options
  *  An associative array of options. Currently supported options are listed above.
@@ -155,9 +155,9 @@ use QueryPath\QueryPath;
  * @return mixed|DOMQuery
  *  Or possibly another QueryPath-like object if you overrode QueryPath_class.
  */
-function qp($document = null, $string = null, array $options = [])
+function qp($document = null, $selector = null, array $options = [])
 {
-	return QueryPath::with($document, $string, $options);
+	return QueryPath::with($document, $selector, $options);
 }
 
 /**
