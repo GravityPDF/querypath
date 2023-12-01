@@ -1,6 +1,10 @@
 QueryPath Changelog
 ===========================
 
+# 3.2.3
+
+- Add PHP 8.3 Support
+
 # 3.2.2
 
 - Add PHP 8.2 Support
