@@ -1594,7 +1594,7 @@ class DOMQuery extends DOM
 	/**
 	 * Get an iterator for the matches in this object.
 	 *
-	 * @return Traversable
+	 * @return Traversable<DOMQuery>
 	 *  Returns an iterator.
 	 */
 	public function getIterator(): Traversable
