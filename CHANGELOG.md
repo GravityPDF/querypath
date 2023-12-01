@@ -4,6 +4,7 @@ QueryPath Changelog
 # 3.2.3
 
 - Add PHP 8.3 Support
+- Fix type mismatch for classes that implement the "Query" interface
 
 # 3.2.2
 
