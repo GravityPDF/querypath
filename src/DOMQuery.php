@@ -723,7 +723,7 @@ class DOMQuery extends DOM
 		$html5 = new HTML5($this->options);
 
 		// append HTML to existing
-		if ($markup === null) {
+		if (isset($markup)) {
 			// Parse the HTML and insert it into the DOM
 			$doc = $html5->loadHTMLFragment($markup);
 			$this->removeChildren();
