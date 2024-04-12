@@ -1216,8 +1216,8 @@ class DOMQuery extends DOM
 	 * In getter mode, the first element wrapped by this DOMNode object will be
 	 * converted to an XML string and returned.
 	 *
-	 * @param string|null $markup
-	 *  A string containing XML data.
+	 * @param string|true|null $markup
+	 *  A string containing XML data. If true is passed, the XML declaration will be omitted.
 	 *
 	 * @return DOMQuery|string|null
 	 *  If markup is passed in, a DOMQuery is returned. If no markup is passed
