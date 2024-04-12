@@ -53,12 +53,11 @@ try {
 	echo '<h2>Example 1</h2>';
 	echo 'Add the attribute <code>class="cell"</code> to all <code>&lt;td&gt;</code> elements:';
 
-	echo '<pre><code>
-&lt;?php 
+	echo '<pre><code>&lt;?php 
 
 echo html5qp($html, "td")
 -&gt;attr("class", "cell")
--&gt;top("table")
+-&gt;parents("table")
 -&gt;html()  
 </code></pre>';
 
@@ -69,13 +68,13 @@ echo html5qp($html, "td")
 	echo htmlspecialchars(
 		html5qp($html, 'td')
 			->attr('class', 'cell')
-			->top('table') // jump back up the DOM to the table
-			->html() // get get HTML of the table
+			->parents('table') // traverse up the DOM until we match the table
+			->html() // get the HTML of the table
 	);
 
 	echo '</code></pre>';
 
-	echo 'If you want to output a valid HTML document, use <code>top()</code> without an argument:';
+	echo 'If you want to output a valid HTML document, replace <code>parents(\'table\')</code> with <code>top()</code>:';
 
 	echo '<pre><code>';
 
@@ -95,8 +94,7 @@ echo html5qp($html, "td")
 		->find('#row2 > td:nth-child(2)')
 		->text();
 
-	echo '<pre><code>
-&lt;?php 
+	echo '<pre><code>&lt;?php 
 
 echo html5qp($html)
 -&gt;find("#row2 > td:nth-child(2)")
@@ -107,12 +105,11 @@ echo html5qp($html)
 
 	echo '<h2>Example 3</h2>';
 	echo 'Append an additional row at the end of the table:';
-	echo '<pre><code>
-&lt;?php 
+	echo '<pre><code>&lt;?php 
 
 echo html5qp($html, "td")
 -&gt;after("&lt;tr&gt;&lt;td&gt;seven&lt;/td&gt;&lt;td&gt;eight&lt;/td&gt;&lt;td&gt;nine&lt;/td&gt;&lt;/tr&gt;")
--&gt;top("table")
+-&gt;parents("table") // traverse up the DOM until we match the table
 -&gt;html()
 </code></pre>';
 
@@ -123,7 +120,7 @@ echo html5qp($html, "td")
 	echo htmlspecialchars(
 		html5qp($html, 'tr:last')
 			->after("\n\n\t<tr>\n\t\t<td>seven</td>\n\t\t<td>eight</td>\n\t\t<td>nine</td>\n\t</tr>")
-			->top("table")
+			->parents('table')
 			->html()
 	);
 
@@ -136,12 +133,11 @@ echo html5qp($html, "td")
 	echo '<h2>Example 1</h2>';
 	echo 'Add the attribute <code>class="item"</code> to all <code>&lt;desc&gt;</code> elements:';
 
-	echo '<pre><code>
-&lt;?php 
+	echo '<pre><code>&lt;?php 
 
 echo qp($xml, "desc")
 -&gt;attr("class", "item)
--&gt;top() // return to the &lt;categories&gt; tag
+-&gt;top() // return to the root node (&lt;categories&gt;)
 -&gt;xml(); // output a valid XML document.
 </code></pre>';
 
@@ -152,7 +148,7 @@ echo qp($xml, "desc")
 	echo htmlspecialchars(
 		qp($xml, 'desc')
 			->attr('class', 'item')
-			->top() // return to the <categories> tag
+			->top() // return to the root node
 			->xml() // output a valid XML document
 	);
 
@@ -167,8 +163,7 @@ echo qp($xml, "desc")
 		->find('categories > category:nth-child(3) desc')
 		->text();
 
-	echo '<pre><code>
-&lt;?php 
+	echo '<pre><code>&lt;?php 
 
 echo qp($xml)
 -&gt;find("categories > category:nth-child(3) desc")
@@ -179,8 +174,7 @@ echo qp($xml)
 
 	echo '<h2>Example 3</h2>';
 	echo 'Append a category at the end of the group:';
-	echo '<pre><code>
-&lt;?php 
+	echo '<pre><code>&lt;?php 
 
 echo qp($xml, "category:last")
 -&gt;after("&lt;category name=\'Appended\'&gt;&lt;desc&gt;The appended node...&lt;/desc&gt;&lt;/category&gt;")
