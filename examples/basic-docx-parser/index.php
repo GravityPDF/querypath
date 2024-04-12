@@ -16,9 +16,15 @@ use QueryPath\Exception;
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
+echo '<h1>Create a Basic Docx Parser</h1>';
+
+echo '<p>This example parses a .docx file, traverse the nodes and displays the text with basic formatting. The contents of the example.xml file is the data extracted from the .docx file that QueryPath processes.</p>';
+
+echo '<h2>Content of example.docx file...</h2>';
+
 try {
 	// Try load the test.docx file, parse for text nodes and output with basic formatting
-	foreach (qp(docx2text('test.docx'), 'w|p') as $qp) {
+	foreach (qp(docx2text('example.docx'), 'w|p') as $qp) {
 		/** @var $qp DOMQuery */
 		/** @var $qr DOMQuery */
 		foreach ($qp->find('w|r') as $qr) {
