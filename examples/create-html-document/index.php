@@ -20,10 +20,12 @@ echo '<h1>Building a HTML Document with QueryPath</h1>';
 
 echo 'You can use QueryPath to build complex HTML documents using a simple jQuery-like API:';
 
+//TODO - consider writeHTML() instead of html()
+
 echo '<pre><code>&lt;?php 
 
 // Begin with an HTML5 stub document and navigate to the title.
-html5qp(\QueryPath\QueryPath::HTML5_STUB, "title")
+echo html5qp(\QueryPath\QueryPath::HTML5_STUB, "title")
 	// Add text to the title
 	-&gt;text("Example of QueryPath.")
 	// Traverse to the root of the document, then locate the body tag

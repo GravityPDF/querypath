@@ -21,8 +21,14 @@ require_once __DIR__ . '/../../vendor/autoload.php';
  *  By default, it will point to the root element `<author />`
  */
 
+//TODO
+// Use QueryPath::withXML() will allow you to omit the XML declaration "<?xml version="1.0"?\>"
+// 	\QueryPath\QueryPath::withXML('<author/>')
+//		->append('<lastName>Wiseman</lastName>')
+//		->writeXML();
+
 try {
-	echo qp('<?xml version="1.0"?><author></author>')
+	qp('<?xml version="1.0"?><author></author>')
 		// Add a new last name inside of author.
 		->append('<lastName>Wiseman</lastName>')
 		// Select all of the children of <author/>. In this case,
@@ -46,7 +52,7 @@ try {
 		// turn the QueryPath contents back into a string. Since we are
 		// at the top of the document, the whole document will be converted
 		// to a string.
-		->xml();
+		->writeXML();
 } catch (\QueryPath\Exception $e) {
 	die($e->getMessage());
 }

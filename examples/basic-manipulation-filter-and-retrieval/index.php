@@ -2,6 +2,8 @@
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
+//TODO - consider writeHTML() or writeXML() instead of html() / xml()
+
 /*
  * HTML Example
  */
