@@ -1,6 +1,10 @@
 QueryPath Changelog
 ===========================
 
+# 3.2.4
+
+- Reverse logic in DomQuery::html5() so that DomQuery::html5() returns the content of the current match, and DomQuery::html5('') replaces the content of the current matches. This matches the existing logic used in DomQuery::html().
+
 # 3.2.3
 
 - Add PHP 8.3 Support
