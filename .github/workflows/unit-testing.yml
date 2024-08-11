@@ -15,7 +15,7 @@ jobs:
     name: PHP ${{ matrix.php-versions }} PHPUnit Test
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -24,7 +24,7 @@ jobs:
           ini-values: error_reporting=E_ALL
 
       - name: Install Composer Dependencies
-        uses: "ramsey/composer-install@v2"
+        uses: ramsey/composer-install@v3
 
       - name: Log debug information
         run: |
@@ -41,6 +41,7 @@ jobs:
 
       - name: Check Code Coverage
         if: ${{ matrix.report }}
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           directory: ./coverage/
+          token: ${{ secrets.CODECOV_TOKEN }}
