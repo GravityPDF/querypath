@@ -1034,6 +1034,9 @@ class DOMQueryTest extends TestCase
 			'li'
 		)->wrapAll('<test class="testWrap"><inside><center/></inside></test>')->get(0)->ownerDocument->saveXML();
 		$this->assertEquals(5, qp($xml, '.testWrap > inside > center > li')->count());
+
+		// verify wrapAll() returns DomQuery object is no matches
+		$this->assertInstanceOf(DOMQuery::class, qp($file, '#non-existing-selector')->wrapAll(''));
 	}
 
 	public function testWrapInner()
