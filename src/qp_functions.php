@@ -4,7 +4,7 @@
  *
  * QueryPath functions.
  *
- * This file holds the QueryPath functions, qp() and htmlqp().
+ * This file holds the QueryPath global functions, qp(), htmlqp(), and html5qp())
  *
  * Usage:
  *
@@ -47,7 +47,8 @@ use QueryPath\QueryPath;
  * QueryPathExtension, and also at some of the simple extensions, such as QPXML.
  */
 
-/**
+if (! function_exists('qp')) {
+	/**
  * Build a new Query Path.
  * This builds a new Query Path object. The new object can be used for
  * reading, search, and modifying a document.
@@ -155,71 +156,76 @@ use QueryPath\QueryPath;
  * @return mixed|DOMQuery
  *  Or possibly another QueryPath-like object if you overrode QueryPath_class.
  */
-function qp($document = null, $selector = null, array $options = [])
-{
-	return QueryPath::with($document, $selector, $options);
+	function qp($document = null, $selector = null, array $options = [])
+	{
+		return QueryPath::with($document, $selector, $options);
+	}
 }
 
-/**
- * A special-purpose version of {@link qp()} designed specifically for HTML.
- *
- * XHTML (if valid) can be easily parsed by {@link qp()} with no problems. However,
- * because of the way that libxml handles HTML, there are several common steps that
- * need to be taken to reliably parse non-XML HTML documents. This function is
- * a convenience tool for configuring QueryPath to parse HTML.
- *
- * The following options are automatically set unless overridden:
- *  - ignore_parser_warnings: TRUE
- *  - convert_to_encoding: ISO-8859-1 (the best for the HTML parser).
- *  - convert_from_encoding: auto (autodetect encoding)
- *  - use_parser: html
- *
- * Parser warning messages are also suppressed, so if the parser emits a warning,
- * the application will not be notified. This is equivalent to
- * calling @code@qp()@endcode.
- *
- * Warning: Character set conversions will only work if the Multi-Byte (mb) library
- * is installed and enabled. This is usually enabled, but not always.
- *
- * @ingroup querypath_core
- *
- * @param mixed $document
- * @param string|null $selector
- * @param array $options
- *
- * @return mixed|DOMQuery
- * @see     qp()
- */
-function htmlqp($document = null, $selector = null, array $options = [])
-{
-	return QueryPath::withHTML($document, $selector, $options);
+if (! function_exists('htmlqp')) {
+	/**
+	 * A special-purpose version of {@link qp()} designed specifically for HTML.
+	 *
+	 * XHTML (if valid) can be easily parsed by {@link qp()} with no problems. However,
+	 * because of the way that libxml handles HTML, there are several common steps that
+	 * need to be taken to reliably parse non-XML HTML documents. This function is
+	 * a convenience tool for configuring QueryPath to parse HTML.
+	 *
+	 * The following options are automatically set unless overridden:
+	 *  - ignore_parser_warnings: TRUE
+	 *  - convert_to_encoding: ISO-8859-1 (the best for the HTML parser).
+	 *  - convert_from_encoding: auto (autodetect encoding)
+	 *  - use_parser: html
+	 *
+	 * Parser warning messages are also suppressed, so if the parser emits a warning,
+	 * the application will not be notified. This is equivalent to
+	 * calling @code@qp()@endcode.
+	 *
+	 * Warning: Character set conversions will only work if the Multi-Byte (mb) library
+	 * is installed and enabled. This is usually enabled, but not always.
+	 *
+	 * @ingroup querypath_core
+	 *
+	 * @param mixed $document
+	 * @param string|null $selector
+	 * @param array $options
+	 *
+	 * @return mixed|DOMQuery
+	 * @see     qp()
+	 */
+	function htmlqp($document = null, $selector = null, array $options = [])
+	{
+		return QueryPath::withHTML($document, $selector, $options);
+	}
 }
 
-/**
- * Parse HTML5 documents.
- *
- * This uses HTML5-PHP to parse the document. In actuality, this parser does
- * a fine job with pre-HTML5 documents in most cases, though really old HTML
- * (like 2.0) may have some substantial quirks.
- *
- * <b>Supported Options</b>
- * Any options supported by HTML5-PHP are allowed here. Additionally, the
- * following options have meaning to QueryPath.
- * - QueryPath_class
- *
- *
- * @param mixed $document
- * @param string|null $selector
- *   A CSS3 selector.
- *
- * @param array  $options
- *   An associative array of options, which is passed on into HTML5-PHP. Note
- *   that the standard QueryPath options may be ignored for this function,
- *   since it uses a different parser.
- *
- * @return mixed|DOMQuery
- */
-function html5qp($document = null, $selector = null, array $options = [])
-{
-	return QueryPath::withHTML5($document, $selector, $options);
+if (! function_exists('html5qp')) {
+	/**
+	 * Parse HTML5 documents.
+	 *
+	 * This uses HTML5-PHP to parse the document. In actuality, this parser does
+	 * a fine job with pre-HTML5 documents in most cases, though really old HTML
+	 * (like 2.0) may have some substantial quirks.
+	 *
+	 * <b>Supported Options</b>
+	 * Any options supported by HTML5-PHP are allowed here. Additionally, the
+	 * following options have meaning to QueryPath.
+	 * - QueryPath_class
+	 *
+	 *
+	 * @param mixed $document
+	 * @param string|null $selector
+	 *   A CSS3 selector.
+	 *
+	 * @param array $options
+	 *   An associative array of options, which is passed on into HTML5-PHP. Note
+	 *   that the standard QueryPath options may be ignored for this function,
+	 *   since it uses a different parser.
+	 *
+	 * @return mixed|DOMQuery
+	 */
+	function html5qp($document = null, $selector = null, array $options = [])
+	{
+		return QueryPath::withHTML5($document, $selector, $options);
+	}
 }

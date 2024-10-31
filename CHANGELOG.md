@@ -1,6 +1,10 @@
 QueryPath Changelog
 ===========================
 
+# 4.0.1
+
+- Only define global functions qp(), htmlqp(), and html5qp() if they haven't been defined already.
+
 # 4.0.0
 
 - Reverse logic in DomQuery::html5() so that DomQuery::html5() returns the content of the current match, and DomQuery::html5('') replaces the content of the current matches. This matches the existing logic used in DomQuery::html().
