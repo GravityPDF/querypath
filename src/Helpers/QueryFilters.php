@@ -798,7 +798,7 @@ trait QueryFilters
 	{
 		$found = new SplObjectStorage();
 		foreach ($this->matches as $m) {
-			while ($m->parentNode->nodeType !== XML_DOCUMENT_NODE) {
+			while ($m->parentNode && $m->parentNode->nodeType !== XML_DOCUMENT_NODE) {
 				$m = $m->parentNode;
 				// Is there any case where parent node is not an element?
 				if ($m->nodeType === XML_ELEMENT_NODE) {
@@ -838,7 +838,7 @@ trait QueryFilters
 	{
 		$found = new SplObjectStorage();
 		foreach ($this->matches as $m) {
-			while ($m->parentNode->nodeType !== XML_DOCUMENT_NODE) {
+			while ($m->parentNode && $m->parentNode->nodeType !== XML_DOCUMENT_NODE) {
 				$m = $m->parentNode;
 				// Is there any case where parent node is not an element?
 				if ($m->nodeType === XML_ELEMENT_NODE) {

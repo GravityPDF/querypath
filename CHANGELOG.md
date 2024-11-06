@@ -1,6 +1,11 @@
 QueryPath Changelog
 ===========================
 
+# 4.0.3
+
+- Fix for error while getting parent() on HTML root node
+- Fix for error while getting parents() on HTML node
+
 # 4.0.2
 
 - Fix for :nth-child(n+B). It now selects B-th and all the following elements
