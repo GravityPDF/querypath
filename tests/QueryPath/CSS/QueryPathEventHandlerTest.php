@@ -714,6 +714,13 @@ class QueryPathEventHandlerTest extends TestCase
 		$matches = $handler->getMatches();
 		$this->assertEquals(0, $matches->count());
 
+		// Test nth-child(n+3) (3+ elements)
+		$handler = new QueryPathEventHandler($doc);
+		$handler->find('i:nth-child(n+3)');
+		$matches = $handler->getMatches();
+		$this->assertEquals(3, $matches->count());
+		$this->assertEquals('four', $this->nthMatch($matches, 1)->getAttribute('id'));
+
 		// Test nth-child(-n+3) (First three lines)
 		// $handler = new QueryPathEventHandler($doc);
 		// $handler->find('i:nth-child(-n+3)');

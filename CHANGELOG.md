@@ -1,6 +1,10 @@
 QueryPath Changelog
 ===========================
 
+# 4.0.2
+
+- Fix for :nth-child(n+B) to select B-th and all following elements
+
 # 4.0.1
 
 - Only define global functions qp(), htmlqp(), and html5qp() if they haven't been defined already.
