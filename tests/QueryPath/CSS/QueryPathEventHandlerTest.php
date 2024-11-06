@@ -628,11 +628,12 @@ class QueryPathEventHandlerTest extends TestCase
 			//['i:nth-child(-2n)', 2, 'four'    ], // Not totally sure what should be returned here
 			['i:nth-child(4n)',   1, 'four', 0], // every fourth row
 			['i:nth-child(4n+1)', 2, 'five'   ], // first of every four rows
-			['i:nth-child(1)',    1, 'one', 0 ], // first row
+			['i:nth-child(1)',    1, 'one',  0], // first row
 			['i:nth-child(0n-0)', 0, null     ], // empty list
 			['i:nth-child(n+3)',  3, 'four'   ], // third+ lines
-			//['i:nth-child(0n+3)', 1, 'three'  ], // third element in a group of siblings
-			//['i:nth-child(-n+3)', 3, 'three'  ], // first three lines
+			['i:nth-child(-n+3)', 3, 'two'    ], // first three elements
+			['i:nth-child(-n+4)', 4, 'two'    ], // first four lines
+			['i:nth-child(0n+2)', 1, 'two',  0], // second element in a group of siblings
 		];
 	}
 

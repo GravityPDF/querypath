@@ -4,6 +4,7 @@ QueryPath Changelog
 # 4.0.2
 
 - Fix for :nth-child(n+B) to select B-th and all following elements
+- Fix for :nth-child(-n+B) to select first B elements
 - Update PHPUnit Test Suite to use @dataProvider in testPseudoClassNthChild() to reduce code repetition
 
 # 4.0.1
