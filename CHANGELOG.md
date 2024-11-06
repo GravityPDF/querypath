@@ -1,6 +1,11 @@
 QueryPath Changelog
 ===========================
 
+# 4.0.2
+
+- Fix for :nth-child(n+B). It now selects B-th and all the following elements
+- Refactored relevant PHPUnit Test Suite to use @dataProvider to remove code repetitions
+
 # 4.0.1
 
 - Only define global functions qp(), htmlqp(), and html5qp() if they haven't been defined already.
