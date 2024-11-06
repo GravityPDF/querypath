@@ -615,7 +615,31 @@ class QueryPathEventHandlerTest extends TestCase
 	  $this->assertEquals('one', $this->nthMatch($matches, 1)->getAttribute('id'));
 	}*/
 
-	public function testPseudoClassNthChild()
+	public function nthChildProvider(): array
+	{
+		return [
+			[':root :even',       3, 'four'   ], // full list
+			['i:even',            2, 'four'   ], // restricted to specific element
+			['i:odd',             3, 'three'  ], // restricted to specific element, odd this time
+			['i:nth-child(odd)',  3, 'three'  ], // odd
+			['i:nth-child(2n+1)', 3, 'three'  ], // odd, equiv to 2n + 1
+			['i:nth-child(2n-1)', 3, 'three'  ], // odd, equiv to 2n + 1
+			['i:nth-child(2n)',   2, 'four'   ], // even
+			//['i:nth-child(-2n)', 2, 'four'    ], // Not totally sure what should be returned here
+			['i:nth-child(4n)',   1, 'four', 0], // every fourth row
+			['i:nth-child(4n+1)', 2, 'five'   ], // first of every four rows
+			['i:nth-child(1)',    1, 'one', 0 ], // first row
+			['i:nth-child(0n-0)', 0, null     ], // empty list
+			['i:nth-child(n+3)',  3, 'four'   ], // third+ lines
+			//['i:nth-child(0n+3)', 1, 'three'  ], // third element in a group of siblings
+			//['i:nth-child(-n+3)', 3, 'three'  ], // first three lines
+		];
+	}
+
+	/**
+	 * @dataProvider nthChildProvider
+	 */
+	public function testPseudoClassNthChild($selector, $matchesCount, $matchId, $matchIndex = 1)
 	{
 		$xml = '<?xml version="1.0" ?>
     <test>
@@ -631,102 +655,16 @@ class QueryPathEventHandlerTest extends TestCase
 
 		// Test full list
 		$handler = new QueryPathEventHandler($doc);
-		$handler->find(':root :even');
+		$handler->find($selector);
 		$matches = $handler->getMatches();
-		$this->assertEquals(3, $matches->count());
-		$this->assertEquals('four', $this->nthMatch($matches, 1)->getAttribute('id'));
+		$this->assertEquals($matchesCount, $matches->count());
+		if ($matchesCount) {
+			$this->assertEquals($matchId, $this->nthMatch($matches, $matchIndex)->getAttribute('id'));
+		}
+	}
 
-		// Test restricted to specific element
-		$handler = new QueryPathEventHandler($doc);
-		$handler->find('i:even');
-		$matches = $handler->getMatches();
-		$this->assertEquals(2, $matches->count());
-		$this->assertEquals('four', $this->nthMatch($matches, 1)->getAttribute('id'));
-
-		// Test restricted to specific element, odd this time
-		$handler = new QueryPathEventHandler($doc);
-		$handler->find('i:odd');
-		$matches = $handler->getMatches();
-		$this->assertEquals(3, $matches->count());
-		$this->assertEquals('three', $this->nthMatch($matches, 1)->getAttribute('id'));
-
-		// Test nth-child(odd)
-		$handler = new QueryPathEventHandler($doc);
-		$handler->find('i:nth-child(odd)');
-		$matches = $handler->getMatches();
-		$this->assertEquals(3, $matches->count());
-		$this->assertEquals('three', $this->nthMatch($matches, 1)->getAttribute('id'));
-
-		// Test nth-child(2n+1)
-		$handler = new QueryPathEventHandler($doc);
-		$handler->find('i:nth-child(2n+1)');
-		$matches = $handler->getMatches();
-		$this->assertEquals(3, $matches->count());
-		$this->assertEquals('three', $this->nthMatch($matches, 1)->getAttribute('id'));
-
-		// Test nth-child(2n) (even)
-		$handler = new QueryPathEventHandler($doc);
-		$handler->find('i:nth-child(2n)');
-		$matches = $handler->getMatches();
-		$this->assertEquals(2, $matches->count());
-		$this->assertEquals('four', $this->nthMatch($matches, 1)->getAttribute('id'));
-
-		// Not totally sure what should be returned here
-		// Test nth-child(-2n)
-		// $handler = new QueryPathEventHandler($doc);
-		//     $handler->find('i:nth-child(-2n)');
-		//     $matches = $handler->getMatches();
-		//     $this->assertEquals(2, $matches->count());
-		//     $this->assertEquals('four', $this->nthMatch($matches, 1)->getAttribute('id'));
-
-		// Test nth-child(2n-1) (odd, equiv to 2n + 1)
-		$handler = new QueryPathEventHandler($doc);
-		$handler->find('i:nth-child(2n-1)');
-		$matches = $handler->getMatches();
-		$this->assertEquals(3, $matches->count());
-		$this->assertEquals('three', $this->nthMatch($matches, 1)->getAttribute('id'));
-
-		// Test nth-child(4n) (every fourth row)
-		$handler = new QueryPathEventHandler($doc);
-		$handler->find('i:nth-child(4n)');
-		$matches = $handler->getMatches();
-		$this->assertEquals(1, $matches->count());
-		$this->assertEquals('four', $this->nthMatch($matches, 0)->getAttribute('id'));
-
-		// Test nth-child(4n+1) (first of every four rows)
-		$handler = new QueryPathEventHandler($doc);
-		$handler->find('i:nth-child(4n+1)');
-		$matches = $handler->getMatches();
-		// Should match rows one and five
-		$this->assertEquals(2, $matches->count());
-		$this->assertEquals('five', $this->nthMatch($matches, 1)->getAttribute('id'));
-
-		// Test nth-child(1) (First row)
-		$handler = new QueryPathEventHandler($doc);
-		$handler->find('i:nth-child(1)');
-		$matches = $handler->getMatches();
-		$this->assertEquals(1, $matches->count());
-		$this->assertEquals('one', $this->firstMatch($matches)->getAttribute('id'));
-
-		// Test nth-child(0n-0) (Empty list)
-		$handler = new QueryPathEventHandler($doc);
-		$handler->find('i:nth-child(0n-0)');
-		$matches = $handler->getMatches();
-		$this->assertEquals(0, $matches->count());
-
-		// Test nth-child(n+3) (3+ elements)
-		$handler = new QueryPathEventHandler($doc);
-		$handler->find('i:nth-child(n+3)');
-		$matches = $handler->getMatches();
-		$this->assertEquals(3, $matches->count());
-		$this->assertEquals('four', $this->nthMatch($matches, 1)->getAttribute('id'));
-
-		// Test nth-child(-n+3) (First three lines)
-		// $handler = new QueryPathEventHandler($doc);
-		// $handler->find('i:nth-child(-n+3)');
-		// $matches = $handler->getMatches();
-		// $this->assertEquals(3, $matches->count());
-
+	public function testPseudoClassNthChildNested()
+	{
 		$xml = '<?xml version="1.0" ?>
     <test>
       <i class="odd" id="one"/>
