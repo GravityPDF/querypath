@@ -13,3 +13,5 @@ doc/*
 test/fakepear
 vendor/
 composer.lock
+.phpunit.result.cache
+.idea/

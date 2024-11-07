@@ -4,6 +4,9 @@ QueryPath Changelog
 # 4.0.1
 
 - Only define global functions qp(), htmlqp(), and html5qp() if they haven't been defined already.
+- Fix for :nth-child(n+B) to select B-th and all following elements
+- Fix for :nth-child(-n+B) to select first B elements
+- Update PHPUnit Test Suite to use @dataProvider in testPseudoClassNthChild() to reduce code repetition
 
 # 4.0.0
 
