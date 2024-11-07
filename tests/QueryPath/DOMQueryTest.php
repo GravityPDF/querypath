@@ -1676,6 +1676,8 @@ class DOMQueryTest extends TestCase
 		$this->assertEquals('root', qp($file, 'unary')->parent()->tag());
 		$this->assertEquals('root', qp($file, 'li')->parent('root')->tag());
 		$this->assertEquals(2, qp($file, 'li')->parent()->count());
+		$this->assertEquals(0, qp(DATA_HTML_FILE, 'html')->parent()->count());
+		$this->assertEquals(2, qp(DATA_HTML_FILE, 'table')->parents()->count());
 	}
 
 	public function testClosest()
