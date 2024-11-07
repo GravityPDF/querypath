@@ -618,22 +618,24 @@ class QueryPathEventHandlerTest extends TestCase
 	public function nthChildProvider(): array
 	{
 		return [
-			[':root :even',       3, 'four'   ], // full list
-			['i:even',            2, 'four'   ], // restricted to specific element
-			['i:odd',             3, 'three'  ], // restricted to specific element, odd this time
-			['i:nth-child(odd)',  3, 'three'  ], // odd
-			['i:nth-child(2n+1)', 3, 'three'  ], // odd, equiv to 2n + 1
-			['i:nth-child(2n-1)', 3, 'three'  ], // odd, equiv to 2n + 1
-			['i:nth-child(2n)',   2, 'four'   ], // even
-			//['i:nth-child(-2n)', 2, 'four'    ], // Not totally sure what should be returned here
-			['i:nth-child(4n)',   1, 'four', 0], // every fourth row
-			['i:nth-child(4n+1)', 2, 'five'   ], // first of every four rows
-			['i:nth-child(1)',    1, 'one',  0], // first row
-			['i:nth-child(0n-0)', 0, null     ], // empty list
-			['i:nth-child(n+3)',  3, 'four'   ], // third+ lines
-			['i:nth-child(-n+3)', 3, 'two'    ], // first three elements
-			['i:nth-child(-n+4)', 4, 'two'    ], // first four lines
-			['i:nth-child(0n+2)', 1, 'two',  0], // second element in a group of siblings
+			[':root :even',        3, 'four'     ], // full list
+			['i:even',             2, 'four'     ], // restricted to specific element
+			['i:odd',              3, 'three'    ], // restricted to specific element, odd this time
+			['i:nth-child(odd)',   3, 'three'    ], // odd
+			['i:nth-child(2n+1)',  3, 'three'    ], // odd, equiv to 2n + 1
+			['i:nth-child(2n-1)',  3, 'three'    ], // odd, equiv to 2n + 1
+			['i:nth-child(2n)',    2, 'four'     ], // even
+			['i:nth-child(-2n)',   0, null       ], // empty list (An+B will only accept positive results and without B this will always be negative)
+			['i:nth-child(-2n+4)', 2, 'two',  0  ], // two and four only
+			['i:nth-child(-2n+4)', 2, 'four', 1  ], // two and four only
+			['i:nth-child(4n)',    1, 'four', 0  ], // every fourth row
+			['i:nth-child(4n+1)',  2, 'five'     ], // first of every four rows
+			['i:nth-child(1)',     1, 'one',  0  ], // first row
+			['i:nth-child(0n-0)',  0, null       ], // empty list
+			['i:nth-child(n+3)',   3, 'four'     ], // third+ lines
+			['i:nth-child(-n+3)',  3, 'two'      ], // first three elements
+			['i:nth-child(-n+4)',  4, 'two'      ], // first four lines
+			['i:nth-child(0n+2)',  1, 'two',  0  ], // second element in a group of siblings
 		];
 	}
 
