@@ -16,7 +16,7 @@
  * @license LGPL The GNU Lesser GPL (LGPL) or an MIT-like license.
  */
 
-require_once '../src/QueryPath/QueryPath.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 // Let's stub out a basic SVG document.
 $svg_stub = '<?xml version="1.0"?>
