@@ -428,7 +428,29 @@ class PseudoClassTest extends TestCase
 		$this->assertEquals(3, $i);
 	}
 
-	public function testNthChild()
+	public function nthChildProvider(): array
+	{
+		return [
+			['2n+1',  10, ['a', 'c']], // Every odd row
+			['odd',   10, ['a', 'c']], // Every odd row
+			['2n',    10, ['b', 'd']], // Every even row
+			['even',  10, ['b', 'd']], // Even (2n)
+			['4n-1',  5,  'c'       ], // 4n - 1 == 4n + 3
+			['6n-1',  3,  null      ], // 6n - 1
+			['26n-1', 0,  null      ], // 26n - 1
+			['0n+0',  0,  null      ], // 0n + 0 -- spec says this is always FALSE
+			['3',     1,  'c'       ], // 3 (0n+3)
+			['-n+3',  3,  null      ], // -n+3: First three elements
+			['n+3',   18, null      ], // third+ elements
+			['2n+4',  9,  ['d', 'b']], // fourth+ even elements
+			['6n+30', 0,  null      ], // 6n + 30. These should always fail to match
+		];
+	}
+
+	/**
+	 * @dataProvider nthChildProvider
+	 */
+	public function testNthChild($pattern, $matchesCount, $matchTag)
 	{
 		$xml = '<?xml version="1.0"?><root>';
 		$xml .= str_repeat('<a/><b/><c/><d/>', 5);
@@ -438,145 +460,25 @@ class PseudoClassTest extends TestCase
 		[$ele, $root] = $this->doc($xml, 'root');
 		$nl = $root->childNodes;
 
-		// 2n + 1 -- Every odd row.
-		$i       = 0;
-		$expects = ['a', 'c'];
-		$j       = 0;
+		$i = 0;
+		$j = 0;
 		foreach ($nl as $n) {
-			$res = $ps->elementMatches('nth-child', $n, $root, '2n+1');
+			$res = $ps->elementMatches('nth-child', $n, $root, $pattern);
 			if ($res) {
 				++$i;
 				$name = $n->tagName;
-				$this->assertContains($name, $expects, sprintf('Expected b or d, got %s in slot %s', $name, ++$j));
+				if (is_string($matchTag)) {
+					$this->assertEquals($matchTag, $name, 'Invalid tagName match');
+				} elseif (is_array($matchTag)) {
+					$this->assertContains(
+						$name,
+						$matchTag,
+						'Expected only ['.implode(', ', $matchTag).'] tags, got '.$name.' in slot '.++$j
+					);
+				}
 			}
 		}
-		$this->assertEquals(10, $i, '2n+1 is ten items.');
-
-		// Odd
-		$i       = 0;
-		$expects = ['a', 'c'];
-		$j       = 0;
-		foreach ($nl as $n) {
-			$res = $ps->elementMatches('nth-child', $n, $root, 'odd');
-			if ($res) {
-				++$i;
-				$name = $n->tagName;
-				$this->assertContains($name, $expects, sprintf('Expected b or d, got %s in slot %s', $name, ++$j));
-			}
-		}
-		$this->assertEquals(10, $i, '2n+1 is ten items.');
-
-		// 2n + 0 -- every even row
-		$i       = 0;
-		$expects = ['b', 'd'];
-		foreach ($nl as $n) {
-			$res = $ps->elementMatches('nth-child', $n, $root, '2n');
-			if ($res) {
-				++$i;
-				$name = $n->tagName;
-				$this->assertContains($name, $expects, 'Expected a or c, got ' . $name);
-			}
-		}
-		$this->assertEquals(10, $i, '2n+0 is ten items.');
-
-		// Even (2n)
-		$i       = 0;
-		$expects = ['b', 'd'];
-		foreach ($nl as $n) {
-			$res = $ps->elementMatches('nth-child', $n, $root, 'even');
-			if ($res) {
-				++$i;
-				$name = $n->tagName;
-				$this->assertContains($name, $expects, 'Expected a or c, got ' . $name);
-			}
-		}
-		$this->assertEquals(10, $i, ' even is ten items.');
-
-		// 4n - 1 == 4n + 3
-		$i = 0;
-		foreach ($nl as $n) {
-			$res = $ps->elementMatches('nth-child', $n, $root, '4n-1');
-			if ($res) {
-				++$i;
-				$name = $n->tagName;
-				$this->assertEquals('c', $name, 'Expected c, got ' . $name);
-			}
-		}
-		$this->assertEquals(5, $i);
-
-		// 6n - 1
-		$i = 0;
-		foreach ($nl as $n) {
-			$res = $ps->elementMatches('nth-child', $n, $root, '6n-1');
-			if ($res) {
-				++$i;
-			}
-		}
-		$this->assertEquals(3, $i);
-
-		// 6n + 1
-		$i = 0;
-		foreach ($nl as $n) {
-			$res = $ps->elementMatches('nth-child', $n, $root, '6n+1');
-			if ($res) {
-				++$i;
-			}
-		}
-		$this->assertEquals(4, $i);
-
-		// 26n - 1
-		$i = 0;
-		foreach ($nl as $n) {
-			$res = $ps->elementMatches('nth-child', $n, $root, '26n-1');
-			if ($res) {
-				++$i;
-			}
-		}
-		$this->assertEquals(0, $i);
-
-		// 0n + 0 -- spec says this is always FALSE.
-		$i = 0;
-		foreach ($nl as $n) {
-			$res = $ps->elementMatches('nth-child', $n, $root, '0n+0');
-			if ($res) {
-				++$i;
-			}
-		}
-		$this->assertEquals(0, $i);
-
-		// 3 (0n+3)
-		$i = 0;
-		foreach ($nl as $n) {
-			$res = $ps->elementMatches('nth-child', $n, $root, '3');
-			if ($res) {
-				++$i;
-				$this->assertEquals('c', $n->tagName);
-			}
-		}
-		$this->assertEquals(1, $i);
-
-		// -n+3: First three elements.
-		$i = 0;
-		foreach ($nl as $n) {
-			$res = $ps->elementMatches('nth-child', $n, $root, '-n+3');
-			if ($res) {
-				++$i;
-				//$this->assertEquals('c', $n->tagName);
-			}
-		}
-		$this->assertEquals(3, $i);
-
-		// BROKEN RULES -- these should always fail to match.
-
-		// 6n + 7;
-		$i = 0;
-		foreach ($nl as $n) {
-			$res = $ps->elementMatches('nth-child', $n, $root, '6n+7');
-			if ($res) {
-				++$i;
-			}
-		}
-		$this->assertEquals(0, $i);
+		$this->assertEquals($matchesCount, $i, 'Invalid matches count');
 	}
 
 	public function testEven()

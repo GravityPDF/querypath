@@ -149,6 +149,8 @@ class Util
 		$aVal = $matches[1] ?? 1;
 		if ($aVal === '-') {
 			$aVal = -1;
+		} elseif ($aVal === '') {
+			$aVal = 1;
 		} else {
 			$aVal = (int) $aVal;
 		}

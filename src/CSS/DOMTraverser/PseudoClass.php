@@ -441,7 +441,6 @@ class PseudoClass
 		$parent = $node->parentNode;
 		if (empty($parent)
 			|| ($groupSize === 0 && $elementInGroup === 0)
-			|| ($groupSize > 0 && $elementInGroup > $groupSize)
 		) {
 			return false;
 		}
