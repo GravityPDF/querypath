@@ -45,6 +45,7 @@ class UtilTest extends TestCase
 		$this->assertEquals([2, -1], Util::parseAnB('2n   -   1'));
 		// -n + 3
 		$this->assertEquals([-1, 3], Util::parseAnB('-n+3'));
+		$this->assertEquals([1,  3], Util::parseAnB('n+3'));
 
 		// Test invalid values
 		$this->assertEquals([0, 0], Util::parseAnB('obviously + invalid'));
