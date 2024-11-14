@@ -1,6 +1,10 @@
 QueryPath Changelog
 ===========================
 
+# Unreleased changes
+
+- Update composer.json to mark library as PHP 8.4 compatible
+
 # 4.0.1
 
 - Only define global functions qp(), htmlqp(), and html5qp() if they haven't been defined already.
