@@ -4,6 +4,8 @@ QueryPath Changelog
 # Unreleased changes
 
 - Update composer.json to mark library as PHP 8.4 compatible
+- Use `\QueryPath\CSS\DOMTraverser\Util::parseAnB()` in `\QueryPath\CSS\QueryPathEventHandler` class to parse the `:nth-child(an+b)` syntax
+- Deprecate protected method `\QueryPath\CSS\QueryPathEventHandler::parseAnB()` in favor of public static method `\QueryPath\CSS\DOMTraverser\Util::parseAnB()`
 
 # 4.0.1
 
