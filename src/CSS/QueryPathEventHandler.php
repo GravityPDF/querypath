@@ -45,6 +45,7 @@ use DOMDocument;
 use DOMElement;
 use DOMNode;
 use DOMNodeList;
+use QueryPath\CSS\DOMTraverser\Util;
 use QueryPath\Exception;
 use SplObjectStorage;
 use stdClass;
@@ -486,19 +487,19 @@ class QueryPathEventHandler implements EventHandler, Traverser
 
 			// Standard child-checking items.
 			case 'nth-child':
-				[$aVal, $bVal] = $this->parseAnB($value);
+				[$aVal, $bVal] = Util::parseAnB($value);
 				$this->nthChild($aVal, $bVal);
 				break;
 			case 'nth-last-child':
-				[$aVal, $bVal] = $this->parseAnB($value);
+				[$aVal, $bVal] = Util::parseAnB($value);
 				$this->nthLastChild($aVal, $bVal);
 				break;
 			case 'nth-of-type':
-				[$aVal, $bVal] = $this->parseAnB($value);
+				[$aVal, $bVal] = Util::parseAnB($value);
 				$this->nthOfTypeChild($aVal, $bVal, false);
 				break;
 			case 'nth-last-of-type':
-				[$aVal, $bVal] = $this->parseAnB($value);
+				[$aVal, $bVal] = Util::parseAnB($value);
 				$this->nthLastOfTypeChild($aVal, $bVal);
 				break;
 			case 'first-child':
@@ -712,41 +713,13 @@ class QueryPathEventHandler implements EventHandler, Traverser
 	 * @param $rule
 	 *  Some rule in the an+b format.
 	 *
-	 * @return
+	 * @return int[]
 	 *  Array (list($aVal, $bVal)) of the two values.
-	 * @throws ParseException
-	 *  If the rule does not follow conventions.
+	 * @deprecated 4.0.2
 	 */
 	protected function parseAnB($rule)
 	{
-		if ($rule == 'even') {
-			return [2, 0];
-		} elseif ($rule == 'odd') {
-			return [2, 1];
-		} elseif ($rule == 'n') {
-			return [1, 0];
-		} elseif (is_numeric($rule)) {
-			return [0, (int) $rule];
-		}
-
-		$rule = explode('n', $rule);
-		if (count($rule) == 0) {
-			throw new ParseException("nth-child value is invalid.");
-		}
-
-		// Each of these is legal: 1, -1, - and <empty>. '-' is shorthand for -1. <empty> is shorthand for 1
-		$aVal = trim($rule[0]);
-		if ($aVal === '') {
-			$aVal = 1;
-		} elseif ($aVal === '-') {
-			$aVal = -1;
-		} else {
-			$aVal = (int) $aVal;
-		}
-
-		$bVal = ! empty($rule[1]) ? (int) trim($rule[1]) : 0;
-
-		return [$aVal, $bVal];
+		return Util::parseAnB($rule);
 	}
 
 	/**
