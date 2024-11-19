@@ -796,26 +796,7 @@ trait QueryFilters
 	 */
 	public function parent($selector = null): Query
 	{
-		$found = new SplObjectStorage();
-		foreach ($this->matches as $m) {
-			while ($m->parentNode->nodeType !== XML_DOCUMENT_NODE) {
-				$m = $m->parentNode;
-				// Is there any case where parent node is not an element?
-				if ($m->nodeType === XML_ELEMENT_NODE) {
-					if (! empty($selector)) {
-						if (QueryPath::with($m, null, $this->options)->is($selector) > 0) {
-							$found->attach($m);
-							break;
-						}
-					} else {
-						$found->attach($m);
-						break;
-					}
-				}
-			}
-		}
-
-		return $this->inst($found, null);
+		return $this->getParentElements($selector, true);
 	}
 
 	/**
@@ -836,18 +817,44 @@ trait QueryFilters
 	 */
 	public function parents($selector = null): Query
 	{
+		return $this->getParentElements($selector, false);
+	}
+
+	/**
+	 * Get ancestor(s) of each element in the DOMQuery.
+	 *
+	 * If a selector is present, only matching ancestors will be retrieved.
+	 *
+	 * @param string|null $selector
+	 *  A valid CSS 3 Selector.
+	 * @param bool $immediate
+	 *  If function should return only the immediate parent
+	 *
+	 * @return DOMQuery
+	 *  A DOMNode object containing the matching ancestors.
+	 * @throws ParseException
+	 * @throws Exception
+	 */
+	private function getParentElements(?string $selector, bool $immediate): Query
+	{
 		$found = new SplObjectStorage();
 		foreach ($this->matches as $m) {
-			while ($m->parentNode->nodeType !== XML_DOCUMENT_NODE) {
+			while ($m->parentNode && $m->parentNode->nodeType !== XML_DOCUMENT_NODE) {
 				$m = $m->parentNode;
 				// Is there any case where parent node is not an element?
 				if ($m->nodeType === XML_ELEMENT_NODE) {
 					if (! empty($selector)) {
 						if (QueryPath::with($m, null, $this->options)->is($selector) > 0) {
 							$found->attach($m);
+							if ($immediate) {
+								break;
+							}
 						}
 					} else {
 						$found->attach($m);
+						if ($immediate) {
+							break;
+						}
 					}
 				}
 			}

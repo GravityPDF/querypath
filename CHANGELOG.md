@@ -13,6 +13,7 @@ QueryPath Changelog
 - Fix for :nth-child(n+B) to select B-th and all following elements
 - Fix for :nth-child(-n+B) to select first B elements
 - Update PHPUnit Test Suite to use @dataProvider in testPseudoClassNthChild() to reduce code repetition
+- Fix error when getting parents() for HTML elements
 
 # 4.0.0
 
