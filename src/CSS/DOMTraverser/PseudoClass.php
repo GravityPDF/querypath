@@ -79,7 +79,7 @@ class PseudoClass
 				return false;
 			case 'indeterminate':
 				// Because sometimes screwing with people is fun.
-				return (boolean) mt_rand(0, 1);
+				return (bool) mt_rand(0, 1);
 			case 'lang':
 				// No value = exception.
 				if (! isset($value)) {
@@ -354,7 +354,7 @@ class PseudoClass
 	protected function has($node, $selector): bool
 	{
 		$splos = new SPLObjectStorage();
-		$splos->attach($node);
+		$splos->offsetSet($node);
 		$traverser = new DOMTraverser($splos, true);
 		$results   = $traverser->find($selector)->matches();
 

@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php-versions: [ '7.1', '7.2', '7.3', '7.4', '8.0', '8.1', '8.2', '8.3', '8.4' ]
+        php-versions: [ '7.1', '7.2', '7.3', '7.4', '8.0', '8.1', '8.2', '8.3', '8.4', '8.5' ]
         include:
           - php: '8.3'
             report: true
@@ -15,7 +15,7 @@ jobs:
     name: PHP ${{ matrix.php-versions }} PHPUnit Test
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -24,7 +24,7 @@ jobs:
           ini-values: error_reporting=E_ALL
 
       - name: Install Composer Dependencies
-        uses: ramsey/composer-install@v3
+        uses: ramsey/composer-install@v4
 
       - name: Log debug information
         run: |
@@ -41,7 +41,7 @@ jobs:
 
       - name: Check Code Coverage
         if: ${{ matrix.report }}
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           directory: ./coverage/
           token: ${{ secrets.CODECOV_TOKEN }}

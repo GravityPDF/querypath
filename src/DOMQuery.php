@@ -206,7 +206,7 @@ class DOMQuery extends DOM
 			$nl = $xpath->query($query, $item);
 			if ($nl->length > 0) {
 				for ($i = 0; $i < $nl->length; ++$i) {
-					$found->attach($nl->item($i));
+					$found->offsetSet($nl->item($i));
 				}
 			}
 		}
@@ -493,7 +493,7 @@ class DOMQuery extends DOM
 		// Copy back into SplObjectStorage.
 		$found = new SplObjectStorage();
 		foreach ($list as $node) {
-			$found->attach($node);
+			$found->offsetSet($node);
 		}
 		//$this->setMatches($found);
 
@@ -629,7 +629,7 @@ class DOMQuery extends DOM
 		$last = $this->matches;
 
 		foreach ($this->last as $item) {
-			$this->matches->attach($item);
+			$this->matches->offsetSet($item);
 		}
 
 		$this->last = $last;
@@ -1524,7 +1524,7 @@ class DOMQuery extends DOM
 	{
 		$found = new SplObjectStorage();
 		foreach ($this->matches as $m) {
-			$found->attach($m->cloneNode(true));
+			$found->offsetSet($m->cloneNode(true));
 		}
 		$this->setMatches($found);
 

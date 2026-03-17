@@ -69,7 +69,7 @@ trait QueryMutators
 				// Then we assume we are writing to the doc root
 				$this->document->appendChild($data);
 				$found = new SplObjectStorage();
-				$found->attach($this->document->documentElement);
+				$found->offsetSet($this->document->documentElement);
 				$this->setMatches($found);
 			} else {
 				// You can only append in item once. So in cases where we
@@ -302,7 +302,7 @@ trait QueryMutators
 		foreach ($this->matches as $m) {
 			$parent = $m->parentNode;
 			$parent->insertBefore($data->cloneNode(true), $m);
-			$found->attach($parent->removeChild($m));
+			$found->offsetSet($parent->removeChild($m));
 		}
 
 		return $this->inst($found, null);
@@ -364,7 +364,7 @@ trait QueryMutators
 			$parent = $m->parentNode;
 			$old    = $parent->removeChild($m);
 			$parent->parentNode->insertBefore($old, $parent);
-			$parents->attach($parent);
+			$parents->offsetSet($parent);
 		}
 
 		// Now that all the children are moved, we
@@ -568,13 +568,13 @@ trait QueryMutators
 			if ($local_deepest > $deepest) {
 				$winner = new SplObjectStorage();
 				foreach ($local_ele as $lele) {
-					$winner->attach($lele);
+					$winner->offsetSet($lele);
 				}
 				$deepest = $local_deepest;
 			} // Augument with other equally deep elements.
 			elseif ($local_deepest === $deepest) {
 				foreach ($local_ele as $lele) {
-					$winner->attach($lele);
+					$winner->offsetSet($lele);
 				}
 			}
 		}
@@ -710,7 +710,7 @@ trait QueryMutators
 		foreach ($this->matches as $item) {
 			// The item returned is (according to docs) different from
 			// the one passed in, so we have to re-store it.
-			$found->attach($item->parentNode->removeChild($item));
+			$found->offsetSet($item->parentNode->removeChild($item));
 		}
 
 		return $this->inst($found, null);
@@ -808,7 +808,7 @@ trait QueryMutators
 		foreach ($matches as $item) {
 			// The item returned is (according to docs) different from
 			// the one passed in, so we have to re-store it.
-			$found->attach($item->parentNode->removeChild($item));
+			$found->offsetSet($item->parentNode->removeChild($item));
 		}
 
 		// Return a clone DOMQuery with just the removed items. If
@@ -882,7 +882,7 @@ trait QueryMutators
 		$this->last = $this->matches;
 
 		foreach (QueryPath::with($this->document, $selector, $this->options)->get() as $item) {
-			$this->matches->attach($item);
+			$this->matches->offsetSet($item);
 		}
 
 		return $this;

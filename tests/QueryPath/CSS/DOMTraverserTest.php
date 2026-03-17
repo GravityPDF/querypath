@@ -29,7 +29,7 @@ class DOMTraverserTest extends TestCase
 		$dom->load($this->xml_file);
 
 		$splos = new SPLObjectStorage();
-		$splos->attach($dom);
+		$splos->offsetSet($dom);
 
 		$traverser = new DOMTraverser($splos);
 
@@ -43,7 +43,7 @@ class DOMTraverserTest extends TestCase
 		$dom->load($this->xml_file);
 
 		$splos = new SPLObjectStorage();
-		$splos->attach($dom->documentElement);
+		$splos->offsetSet($dom->documentElement);
 
 		$traverser = new DOMTraverser($splos);
 
