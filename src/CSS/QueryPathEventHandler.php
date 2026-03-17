@@ -95,7 +95,7 @@ class QueryPathEventHandler implements EventHandler, Traverser
 			foreach ($dom as $item) {
 				if ($item instanceof DOMNode && $item->nodeType == XML_ELEMENT_NODE) {
 					//$matches[] = $item;
-					$matches->attach($item);
+					$matches->offsetSet($item);
 				}
 			}
 			//$this->dom = count($matches) > 0 ? $matches[0] : NULL;
@@ -110,17 +110,17 @@ class QueryPathEventHandler implements EventHandler, Traverser
 		} // DOM Document -- we get the root element.
 		elseif ($dom instanceof DOMDocument) {
 			$this->dom = $dom->documentElement;
-			$matches->attach($dom->documentElement);
+			$matches->offsetSet($dom->documentElement);
 		} // DOM Element -- we use this directly
 		elseif ($dom instanceof DOMElement) {
 			$this->dom = $dom;
-			$matches->attach($dom);
+			$matches->offsetSet($dom);
 		} // NodeList -- We turn this into an array
 		elseif ($dom instanceof DOMNodeList) {
 			$a = []; // Not sure why we are doing this....
 			foreach ($dom as $item) {
 				if ($item->nodeType == XML_ELEMENT_NODE) {
-					$matches->attach($item);
+					$matches->offsetSet($item);
 					$a[] = $item;
 				}
 			}
@@ -169,10 +169,10 @@ class QueryPathEventHandler implements EventHandler, Traverser
 		//$result = array_merge($this->alreadyMatched, $this->matches);
 		$result = new SplObjectStorage();
 		foreach ($this->alreadyMatched as $m) {
-			$result->attach($m);
+			$result->offsetSet($m);
 		}
 		foreach ($this->matches as $m) {
-			$result->attach($m);
+			$result->offsetSet($m);
 		}
 
 		return $result;
@@ -199,7 +199,7 @@ class QueryPathEventHandler implements EventHandler, Traverser
 		foreach ($matches as $item) {
 			// Check if any of the current items has the desired ID.
 			if ($item->hasAttribute('id') && $item->getAttribute('id') === $id) {
-				$found->attach($item);
+				$found->offsetSet($item);
 				break;
 			}
 		}
@@ -218,7 +218,7 @@ class QueryPathEventHandler implements EventHandler, Traverser
 			// In some cases (e.g. element is root element)
 			// it definitely should. But what about other cases?
 			if ($item->tagName == $name) {
-				$found->attach($item);
+				$found->offsetSet($item);
 			}
 			// Search for matching kids.
 			//$nl = $item->getElementsByTagName($name);
@@ -252,7 +252,7 @@ class QueryPathEventHandler implements EventHandler, Traverser
 			if ($item instanceof DOMNode
 				&& $item->namespaceURI == $nsuri
 				&& $lname == $item->localName) {
-				$found->attach($item);
+				$found->offsetSet($item);
 			}
 
 			if (! empty($nsuri)) {
@@ -270,7 +270,7 @@ class QueryPathEventHandler implements EventHandler, Traverser
 				foreach ($nl as $node) {
 					if ($node->tagName == $tagname) {
 						//$nsmatches[] = $node;
-						$found->attach($node);
+						$found->offsetSet($node);
 					}
 				}
 				// If something is found, merge them:
@@ -286,7 +286,7 @@ class QueryPathEventHandler implements EventHandler, Traverser
 		//$this->findAnyElement = TRUE;
 		$matches = $this->candidateList();
 		foreach ($matches as $item) {
-			$found->attach($item); // Add self
+			$found->offsetSet($item); // Add self
 			// See issue #20 or section 6.2 of this:
 			// http://www.w3.org/TR/2009/PR-css3-selectors-20091215/#universal-selector
 			//$nl = $item->getElementsByTagName('*');
@@ -306,7 +306,7 @@ class QueryPathEventHandler implements EventHandler, Traverser
 			$matches = $this->candidateList();
 			foreach ($matches as $item) {
 				if ($item instanceof DOMNode && $nsuri == $item->namespaceURI) {
-					$found->attach($item);
+					$found->offsetSet($item);
 				}
 			}
 		}
@@ -323,7 +323,7 @@ class QueryPathEventHandler implements EventHandler, Traverser
 			if ($item->hasAttribute('class')) {
 				$classes = explode(' ', $item->getAttribute('class'));
 				if (in_array($name, $classes)) {
-					$found->attach($item);
+					$found->offsetSet($item);
 				}
 			}
 		}
@@ -341,11 +341,11 @@ class QueryPathEventHandler implements EventHandler, Traverser
 				if (isset($value)) {
 					// If a value exists, then we need a match.
 					if ($this->attrValMatches($value, $item->getAttribute($name), $operation)) {
-						$found->attach($item);
+						$found->offsetSet($item);
 					}
 				} else {
 					// If no value exists, then we consider it a match.
-					$found->attach($item);
+					$found->offsetSet($item);
 				}
 			}
 		}
@@ -366,10 +366,10 @@ class QueryPathEventHandler implements EventHandler, Traverser
 			if ($candidate->hasAttribute($name)) {
 				// If value is required, match that, too.
 				if (isset($value) && $value == $candidate->getAttribute($name)) {
-					$found->attach($candidate);
+					$found->offsetSet($candidate);
 				} // Otherwise, it's a match on name alone.
 				else {
-					$found->attach($candidate);
+					$found->offsetSet($candidate);
 				}
 			}
 		}
@@ -400,10 +400,10 @@ class QueryPathEventHandler implements EventHandler, Traverser
 			if ($item->hasAttributeNS($uri, $lname)) {
 				if (isset($value)) {
 					if ($this->attrValMatches($value, $item->getAttributeNS($uri, $lname), $operation)) {
-						$found->attach($item);
+						$found->offsetSet($item);
 					}
 				} else {
-					$found->attach($item);
+					$found->offsetSet($item);
 				}
 			}
 		}
@@ -453,17 +453,17 @@ class QueryPathEventHandler implements EventHandler, Traverser
 				if (empty($this->dom)) {
 					$this->matches = $found;
 				} elseif (is_array($this->dom)) {
-					$found->attach($this->dom[0]->ownerDocument->documentElement);
+					$found->offsetSet($this->dom[0]->ownerDocument->documentElement);
 					$this->matches = $found;
 				} elseif ($this->dom instanceof DOMNode) {
-					$found->attach($this->dom->ownerDocument->documentElement);
+					$found->offsetSet($this->dom->ownerDocument->documentElement);
 					$this->matches = $found;
 				} elseif ($this->dom instanceof DOMNodeList && $this->dom->length > 0) {
-					$found->attach($this->dom->item(0)->ownerDocument->documentElement);
+					$found->offsetSet($this->dom->item(0)->ownerDocument->documentElement);
 					$this->matches = $found;
 				} else {
 					// Hopefully we never get here:
-					$found->attach($this->dom);
+					$found->offsetSet($this->dom);
 					$this->matches = $found;
 				}
 				break;
@@ -473,7 +473,7 @@ class QueryPathEventHandler implements EventHandler, Traverser
 			case 'x-root':
 			case 'x-reset':
 				$this->matches = new SplObjectStorage();
-				$this->matches->attach($this->dom);
+				$this->matches->offsetSet($this->dom);
 				break;
 
 			// NON-STANDARD extensions for simple support of even and odd. These
@@ -545,7 +545,7 @@ class QueryPathEventHandler implements EventHandler, Traverser
 				$found   = new SplObjectStorage();
 				foreach ($matches as $match) {
 					if (! empty($match->firstChild)) {
-						$found->attach($match);
+						$found->offsetSet($match);
 					}
 				}
 				$this->matches = $found;
@@ -575,7 +575,7 @@ class QueryPathEventHandler implements EventHandler, Traverser
 					$tag = $item->tagName;
 					$f   = strtolower(substr($tag, 0, 1));
 					if ($f == 'h' && strlen($tag) == 2 && ctype_digit(substr($tag, 1, 1))) {
-						$found->attach($item);
+						$found->offsetSet($item);
 					}
 				}
 				$this->matches = $found;
@@ -592,7 +592,7 @@ class QueryPathEventHandler implements EventHandler, Traverser
 				$found   = new SplObjectStorage();
 				foreach ($matches as $item) {
 					if (strpos($item->textContent, $value) !== false) {
-						$found->attach($item);
+						$found->offsetSet($item);
 					}
 				}
 				$this->matches = $found;
@@ -606,7 +606,7 @@ class QueryPathEventHandler implements EventHandler, Traverser
 				$found   = new SplObjectStorage();
 				foreach ($matches as $item) {
 					if ($item->textContent == $value) {
-						$found->attach($item);
+						$found->offsetSet($item);
 					}
 				}
 				$this->matches = $found;
@@ -651,7 +651,7 @@ class QueryPathEventHandler implements EventHandler, Traverser
 					foreach ($matches as $match) {
 						// CSS is 1-based, so we pre-increment.
 						if ($matches->key() + 1 == $pos) {
-							$found->attach($match);
+							$found->offsetSet($match);
 							break;
 						}
 					}
@@ -660,7 +660,7 @@ class QueryPathEventHandler implements EventHandler, Traverser
 			case 'first':
 				if ($matches->count() > 0) {
 					$matches->rewind(); // This is necessary to init.
-					$found->attach($matches->current());
+					$found->offsetSet($matches->current());
 				}
 				break;
 			case 'last':
@@ -669,7 +669,7 @@ class QueryPathEventHandler implements EventHandler, Traverser
 					foreach ($matches as $item) {
 					}
 
-					$found->attach($item);
+					$found->offsetSet($item);
 				}
 				break;
 			// case 'even':
@@ -690,7 +690,7 @@ class QueryPathEventHandler implements EventHandler, Traverser
 				$i = 0;
 				foreach ($matches as $item) {
 					if (++$i < $pos) {
-						$found->attach($item);
+						$found->offsetSet($item);
 					}
 				}
 				break;
@@ -698,7 +698,7 @@ class QueryPathEventHandler implements EventHandler, Traverser
 				$i = 0;
 				foreach ($matches as $item) {
 					if (++$i > $pos) {
-						$found->attach($item);
+						$found->offsetSet($item);
 					}
 				}
 				break;
@@ -748,7 +748,7 @@ class QueryPathEventHandler implements EventHandler, Traverser
 			// Build up an array of all of children of this parent, and store the
 			// index of each element for reference later. We only need to do this
 			// once per parent, though.
-			if (!$parents->contains($parent)) {
+			if (!$parents->offsetExists($parent)) {
 				$c = 0;
 				foreach ($parent->childNodes as $child) {
 					// We only want nodes, and if this call is preceded by an element
@@ -757,10 +757,10 @@ class QueryPathEventHandler implements EventHandler, Traverser
 					// necessary to make the implementation match the examples in the spec. However,
 					// jQuery 1.2 does not do this.
 					if ($child->nodeType === XML_ELEMENT_NODE && ($this->findAnyElement || $child->tagName === $item->tagName)) {
-						$index->attach($child, ++$c);
+						$index->offsetSet($child, ++$c);
 					}
 				}
-				$parents->attach($parent, $c);
+				$parents->offsetSet($parent, $c);
 			}
 
 			// If we are looking for the last child, we count from the end of a list.
@@ -775,7 +775,7 @@ class QueryPathEventHandler implements EventHandler, Traverser
 			// If group size is 0, then we return element at the right index.
 			if ($groupSize === 0) {
 				if ($indexToMatch === $elementInGroup) {
-					$matches->attach($item);
+					$matches->offsetSet($item);
 				}
 			}
 			// If group size != 0, then we grab nth element from group offset by
@@ -783,7 +783,7 @@ class QueryPathEventHandler implements EventHandler, Traverser
 			else {
 				if (($indexToMatch - $elementInGroup) % $groupSize == 0
 					&& ($indexToMatch - $elementInGroup) / $groupSize >= 0) {
-					$matches->attach($item);
+					$matches->offsetSet($item);
 				}
 			}
 		}
@@ -805,7 +805,7 @@ class QueryPathEventHandler implements EventHandler, Traverser
 	foreach ($this->matches as $m) array_unshift($arr, $m);
 
 	$this->found = new \SplObjectStorage();
-	foreach ($arr as $item) $this->found->attach($item);
+	foreach ($arr as $item) $this->found->offsetSet($item);
 	}*/
 
 	/**
@@ -896,7 +896,7 @@ class QueryPathEventHandler implements EventHandler, Traverser
 			 // See if this is the index we are looking for.
 			 if ($i == $index) {
 			   //$this->matches = new \SplObjectStorage();
-			   $this->matches->attach($child);
+			   $this->matches->offsetSet($child);
 			   return;
 			 }
 			 // If it's not the one we are looking for, increment.
@@ -906,7 +906,7 @@ class QueryPathEventHandler implements EventHandler, Traverser
 		 // We don't care about type. Any tagName will match.
 		 else {
 		   if ($i == $index) {
-			 $this->matches->attach($child);
+			 $this->matches->offsetSet($child);
 			 return;
 		   }
 		   ++$i;
@@ -934,17 +934,17 @@ class QueryPathEventHandler implements EventHandler, Traverser
 			// Build up an array of all of children of this parent, and store the
 			// index of each element for reference later. We only need to do this
 			// once per parent, though.
-			if (!$parents->contains($parent)) {
+			if (!$parents->offsetExists($parent)) {
 				$c = 0;
 				foreach ($parent->childNodes as $child) {
 					// This doesn't totally make sense, since the CSS 3 spec does not require that
 					// this pseudo-class be adjoined to an element (e.g. ' :nth-of-type' is allowed).
 					if ($child->nodeType === XML_ELEMENT_NODE && $child->tagName === $item->tagName) {
-						$index->attach($child, ++$c);
+						$index->offsetSet($child, ++$c);
 					}
 				}
 
-				$parents->attach($parent, $c);
+				$parents->offsetSet($parent, $c);
 			}
 
 			// If we are looking for the last child, we count from the end of a list.
@@ -959,7 +959,7 @@ class QueryPathEventHandler implements EventHandler, Traverser
 			// If group size is 0, then we return element at the right index.
 			if ($groupSize === 0) {
 				if ($indexToMatch === $elementInGroup) {
-					$matches->attach($item);
+					$matches->offsetSet($item);
 				}
 			}
 			// If group size != 0, then we grab nth element from group offset by
@@ -967,7 +967,7 @@ class QueryPathEventHandler implements EventHandler, Traverser
 			else {
 				if (($indexToMatch - $elementInGroup) % $groupSize == 0
 					&& ($indexToMatch - $elementInGroup) / $groupSize >= 0) {
-					$matches->attach($item);
+					$matches->offsetSet($item);
 				}
 			}
 		}
@@ -1013,7 +1013,7 @@ class QueryPathEventHandler implements EventHandler, Traverser
 		// the document because we search for xml:lang separately
 		// from lang.
 		foreach ($this->matches as $added) {
-			$lang->attach($added);
+			$lang->offsetSet($added);
 		}
 		$this->matches = $lang;
 	}
@@ -1037,7 +1037,7 @@ class QueryPathEventHandler implements EventHandler, Traverser
 			$handler   = new QueryPathEventHandler($item);
 			$not_these = $handler->find($filter)->getMatches();
 			if ($not_these->count() == 0) {
-				$found->attach($item);
+				$found->offsetSet($item);
 			}
 		}
 		// No need to check for unique elements, since the list
@@ -1058,7 +1058,7 @@ class QueryPathEventHandler implements EventHandler, Traverser
 			$handler = new QueryPathEventHandler($item);
 			$these   = $handler->find($filter)->getMatches();
 			if (count($these) > 0) {
-				$found->attach($item);
+				$found->offsetSet($item);
 			}
 		}
 		$this->matches = $found;
@@ -1078,8 +1078,8 @@ class QueryPathEventHandler implements EventHandler, Traverser
 			$parent = $item->parentNode;
 			foreach ($parent->childNodes as $kid) {
 				if ($kid->nodeType == XML_ELEMENT_NODE && $kid->tagName == $type) {
-					if (! $found->contains($kid)) {
-						$found->attach($kid);
+					if (! $found->offsetExists($kid)) {
+						$found->offsetSet($kid);
 					}
 					break;
 				}
@@ -1101,8 +1101,8 @@ class QueryPathEventHandler implements EventHandler, Traverser
 			for ($i = $parent->childNodes->length - 1; $i >= 0; --$i) {
 				$kid = $parent->childNodes->item($i);
 				if ($kid->nodeType == XML_ELEMENT_NODE && $kid->tagName == $type) {
-					if (! $found->contains($kid)) {
-						$found->attach($kid);
+					if (! $found->offsetExists($kid)) {
+						$found->offsetSet($kid);
 					}
 					break;
 				}
@@ -1129,7 +1129,7 @@ class QueryPathEventHandler implements EventHandler, Traverser
 			// There should be only one child element, and
 			// it should be the one being tested.
 			if (count($kids) == 1 && $kids[0] === $item) {
-				$found->attach($kids[0]);
+				$found->offsetSet($kids[0]);
 			}
 		}
 		$this->matches = $found;
@@ -1153,7 +1153,7 @@ class QueryPathEventHandler implements EventHandler, Traverser
 				}
 			}
 			if ($empty) {
-				$found->attach($item);
+				$found->offsetSet($item);
 			}
 		}
 		$this->matches = $found;
@@ -1186,7 +1186,7 @@ class QueryPathEventHandler implements EventHandler, Traverser
 
 			// If no others were found, attach this one.
 			if ($onlyOfType) {
-				$found->attach($item);
+				$found->offsetSet($item);
 			}
 		}
 		$this->matches = $found;
@@ -1247,7 +1247,7 @@ class QueryPathEventHandler implements EventHandler, Traverser
 						$line = trim($lines[0]);
 						if (! empty($line)) {
 							$o->textContent = $line;
-							$found->attach($o);//trim($lines[0]);
+							$found->offsetSet($o);//trim($lines[0]);
 						}
 					}
 				}
@@ -1264,7 +1264,7 @@ class QueryPathEventHandler implements EventHandler, Traverser
 					if (! empty($str)) {
 						$str            = substr($str, 0, 1);
 						$o->textContent = $str;
-						$found->attach($o);
+						$found->offsetSet($o);
 					}
 				}
 				$this->matches = $found;
@@ -1290,7 +1290,7 @@ class QueryPathEventHandler implements EventHandler, Traverser
 			$kidsNL = $item->childNodes;
 			foreach ($kidsNL as $kidNode) {
 				if ($kidNode->nodeType == XML_ELEMENT_NODE) {
-					$kids->attach($kidNode);
+					$kids->offsetSet($kidNode);
 				}
 			}
 		}
@@ -1321,7 +1321,7 @@ class QueryPathEventHandler implements EventHandler, Traverser
 		foreach ($this->matches as $item) {
 			while (isset($item->nextSibling)) {
 				if (isset($item->nextSibling) && $item->nextSibling->nodeType === XML_ELEMENT_NODE) {
-					$found->attach($item->nextSibling);
+					$found->offsetSet($item->nextSibling);
 					break;
 				}
 				$item = $item->nextSibling;
@@ -1337,14 +1337,14 @@ class QueryPathEventHandler implements EventHandler, Traverser
 		if ($this->matches->count() > 0) {
 			//$this->alreadyMatched = array_merge($this->alreadyMatched, $this->matches);
 			foreach ($this->matches as $item) {
-				$this->alreadyMatched->attach($item);
+				$this->alreadyMatched->offsetSet($item);
 			}
 		}
 
 		// Start over at the top of the tree.
 		$this->findAnyElement = true; // Reset depth flag.
 		$this->matches        = new SplObjectStorage();
-		$this->matches->attach($this->dom);
+		$this->matches->offsetSet($this->dom);
 	}
 
 	/**
@@ -1365,14 +1365,14 @@ class QueryPathEventHandler implements EventHandler, Traverser
 				/*$candidates = $item->parentNode->childNodes;
 				foreach ($candidates as $candidate) {
 				  if ($candidate->nodeType === XML_ELEMENT_NODE && $candidate !== $item) {
-					$sibs->attach($candidate);
+					$sibs->offsetSet($candidate);
 				  }
 				}
 				*/
 				while ($item->nextSibling != null) {
 					$item = $item->nextSibling;
 					if ($item->nodeType === XML_ELEMENT_NODE) {
-						$sibs->attach($item);
+						$sibs->offsetSet($item);
 					}
 				}
 			}
@@ -1431,7 +1431,7 @@ class QueryPathEventHandler implements EventHandler, Traverser
 	{
 		$found = new SplObjectStorage();
 		foreach ($elements as $item) {
-			$found->attach($item); // put self in
+			$found->offsetSet($item); // put self in
 			$nl = $item->getElementsByTagName('*');
 			//foreach ($nl as $node) $found[] = $node;
 			$this->attachNodeList($nl, $found);
@@ -1460,7 +1460,7 @@ class QueryPathEventHandler implements EventHandler, Traverser
 	public function attachNodeList(DOMNodeList $nodeList, SplObjectStorage $splos)
 	{
 		foreach ($nodeList as $item) {
-			$splos->attach($item);
+			$splos->offsetSet($item);
 		}
 	}
 }

@@ -173,7 +173,7 @@ final class Scanner
 			// have a native UTF-8 string. Should we use external
 			// mbstring library?
 
-			$ord = ord($ch);
+			$ord = strlen($ch) === 1 ? ord($ch) : 0;
 			// Characters in this pool are legal for use inside of
 			// certain strings. Extended ASCII is used here, though I
 			// Don't know if these are really legal.

@@ -138,7 +138,7 @@ abstract class DOM implements Query, IteratorAggregate, Countable
 			if (! empty($document) && $document[0] instanceof DOMNode) {
 				$found = new SplObjectStorage();
 				foreach ($document as $item) {
-					$found->attach($item);
+					$found->offsetSet($item);
 				}
 				//$this->matches = $found;
 				$this->setMatches($found);
@@ -254,7 +254,7 @@ abstract class DOM implements Query, IteratorAggregate, Countable
 			trigger_error('Legacy array detected.');
 			$tmp = new SplObjectStorage();
 			foreach ($matches as $m) {
-				$tmp->attach($m);
+				$tmp->offsetSet($m);
 			}
 			$this->matches = $tmp;
 		}
@@ -263,7 +263,7 @@ abstract class DOM implements Query, IteratorAggregate, Countable
 		else {
 			$found = new SplObjectStorage();
 			if (isset($matches)) {
-				$found->attach($matches);
+				$found->offsetSet($matches);
 			}
 			$this->matches = $found;
 		}

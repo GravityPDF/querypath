@@ -52,10 +52,10 @@ trait QueryChecks
 				// pass an is() on [a, b, c, d]. We use the $seen SPLOS to prevent this.
 				$seen = new SplObjectStorage();
 				foreach ($selector as $item) {
-					if (! $this->matches->contains($item) || $seen->contains($item)) {
+					if (! $this->matches->offsetExists($item) || $seen->offsetExists($item)) {
 						return false;
 					}
-					$seen->attach($item);
+					$seen->offsetSet($item);
 				}
 
 				return true;
@@ -114,8 +114,8 @@ trait QueryChecks
 		foreach ($nodes as $original_node) {
 			$node = $original_node;
 			while (! empty($node)/* && $node != $node->ownerDocument*/) {
-				if ($this->matches->contains($node)) {
-					$found->attach($node);
+				if ($this->matches->offsetExists($node)) {
+					$found->offsetSet($node);
 				}
 				$node = $node->parentNode;
 			}

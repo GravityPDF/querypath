@@ -104,7 +104,7 @@ class DOMTraverser implements Traverser
 		/*
 		$this->dom = $dom;
 		$this->matches = new \SplObjectStorage();
-		$this->matches->attach($this->dom);
+		$this->matches->offsetSet($this->dom);
 		 */
 	}
 
@@ -149,7 +149,7 @@ class DOMTraverser implements Traverser
 				// fprintf(STDOUT, "Testing %s against %s.\n", $candidate->tagName, $selectorGroup[0]);
 				if ($this->matchesSelector($candidate, $selectorGroup)) {
 					// $this->debug('Attaching ' . $candidate->nodeName);
-					$found->attach($candidate);
+					$found->offsetSet($candidate);
 				}
 			}
 		}
@@ -477,7 +477,7 @@ class DOMTraverser implements Traverser
 		/** @var DOMElement $node */
 		foreach ($matches as $node) {
 			if ($node->getAttribute('id') === $id) {
-				$found->attach($node);
+				$found->offsetSet($node);
 			}
 
 			$nl = $this->initialXpathQuery($xpath, $node, $baseQuery);
@@ -524,7 +524,7 @@ class DOMTraverser implements Traverser
 			if ($node->hasAttribute('class')) {
 				$intersect = array_intersect($selector->classes, explode(' ', $node->getAttribute('class')));
 				if (count($intersect) === count($selector->classes)) {
-					$found->attach($node);
+					$found->offsetSet($node);
 				}
 			}
 
@@ -536,7 +536,7 @@ class DOMTraverser implements Traverser
 
 				$intersect = array_intersect($selector->classes, $classArray);
 				if (count($intersect) === count($selector->classes)) {
-					$found->attach($subNode);
+					$found->offsetSet($subNode);
 				}
 			}
 		}
@@ -590,7 +590,7 @@ class DOMTraverser implements Traverser
 			// Capture the case where the initial element is the root element.
 			if ($node->tagName === $element
 				|| ($element === '*' && $node->parentNode instanceof DOMDocument)) {
-				$found->attach($node);
+				$found->offsetSet($node);
 			}
 			$nl = $node->getElementsByTagName($element);
 			if (! empty($nl) && $nl instanceof DOMNodeList) {
@@ -634,7 +634,7 @@ class DOMTraverser implements Traverser
 			}
 		}
 		foreach ($detach as $rem) {
-			$elements->detach($rem);
+			$elements->offsetUnset($rem);
 		}
 		$selector->ns = null;
 
@@ -888,7 +888,7 @@ class DOMTraverser implements Traverser
 	public function attachNodeList(DOMNodeList $nodeList, SplObjectStorage $splos)
 	{
 		foreach ($nodeList as $item) {
-			$splos->attach($item);
+			$splos->offsetSet($item);
 		}
 	}
 

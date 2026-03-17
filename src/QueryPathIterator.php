@@ -33,7 +33,7 @@ class QueryPathIterator extends IteratorIterator
 			$this->qp = QueryPath::with(parent::current(), null, $this->options);
 		} else {
 			$splos = new SplObjectStorage();
-			$splos->attach(parent::current());
+			$splos->offsetSet(parent::current());
 			$this->qp->setMatches($splos);
 		}
 

@@ -45,16 +45,16 @@ trait QueryFilters
 		$tmp   = new SplObjectStorage();
 
 		foreach ($this->matches as $m) {
-			$tmp->attach($m);
+			$tmp->offsetSet($m);
 			// Seems like this should be right... but it fails unit
 			// tests. Need to compare to jQuery.
 			// $query = new \QueryPath\CSS\DOMTraverser($tmp, TRUE, $m);
 			$query = new DOMTraverser($tmp);
 			$query->find($selector);
 			if (count($query->matches())) {
-				$found->attach($m);
+				$found->offsetSet($m);
 			}
-			$tmp->detach($m);
+			$tmp->offsetUnset($m);
 		}
 
 		return $this->inst($found, null);
@@ -100,7 +100,7 @@ trait QueryFilters
 		$i        = 0;
 		foreach ($this->matches as $item) {
 			if ($function($i++, $item) !== false) {
-				$found->attach($item);
+				$found->offsetSet($item);
 			}
 		}
 
@@ -150,7 +150,7 @@ trait QueryFilters
 
 		foreach ($this->matches as $item) {
 			if (preg_match($regex, $item->textContent) > 0) {
-				$found->attach($item);
+				$found->offsetSet($item);
 			}
 		}
 
@@ -194,7 +194,7 @@ trait QueryFilters
 		if (is_callable($callback)) {
 			foreach ($this->matches as $item) {
 				if ($callback($i++, $item) !== false) {
-					$found->attach($item);
+					$found->offsetSet($item);
 				}
 			}
 		} else {
@@ -250,7 +250,7 @@ trait QueryFilters
 								$tmp->textContent = $retval;
 								$retval           = $tmp;
 							}
-							$found->attach($retval);
+							$found->offsetSet($retval);
 						}
 					} else {
 						if (! is_object($c)) {
@@ -258,7 +258,7 @@ trait QueryFilters
 							$tmp->textContent = $c;
 							$c                = $tmp;
 						}
-						$found->attach($c);
+						$found->offsetSet($c);
 					}
 				}
 				++$i;
@@ -298,7 +298,7 @@ trait QueryFilters
 				if ($end > 0 && $j >= $end) {
 					break;
 				}
-				$found->attach($m);
+				$found->offsetSet($m);
 				++$j;
 			}
 			++$i;
@@ -397,7 +397,7 @@ trait QueryFilters
 		$even  = false;
 		foreach ($this->matches as $m) {
 			if ($even && $m->nodeType === XML_ELEMENT_NODE) {
-				$found->attach($m);
+				$found->offsetSet($m);
 			}
 			$even = $even ? false : true;
 		}
@@ -425,7 +425,7 @@ trait QueryFilters
 		$odd   = true;
 		foreach ($this->matches as $m) {
 			if ($odd && $m->nodeType === XML_ELEMENT_NODE) {
-				$found->attach($m);
+				$found->offsetSet($m);
 			}
 			$odd = $odd ? false : true;
 		}
@@ -450,7 +450,7 @@ trait QueryFilters
 		$found = new SplObjectStorage();
 		foreach ($this->matches as $m) {
 			if ($m->nodeType === XML_ELEMENT_NODE) {
-				$found->attach($m);
+				$found->offsetSet($m);
 				break;
 			}
 		}
@@ -478,7 +478,7 @@ trait QueryFilters
 		foreach ($this->matches as $m) {
 			foreach ($m->childNodes as $c) {
 				if ($c->nodeType === XML_ELEMENT_NODE) {
-					$found->attach($c);
+					$found->offsetSet($c);
 					$flag = true;
 					break;
 				}
@@ -513,7 +513,7 @@ trait QueryFilters
 			}
 		}
 		if ($item) {
-			$found->attach($item);
+			$found->offsetSet($item);
 		}
 
 		return $this->inst($found, null);
@@ -542,7 +542,7 @@ trait QueryFilters
 				}
 			}
 			if ($item) {
-				$found->attach($item);
+				$found->offsetSet($item);
 				$item = null;
 			}
 		}
@@ -580,7 +580,7 @@ trait QueryFilters
 					if (null !== $selector && QueryPath::with($m, null, $this->options)->is($selector) > 0) {
 						break;
 					}
-					$found->attach($m);
+					$found->offsetSet($m);
 				}
 			}
 		}
@@ -620,7 +620,7 @@ trait QueryFilters
 						break;
 					}
 
-					$found->attach($m);
+					$found->offsetSet($m);
 				}
 			}
 		}
@@ -657,9 +657,9 @@ trait QueryFilters
 						if (QueryPath::with($m, null, $this->options)->is($selector) > 0) {
 							break;
 						}
-						$found->attach($m);
+						$found->offsetSet($m);
 					} else {
-						$found->attach($m);
+						$found->offsetSet($m);
 					}
 				}
 			}
@@ -709,25 +709,25 @@ trait QueryFilters
 		if ($selector instanceof DOMElement) {
 			foreach ($this->matches as $m) {
 				if ($m !== $selector) {
-					$found->attach($m);
+					$found->offsetSet($m);
 				}
 			}
 		} elseif (is_array($selector)) {
 			foreach ($this->matches as $m) {
 				if (! in_array($m, $selector, true)) {
-					$found->attach($m);
+					$found->offsetSet($m);
 				}
 			}
 		} elseif ($selector instanceof SplObjectStorage) {
 			foreach ($this->matches as $m) {
-				if ($selector->contains($m)) {
-					$found->attach($m);
+				if ($selector->offsetExists($m)) {
+					$found->offsetSet($m);
 				}
 			}
 		} else {
 			foreach ($this->matches as $m) {
 				if (! QueryPath::with($m, null, $this->options)->is($selector)) {
-					$found->attach($m);
+					$found->offsetSet($m);
 				}
 			}
 		}
@@ -757,7 +757,7 @@ trait QueryFilters
 		$found = new SplObjectStorage();
 		foreach ($this->matches as $m) {
 			if (QueryPath::with($m, null, $this->options)->is($selector) > 0) {
-				$found->attach($m);
+				$found->offsetSet($m);
 			} else {
 				while ($m->parentNode->nodeType !== XML_DOCUMENT_NODE) {
 					$m = $m->parentNode;
@@ -767,7 +767,7 @@ trait QueryFilters
 						null,
 						$this->options
 					)->is($selector) > 0) {
-						$found->attach($m);
+						$found->offsetSet($m);
 						break;
 					}
 				}
@@ -845,13 +845,13 @@ trait QueryFilters
 				if ($m->nodeType === XML_ELEMENT_NODE) {
 					if (! empty($selector)) {
 						if (QueryPath::with($m, null, $this->options)->is($selector) > 0) {
-							$found->attach($m);
+							$found->offsetSet($m);
 							if ($immediate) {
 								break;
 							}
 						}
 					} else {
-						$found->attach($m);
+						$found->offsetSet($m);
 						if ($immediate) {
 							break;
 						}
@@ -891,11 +891,11 @@ trait QueryFilters
 				if ($m->nodeType === XML_ELEMENT_NODE) {
 					if (! empty($selector)) {
 						if (QueryPath::with($m, null, $this->options)->is($selector) > 0) {
-							$found->attach($m);
+							$found->offsetSet($m);
 							break;
 						}
 					} else {
-						$found->attach($m);
+						$found->offsetSet($m);
 						break;
 					}
 				}
@@ -933,10 +933,10 @@ trait QueryFilters
 				if ($m->nodeType === XML_ELEMENT_NODE) {
 					if (! empty($selector)) {
 						if (QueryPath::with($m, null, $this->options)->is($selector) > 0) {
-							$found->attach($m);
+							$found->offsetSet($m);
 						}
 					} else {
-						$found->attach($m);
+						$found->offsetSet($m);
 					}
 				}
 			}
@@ -974,11 +974,11 @@ trait QueryFilters
 				if ($m->nodeType === XML_ELEMENT_NODE) {
 					if (! empty($selector)) {
 						if (QueryPath::with($m, null, $this->options)->is($selector)) {
-							$found->attach($m);
+							$found->offsetSet($m);
 							break;
 						}
 					} else {
-						$found->attach($m);
+						$found->offsetSet($m);
 						break;
 					}
 				}
@@ -1016,10 +1016,10 @@ trait QueryFilters
 				if ($m->nodeType === XML_ELEMENT_NODE) {
 					if (! empty($selector)) {
 						if (QueryPath::with($m, null, $this->options)->is($selector)) {
-							$found->attach($m);
+							$found->offsetSet($m);
 						}
 					} else {
-						$found->attach($m);
+						$found->offsetSet($m);
 					}
 				}
 			}
@@ -1059,16 +1059,16 @@ trait QueryFilters
 				if ($c->nodeType === XML_ELEMENT_NODE) {
 					// This is basically an optimized filter() just for children().
 					if ($filter) {
-						$tmp->attach($c);
+						$tmp->offsetSet($c);
 						$query = new DOMTraverser($tmp, true, $c);
 						$query->find($selector);
 						if (count($query->matches()) > 0) {
-							$found->attach($c);
+							$found->offsetSet($c);
 						}
-						$tmp->detach($c);
+						$tmp->offsetUnset($c);
 					} // No filter. Just attach it.
 					else {
-						$found->attach($c);
+						$found->offsetSet($c);
 					}
 				}
 			}
@@ -1104,7 +1104,7 @@ trait QueryFilters
 				continue;
 			}
 			foreach ($m->childNodes as $c) {
-				$found->attach($c);
+				$found->offsetSet($c);
 			}
 		}
 
@@ -1143,7 +1143,7 @@ trait QueryFilters
 			$parent = $m->parentNode;
 			foreach ($parent->childNodes as $n) {
 				if ($n->nodeType === XML_ELEMENT_NODE && $n !== $m) {
-					$found->attach($n);
+					$found->offsetSet($n);
 				}
 			}
 		}
