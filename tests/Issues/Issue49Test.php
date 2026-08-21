@@ -42,12 +42,21 @@ class Issue49Test extends TestCase
 	{
 		$q = html5qp('<div><input name="text1" type="text" /><input name="text2" /></div>', 'div');
 
-		/* Check if the DOMNode or its children matches */
-		$this->assertTrue($q->is(':text'));
+		/*
+		 * The collection holds the <div>. It is not itself a text input, but it contains two,
+		 * so the containment question is asked with has() and the matches with find().
+		 */
+		$this->assertCount(1, $q->has(':text'));
 		$this->assertCount(2, $q->find(':text'));
 
-		$textNode = $q->find('div')->contents()->eq(0);
-		$this->assertTrue($textNode->is(':text'));
+		/* The inputs themselves match: an explicit type="text", and an <input> with no type */
+		$this->assertTrue($q->find('input')->is(':text'));
+		$this->assertTrue($q->find('[name="text1"]')->is(':text'));
+		$this->assertTrue($q->find('[name="text2"]')->is(':text'));
+
+		/* contents() here holds the two <input> elements, not text nodes */
+		$firstInput = $q->find('div')->contents()->eq(0);
+		$this->assertTrue($firstInput->is(':text'));
 	}
 
 	public function testCheckingForEmptyTextInputs(): void
