@@ -697,9 +697,7 @@ class DOMTraverser implements Traverser
 				continue;
 			}
 
-			// Descendants only, as in find(). The document element is the exception,
-			// because the match set is seeded with it rather than with the document.
-			if ($node->parentNode instanceof DOMDocument && $node->getAttribute('id') === $id) {
+			if ($this->isDocumentElement($node) && $node->getAttribute('id') === $id) {
 				$found->offsetSet($node);
 			}
 
@@ -747,9 +745,7 @@ class DOMTraverser implements Traverser
 			}
 
 			// Refactor me!
-			// Descendants only, as in find(). The document element is the exception,
-			// because the match set is seeded with it rather than with the document.
-			if ($node->parentNode instanceof DOMDocument && $node->hasAttribute('class')) {
+			if ($this->isDocumentElement($node) && $node->hasAttribute('class')) {
 				$intersect = array_intersect($selector->classes, explode(' ', $node->getAttribute('class')));
 				if (count($intersect) === count($selector->classes)) {
 					$found->offsetSet($node);
@@ -799,6 +795,26 @@ class DOMTraverser implements Traverser
 	}
 
 	/**
+	 * Is this node the element the match set was seeded with?
+	 *
+	 * jQuery's find() searches descendants only, so a node already in the match set is not
+	 * a candidate for its own selector. The document element is the one exception: QueryPath
+	 * seeds the match set with it rather than with the document, so it stands in for the
+	 * document and qp($xml)->find('root') has to keep matching.
+	 *
+	 * All three initial matchers ask this, and they have to agree — otherwise find('#a1')
+	 * would match a node that find('a') does not.
+	 *
+	 * @param DOMNode $node
+	 *
+	 * @return bool
+	 */
+	private function isDocumentElement($node): bool
+	{
+		return $node->parentNode instanceof DOMDocument;
+	}
+
+	/**
 	 * Shortcut for setting the initial match.
 	 *
 	 * @param $selector
@@ -818,11 +834,7 @@ class DOMTraverser implements Traverser
 				continue;
 			}
 
-			// jQuery's find() searches descendants only, so a node in the match set is not
-			// a candidate for its own selector. The document element is the exception:
-			// QueryPath seeds the match set with it rather than with the document, so
-			// without this qp($xml)->find('root') could never match.
-			if ($node->parentNode instanceof DOMDocument
+			if ($this->isDocumentElement($node)
 				&& ($element === '*' || $node->tagName === $element)) {
 				$found->offsetSet($node);
 			}
