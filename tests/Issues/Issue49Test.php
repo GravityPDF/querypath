@@ -55,7 +55,7 @@ class Issue49Test extends TestCase
 		$this->assertTrue($q->find('[name="text2"]')->is(':text'));
 
 		/* contents() here holds the two <input> elements, not text nodes */
-		$firstInput = $q->find('div')->contents()->eq(0);
+		$firstInput = $q->contents()->eq(0);
 		$this->assertTrue($firstInput->is(':text'));
 	}
 
@@ -189,13 +189,20 @@ class Issue49Test extends TestCase
 	 */
 	public function testMixedNodeMatchSetStillMatchesItsElements(): void
 	{
-		$contents = html5qp('<div>Sample<span class="x" id="s">Child</span></div>', 'div')->contents();
+		$contents = html5qp('<div>Sample<span class="x" id="s"><em id="e">Child</em></span></div>', 'div')
+			->contents();
 
+		/* The set holds a text node and an element; neither may cause a fatal. */
 		$this->assertCount(2, $contents);
-		$this->assertSame(['s'], $this->ids($contents->find('span')));
-		$this->assertSame(['s'], $this->ids($contents->find('.x')));
-		$this->assertSame(['s'], $this->ids($contents->find('#s')));
+
+		/* find() reaches the descendants of the elements in the set */
+		$this->assertSame(['e'], $this->ids($contents->find('em')));
+		$this->assertSame(['e'], $this->ids($contents->find('#e')));
+
+		/* filter() and is() ask about the elements in the set itself */
 		$this->assertSame(['s'], $this->ids($contents->filter('span')));
+		$this->assertSame(['s'], $this->ids($contents->filter('.x')));
+		$this->assertSame(['s'], $this->ids($contents->filter('#s')));
 		$this->assertTrue($contents->is('.x'));
 	}
 }
