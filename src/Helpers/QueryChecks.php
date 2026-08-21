@@ -2,9 +2,7 @@
 
 namespace QueryPath\Helpers;
 
-use DOMElement;
 use DOMNode;
-use QueryPath\CSS\DOMTraverser;
 use QueryPath\CSS\ParseException;
 use QueryPath\DOMQuery;
 use QueryPath\Exception;
@@ -78,25 +76,9 @@ trait QueryChecks
 			throw new Exception('Cannot compare an object to a DOMQuery.');
 		}
 
-		// Only elements can be matched against a CSS selector, so anything else in the
-		// match set is discarded before the selector is evaluated.
-		$candidates = new SplObjectStorage();
-		foreach ($this->matches as $match) {
-			if ($match instanceof DOMElement) {
-				$candidates->offsetSet($match);
-			}
-		}
-
-		if (count($candidates) === 0) {
-			return false;
-		}
-
-		// The second argument tells the traverser that the match set is already the set of
-		// candidates, so the selector filters those elements rather than searching below them.
-		$traverser = new DOMTraverser($candidates, true);
-		$traverser->find($selector);
-
-		return count($traverser->matches()) > 0;
+		// Only the elements in the match set are candidates: a descendant that matches
+		// the selector must not make is() true. See NodeMatcher for the details.
+		return NodeMatcher::matchesAny($this->matches, $selector);
 	}
 
 	/**
