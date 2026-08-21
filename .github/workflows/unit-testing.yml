@@ -22,6 +22,8 @@ jobs:
         with:
           php-version: ${{ matrix.php-versions }}
           ini-values: error_reporting=E_ALL
+          # zip is needed by the .docx and .odt examples, which ExamplesTest runs.
+          extensions: dom, simplexml, zip
 
       - name: Install Composer Dependencies
         uses: ramsey/composer-install@v4

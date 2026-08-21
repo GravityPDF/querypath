@@ -1,113 +1,187 @@
 # QueryPath QuickStart
 
-This short guide is intended to help you get started with QueryPath 3.
+A short guide to getting started with QueryPath.
 
-## Using QueryPath in Your Project
+## Installing
 
-To use QueryPath inside of your own application, you will need to make sure that PHP can find the QueryPath library. There are a few possible ways of doing this. The first is to use an autoloader. The second is to include QueryPath manually. We'll look briefly at each.
+QueryPath is installed with [Composer](https://getcomposer.org):
 
-### Autoloaders and QueryPath
-
-In recent time, PHP has standardized a method of automatically importing classes by name. This is often called [PSR-0 autoloading](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-0.md). Symfony, Composer, and many other PHP projects use PSR-0 autoloaders, and QueryPath should work with those. In addition, QueryPath has its own autoloader in `qp.php`.
-
-To use QueryPath's autoloader, all you need to do is include `qp.php`. This will detect if another autoloader is already in place, and if not, it will configure it's own autoloader:
-
-```{php}
-<?php
-require 'qp.php';
-
-print QueryPath::withHTML('http://technosophos.com', 'title')->text();
-
-print htmlqp('http://technosophos.com', 'title')->text();
-?>
+```bash
+composer require gravitypdf/querypath
 ```
 
-The above illustrates the requiring of QueryPath's autoloader. Note that in that case we don't need to do anything else to get the `QueryPath` class or the `htmlqp()` functions.
+Include Composer's autoloader and you are ready to go:
 
-QueryPath also ships with [Composer](http://getcomposer.org) support. Composer provides PSR-0 autoloading. To use Composer's autoloader, you can do this:
-
-```{php}
+```php
 <?php
-// The composer autoloader.
-require 'vender/autoload.php';
+require 'vendor/autoload.php';
 
-print QueryPath::withHTML('http://technosophos.com', 'title')->text();
-
-// THIS DOESN'T WORK!
-// print htmlqp('http://technosophos.com', 'title')->text();
-?>
+echo html5qp('https://example.com', 'title')->text();
 ```
 
-Notice, though, that the `qp()` and `htmlqp` functions *will not work* with this method. Why? Because PHP's autoloader does not know about functions. It operates on classes only. So you can use QueryPath's Object-Oriented API (`QueryPath::with()`, `QueryPath::withHTML()`, `QueryPath::withXML()`), but not the `qp()` and `qphtml()` functions. If you want to use those, too, simply include `qp.php`:
+The three global functions – `qp()`, `htmlqp()`, and `html5qp()` – come from
+`src/qp_functions.php`, which Composer loads for you through its `files`
+autoloader. There is nothing else to include.
 
-```{php}
+Each function is a thin wrapper around a static factory, so the object-oriented
+form is always available if you prefer it, or if a function of the same name is
+already defined elsewhere in your application:
+
+| Function                | Equivalent                     | Parser                                          |
+|-------------------------|--------------------------------|-------------------------------------------------|
+| `qp($source)`           | `QueryPath::with($source)`     | Guesses XML or HTML (libxml)                    |
+| `htmlqp($source)`       | `QueryPath::withHTML($source)` | Legacy, pre-HTML5 HTML (libxml)                 |
+| `html5qp($source)`      | `QueryPath::withHTML5($source)`| HTML5 via [masterminds/html5][html5]            |
+| –                       | `QueryPath::withXML($source)`  | XML, unconditionally                            |
+
+All of them return a `\QueryPath\DOMQuery`.
+
+## A simple example
+
+```php
 <?php
-// The composer autoloader.
-require 'vender/autoload.php';
-require 'qp.php';
+require 'vendor/autoload.php';
 
-print QueryPath::withHTML('http://technosophos.com', 'title')->text();
-
-// This works because qp.php was imported
-print htmlqp('http://technosophos.com', 'title')->text();
-?>
+echo html5qp('https://example.com', 'title')->text();
 ```
 
-## A Simple Example
+That one line does three things:
 
-So far, we have seen a few variations of the same program. Let's learn what it does. Here's the program:
+1. **Loads and parses a document.** QueryPath reads local files, remote URLs,
+   strings of HTML or XML, `DOMDocument` and `DOMNode` objects, `SimpleXMLElement`
+   objects, and other `DOMQuery` objects.
+2. **Runs a selector.** The second argument is a CSS selector, the same query
+   language jQuery uses. `title` is about as simple as they get – something like
+   `#bar-one table > tr:odd td > a:first-of-type` works just as well. If you would
+   rather use XPath, there is an `xpath()` method.
+3. **Reads a value.** `text()` returns the text content of the matches, or an
+   empty string when nothing matched.
 
-```{php}
-<?php
-require 'qp.php';
-
-print QueryPath::withHTML('http://technosophos.com', 'title')->text();
-
-print htmlqp('http://technosophos.com', 'title')->text();
-?>
-```
-
-This does the same thing two different ways. Let's look at line 3:
-
-```{php}
-<?php
-print QueryPath::withHTML('http://technosophos.com', 'title')->text();
-?>
-```
-
-This line does three things:
-
-1. It loads and parses the HTML document it finds at `http://techosophos.com`. QueryPath can load documents locally and remotely. It can also load strings of HTML or XML, as well as `SimpleXML` objects and `DOMDocument` objects. It should be easy to get your HTML or XML loaded into QueryPath.
-2. It performs a search for the tag named `title`. QueryPath uses CSS 4 Selectors (as the current draft stands) as a query language -- just like jQuery and CSS. (If you prefer XPath, check out the `xpath()` method on QueryPath). Of course, `title` is a very basic selector. You can do more advanced selectors like `#bar-one table>tr:odd td>a:first-of-type()`, which looks for the element with ID `bar-one` and then fetches every odd row from its table, then from each cell in the row, it finds the first hyperlink.
-3. Finally, the example calls `text()`, which will fetch the text content of the first element it's found (in this case, the `title` tag in the HTML head). If not title is found, this will return an empty string. Otherwise it will return the text of that tag.
-
-QueryPath has well over 60 methods like `text()`. Some are for navigating, like `top()`, `children()`, `next()`, and `prev()`. Some are for manipulating the parts of an HTML or XML element, like `attar()`. Others are for doing sophisticated finding and filtering operations (`find()`, `filter()`, `filterCallback()`, `map()`, and so on). And, of course, there are methods for modifying the document (`append()`, `before()`, `after()`, `attr()`, `text()`, and many more).
-
-The goal of QueryPath is to make it easy for you to process XML and HTML documents. There may be a lot of methods to learn (just like jQuery), but those methods are there to make your life simpler.
+From there, the API mirrors jQuery. There are methods for traversing (`find()`,
+`top()`, `children()`, `next()`, `prev()`, `parents()`), for filtering (`filter()`,
+`filterCallback()`, `map()`, `eq()`, `not()`), and for modifying a document
+(`append()`, `prepend()`, `before()`, `after()`, `attr()`, `css()`, `addClass()`,
+`text()`, `remove()`). Almost all of them return a `DOMQuery`, so calls chain.
 
 ## HTML vs XML
 
-When QueryPath was first introduced, it did not distinguish between XML and HTML documents. At that time, momentum was behind XHTML, and it looked like the future was XML. But over time, it has become abundantly clear that HTML documents cannot be treated as XML during parsing and processing, or during output.
+QueryPath originally made no distinction between HTML and XML. In practice, HTML
+cannot be parsed or serialized as though it were XML, so the two now have
+separate entry points:
 
-So there are now separate parser functions for HTML and XML -- as well as a generic parser function that inspects the document and attempts to determine whether it is XML or HTML:
+* **`html5qp()` / `QueryPath::withHTML5()`** – parses with masterminds/html5.
+  This is the recommended choice for anything that is HTML.
+* **`htmlqp()` / `QueryPath::withHTML()`** – forces libxml's HTML parser and makes
+  a number of adjustments to accommodate common HTML breakages. Use it for
+  pre-HTML5 documents.
+* **`QueryPath::withXML()`** – forces XML parsing.
+* **`qp()` / `QueryPath::with()`** – inspects the document and guesses, favouring
+  XML slightly. It decides from the file extension, the XML declaration, and any
+  options passed in. Because it guesses, an XML *string* handed to `qp()` should
+  begin with `<?xml version="1.0"?>`.
 
-* `QueryPath::withXML()`: This *only* handles XML documents. If you give it an HTML document, it will attempt to force XML parsing on that document.
-* `htmlqp()`, `QueryPath::withHTML()`: This will force QueryPath to use the HTML parser. it will also make a number of adjustments to QueryPath to accommodate common HTML breakages.
-* `qp()`, `QueryPath::with()`: This will attempt to guess whether the document is XML or HTML. In general, it favors XML slightly. Guessing may be done by… 
-	- File extension
-	- XML declaration
-	- The suggestions made by any options passed into the document
+Output follows the same split: `writeHTML()`, `writeHTML5()`, and `writeXML()`
+print a document, while `html()`, `html5()`, and `xml()` return it as a string.
 
-###… And Character Encoding
+Empty documents to build on are available as constants:
+`QueryPath::HTML5_STUB`, `QueryPath::HTML_STUB`, and `QueryPath::XHTML_STUB`.
 
-XML suggests that all documents be encoded as UTF-8. Most HTML documents are encoded using one of the ISO specifications (typically ISO-8859-1). And web servers are often misconfigured to report that documents are using one character set when they are actually using another.
+## Character encoding
 
-To work around all of these issues, QueryPath attempts to convert documents automatically. It does this using PHP's internal character detection libraries. But sometimes it guesses wrong. You can adjust this feature manually by passing in language settings in the `$options` array. See the documentation on `qp()` for details.
+XML expects UTF-8. Plenty of HTML is encoded as something else – often
+ISO-8859-1 – and web servers regularly report one character set while serving
+another. QueryPath tries to convert documents automatically using PHP's character
+detection, but it does sometimes guess wrong. When it does, pass the encoding
+explicitly in the `$options` array:
 
+```php
+<?php
+htmlqp($source, 'body', ['encoding' => 'ISO-8859-1']);
+```
+
+## Remote documents
+
+`qp()` and `htmlqp()` fetch URLs through PHP's stream wrappers, so a stream
+context passed as the `context` option controls the request – headers, method,
+timeouts, proxies, and so on:
+
+```php
+<?php
+$context = stream_context_create([
+	'http' => [
+		'header' => 'User-Agent: My Application',
+	],
+]);
+
+qp('https://example.com/feed.xml', 'item', ['context' => $context]);
+```
+
+`html5qp()` fetches URLs through masterminds/html5, which does not take a stream
+context. To control that request, fetch the page yourself and pass the markup to
+`html5qp()` as a string.
+
+## The examples
+
+Every example in this directory is runnable on its own:
+
+```bash
+composer install
+php examples/hello-world/index.php
+```
+
+Most of them print HTML, so they also work under a web server:
+
+```bash
+php -S localhost:8000 -t examples
+```
+
+### The basics
+
+| Example | What it covers |
+|---------|----------------|
+| [hello-world](hello-world/index.php) | The smallest useful program: parse, select, read, and modify. |
+| [basic-manipulation-filter-and-retrieval](basic-manipulation-filter-and-retrieval/index.php) | Selecting, filtering, and manipulating HTML and XML side by side. |
+| [iterating-over-matches](iterating-over-matches/index.php) | Five ways to loop over a set of matches, and how changes made in a loop stick. |
+| [filtering-by-text-content](filtering-by-text-content/index.php) | `:contains()` and `filterCallback()` for matching on content rather than structure. |
+
+### Building documents
+
+| Example | What it covers |
+|---------|----------------|
+| [create-html-document](create-html-document/index.php) | Building a full HTML document in a single chain. |
+| [create-xml-document](create-xml-document/index.php) | Building XML with `wrap()`, `before()`, `after()`, and friends. |
+| [create-svg-document](create-svg-document/index.php) | Generating an SVG image from an XML stub. |
+| [generating-rss-feed](generating-rss-feed/index.php) | Merging data into stub documents to render a feed. |
+
+### Working with remote data
+
+| Example | What it covers |
+|---------|----------------|
+| [parsing-rss-feed](parsing-rss-feed/index.php) | Fetching and parsing a remote RSS feed, with a stream context. |
+| [remote-filter-and-retrieval](remote-filter-and-retrieval/index.php) | Scraping an HTML page and pulling values out of it. |
+| [curl-xml-filter-and-retrieval](curl-xml-filter-and-retrieval/index.php) | Two chained REST requests with cURL, and attribute selectors over the XML. |
+| [parsing-xml-from-url-and-dynamically-generating-html](parsing-xml-from-url-and-dynamically-generating-html/index.php) | Reading a remote XML API and rendering it into an HTML template. |
+| [http-stream-xml-namespaces-and-linked-data](http-stream-xml-namespaces-and-linked-data/index.php) | Stream contexts, XML namespaces, and Linked Data from DBpedia. |
+| [sparql-endpoint-query](sparql-endpoint-query/index.php) | Querying a SPARQL endpoint and rendering the results as a table. |
+
+### Parsing other formats
+
+| Example | What it covers |
+|---------|----------------|
+| [basic-docx-parser](basic-docx-parser/index.php) | Reading a Word `.docx` file out of its ZIP archive. |
+| [basic-odt-parser](basic-odt-parser/index.php) | Reading an OpenDocument `.odt` file via the `zip://` stream wrapper. |
+| [parsing-php-source](parsing-php-source/index.php) | Traversing and rewriting a PHP template, PHP blocks and all. |
+
+Several of these call live third-party services, which change their markup,
+rate-limit, and occasionally go down. An example that reaches across the network
+may need its selectors adjusted from time to time; the ones that read local
+fixtures will always work.
 
 ## Where to go from here
 
-* [QueryPath.org](http://querypath.org) has pointers to other resources.
-* [The API docs](http://api.querypath.org) have detailed explanations of every single part of QueryPath.
+* The source is documented inline; `src/Helpers/` holds most of the jQuery-style
+  methods.
+* Issues and discussions live on [GitHub][repo].
 
-	
+[html5]: https://github.com/Masterminds/html5-php
+[repo]: https://github.com/GravityPDF/querypath
