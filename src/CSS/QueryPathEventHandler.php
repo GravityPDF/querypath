@@ -25,6 +25,10 @@
  *  - pseudo-class filters of the form -an+b do not function as described in the
  *    specification. However, they do behave the same way here as they do in
  *    jQuery.
+ *  - The jQuery positional pseudo-classes (:eq(), :first, :last, :lt(), :gt(),
+ *    :odd, :even) are zero-indexed and filter the matched set, exactly as they
+ *    do in QueryPath\CSS\DOMTraverser. They are not the CSS structural
+ *    pseudo-classes, which count siblings and are one-indexed.
  *  - This library DOES provide XML namespace aware tools. Selectors can use
  *    namespaces to increase specificity.
  *  - This library does nothing with the CSS 3 Selector specificity rating. Of
@@ -476,15 +480,6 @@ class QueryPathEventHandler implements EventHandler, Traverser
 				$this->matches->offsetSet($this->dom);
 				break;
 
-			// NON-STANDARD extensions for simple support of even and odd. These
-			// are supported by jQuery, FF, and other user agents.
-			case 'even':
-				$this->nthChild(2, 0);
-				break;
-			case 'odd':
-				$this->nthChild(2, 1);
-				break;
-
 			// Standard child-checking items.
 			case 'nth-child':
 				[$aVal, $bVal] = Util::parseAnB($value);
@@ -529,15 +524,16 @@ class QueryPathEventHandler implements EventHandler, Traverser
 				}
 				$this->not($value);
 				break;
-			// Additional pseudo-classes defined in jQuery:
+			// Additional (NON-STANDARD) positional pseudo-classes defined by jQuery.
+			// These index the matched set, not a node's siblings.
 			case 'lt':
 			case 'gt':
 			case 'nth':
 			case 'eq':
 			case 'first':
 			case 'last':
-				//case 'even':
-				//case 'odd':
+			case 'even':
+			case 'odd':
 				$this->getByPosition($name, $value);
 				break;
 			case 'parent':
@@ -632,76 +628,31 @@ class QueryPathEventHandler implements EventHandler, Traverser
 	}
 
 	/**
-	 * Pseudo-class handler for a variety of jQuery pseudo-classes.
-	 * Handles lt, gt, eq, nth, first, last pseudo-classes.
+	 * Pseudo-class handler for the jQuery positional pseudo-classes.
+	 *
+	 * Handles :lt(), :gt(), :eq(), :nth(), :first, :last, :even and :odd.
+	 *
+	 * These filter the ordered set of currently matched elements. They are NOT
+	 * the CSS structural pseudo-classes, which describe a node's position among
+	 * its siblings; see nthChild() for those. All indexes are zero-based, as in
+	 * jQuery.
+	 *
+	 * @param string $operator
+	 * @param mixed  $pos
 	 */
 	private function getByPosition($operator, $pos)
 	{
 		$matches = $this->candidateList();
-		$found   = new SplObjectStorage();
-		if ($matches->count() == 0) {
+		if ($matches->count() === 0) {
 			return;
 		}
 
-		switch ($operator) {
-			case 'nth':
-			case 'eq':
-				if ($matches->count() >= $pos) {
-					//$found[] = $matches[$pos -1];
-					foreach ($matches as $match) {
-						// CSS is 1-based, so we pre-increment.
-						if ($matches->key() + 1 == $pos) {
-							$found->offsetSet($match);
-							break;
-						}
-					}
-				}
-				break;
-			case 'first':
-				if ($matches->count() > 0) {
-					$matches->rewind(); // This is necessary to init.
-					$found->offsetSet($matches->current());
-				}
-				break;
-			case 'last':
-				if ($matches->count() > 0) {
-					// Spin through iterator.
-					foreach ($matches as $item) {
-					}
+		$nodes = Util::sortDocumentOrder(iterator_to_array($matches, false));
+		$nodes = Util::applyPositionalPseudoClass($nodes, $operator, $pos);
 
-					$found->offsetSet($item);
-				}
-				break;
-			// case 'even':
-			//         for ($i = 1; $i <= count($matches); ++$i) {
-			//           if ($i % 2 == 0) {
-			//             $found[] = $matches[$i];
-			//           }
-			//         }
-			//         break;
-			//       case 'odd':
-			//         for ($i = 1; $i <= count($matches); ++$i) {
-			//           if ($i % 2 == 0) {
-			//             $found[] = $matches[$i];
-			//           }
-			//         }
-			//         break;
-			case 'lt':
-				$i = 0;
-				foreach ($matches as $item) {
-					if (++$i < $pos) {
-						$found->offsetSet($item);
-					}
-				}
-				break;
-			case 'gt':
-				$i = 0;
-				foreach ($matches as $item) {
-					if (++$i > $pos) {
-						$found->offsetSet($item);
-					}
-				}
-				break;
+		$found = new SplObjectStorage();
+		foreach ($nodes as $node) {
+			$found->offsetSet($node);
 		}
 
 		$this->matches = $found;

@@ -8,6 +8,7 @@
 namespace QueryPath\CSS;
 
 use Exception;
+use QueryPath\CSS\DOMTraverser\Util;
 
 /**
  * Models a simple selector.
@@ -46,6 +47,17 @@ class SimpleSelector
 	public $pseudoClasses = [];
 	public $pseudoElements = [];
 	public $combinator;
+
+	/**
+	 * The pseudo-classes split into set-level filters and per-node tests.
+	 *
+	 * Which side a pseudo-class falls on is a property of the parsed selector, not of any
+	 * node, so it is worked out once. Deciding it per node cost two strtolower() and two
+	 * in_array() calls for every node the selector was tested against.
+	 *
+	 * @var array|null
+	 */
+	private $pseudoClassSplit;
 
 	/**
 	 * @param $code
@@ -96,6 +108,77 @@ class SimpleSelector
 
 	public function __construct()
 	{
+	}
+
+	/**
+	 * Get the pseudo-classes that have to be applied to a whole result set.
+	 *
+	 * The jQuery positional pseudo-classes (:eq(), :first, :last, :lt(), :gt(),
+	 * :odd, :even) filter an ordered result set rather than testing an
+	 * individual node, so a traverser must apply these after it has collected
+	 * its matches. The same is true of :not(), :has() and :matches() when their
+	 * argument contains one.
+	 *
+	 * They are returned in the order they were written, which is the order they
+	 * must be applied in.
+	 *
+	 * @return array
+	 * @see    \QueryPath\CSS\DOMTraverser\Util::POSITIONAL_PSEUDO_CLASSES
+	 */
+	public function setFilterPseudoClasses(): array
+	{
+		$split = $this->splitPseudoClasses();
+
+		return $split['set'];
+	}
+
+	/**
+	 * The pseudo-classes that are tested against an individual node.
+	 *
+	 * The complement of setFilterPseudoClasses(): everything that is not a filter over the
+	 * ordered result set.
+	 *
+	 * @return array
+	 */
+	public function nodePseudoClasses(): array
+	{
+		$split = $this->splitPseudoClasses();
+
+		return $split['node'];
+	}
+
+	/**
+	 * Split the pseudo-classes into set-level filters and per-node tests, once.
+	 *
+	 * @return array
+	 */
+	private function splitPseudoClasses(): array
+	{
+		if ($this->pseudoClassSplit !== null) {
+			return $this->pseudoClassSplit;
+		}
+
+		$split = ['set' => [], 'node' => []];
+		foreach ($this->pseudoClasses as $pseudoClass) {
+			$value = isset($pseudoClass['value']) ? $pseudoClass['value'] : null;
+			$key   = Util::isSetFilterPseudoClass($pseudoClass['name'], $value) ? 'set' : 'node';
+
+			$split[$key][] = $pseudoClass;
+		}
+
+		$this->pseudoClassSplit = $split;
+
+		return $split;
+	}
+
+	/**
+	 * Whether this simple selector carries any set-level pseudo-class.
+	 *
+	 * @return bool
+	 */
+	public function hasSetFilterPseudoClasses(): bool
+	{
+		return count($this->setFilterPseudoClasses()) > 0;
 	}
 
 	/**

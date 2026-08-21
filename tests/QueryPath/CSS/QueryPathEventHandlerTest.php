@@ -618,9 +618,12 @@ class QueryPathEventHandlerTest extends TestCase
 	public function nthChildProvider(): array
 	{
 		return [
-			[':root :even',        3, 'four'     ], // full list
-			['i:even',             2, 'four'     ], // restricted to specific element
-			['i:odd',              3, 'three'    ], // restricted to specific element, odd this time
+			// :even and :odd are the jQuery positional filters: they index the
+			// zero-based matched set, not the sibling position. Contrast with
+			// :nth-child(even) / :nth-child(odd) below, which are the CSS ones.
+			[':root :even',        3, 'three'    ], // full list
+			['i:even',             3, 'three'    ], // restricted to specific element
+			['i:odd',              2, 'four'     ], // restricted to specific element, odd this time
 			['i:nth-child(odd)',   3, 'three'    ], // odd
 			['i:nth-child(2n+1)',  3, 'three'    ], // odd, equiv to 2n + 1
 			['i:nth-child(2n-1)',  3, 'three'    ], // odd, equiv to 2n + 1
@@ -1045,8 +1048,8 @@ class QueryPathEventHandlerTest extends TestCase
 		$handler = new QueryPathEventHandler($doc);
 		$handler->find('i:gt(1)');
 		$matches = $handler->getMatches();
-		$this->assertEquals(2, $matches->count());
-		$this->assertEquals('two', $this->firstMatch($matches)->getAttribute('id'));
+		$this->assertEquals(1, $matches->count());
+		$this->assertEquals('three', $this->firstMatch($matches)->getAttribute('id'));
 	}
 
 	public function testPseudoClassLT()
@@ -1064,9 +1067,10 @@ class QueryPathEventHandlerTest extends TestCase
 		$handler = new QueryPathEventHandler($doc);
 		$handler->find('i:lt(3)');
 		$matches = $handler->getMatches();
-		$this->assertEquals(2, $matches->count());
+		$this->assertEquals(3, $matches->count());
 		$this->assertEquals('one', $this->nthMatch($matches, 0)->getAttribute('id'));
 		$this->assertEquals('two', $this->nthMatch($matches, 1)->getAttribute('id'));
+		$this->assertEquals('three', $this->nthMatch($matches, 2)->getAttribute('id'));
 	}
 
 	public function testPseudoClassNTH()
@@ -1081,16 +1085,23 @@ class QueryPathEventHandlerTest extends TestCase
 		$doc->loadXML($xml);
 
 		$handler = new QueryPathEventHandler($doc);
+		// :nth() is an alias of :eq(), and both are zero-indexed, as in jQuery.
 		$handler->find('i:nth(2)');
 		$matches = $handler->getMatches();
 		$this->assertEquals(1, $matches->count());
-		$this->assertEquals('two', $this->firstMatch($matches)->getAttribute('id'));
+		$this->assertEquals('three', $this->firstMatch($matches)->getAttribute('id'));
 
 		$handler = new QueryPathEventHandler($doc);
 		$handler->find('i:eq(2)');
 		$matches = $handler->getMatches();
 		$this->assertEquals(1, $matches->count());
-		$this->assertEquals('two', $this->firstMatch($matches)->getAttribute('id'));
+		$this->assertEquals('three', $this->firstMatch($matches)->getAttribute('id'));
+
+		$handler = new QueryPathEventHandler($doc);
+		$handler->find('i:eq(0)');
+		$matches = $handler->getMatches();
+		$this->assertEquals(1, $matches->count());
+		$this->assertEquals('one', $this->firstMatch($matches)->getAttribute('id'));
 	}
 
 	public function testPseudoClassNthOfType()
