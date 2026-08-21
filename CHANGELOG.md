@@ -3,10 +3,11 @@ QueryPath Changelog
 
 # Unreleased changes
 
-- Fix `parents($selector)` so the selector filters the ancestors themselves, instead of matching any ancestor that merely *contains* an element matching the selector. `qp($xml, 'Demographics > Age > Name')->parents('Demographics')` now returns only `<Demographics>`, matching jQuery
-- Apply the same fix to the other selector-filtered traversal methods in `QueryPath\Helpers\QueryFilters`: `parent()`, `parents()`, `parentsUntil()`, `closest()`, `next()`, `nextAll()`, `nextUntil()`, `prev()`, `prevAll()`, `prevUntil()`, `siblings()`, and `not()`
-- **Behaviour change:** `parents()` and `parentsUntil()` now return their results in reverse document order with duplicates removed, as jQuery does. Previously a set built from more than one starting element was grouped by starting element
-
+- **Breaking behaviour change:** `DOMQuery::is()` now behaves like jQuery's `.is()`. It tests the elements held in the current match set and returns `true` when at least one of them matches the selector. Previously it ran a descendant search, so `html5qp('<p><span>foo</span></p>', 'p')->is('span')` returned `true`. Use `has()` if you need the old "does the set contain something matching this selector" behaviour (#51)
+- `DOMQuery::is()` no longer raises a fatal error when the match set contains non-element nodes (text nodes, comments, processing instructions). Those nodes cannot match a CSS selector, so they are skipped (#51)
+- Fix `parents($selector)` so the selector filters the ancestors themselves, instead of matching any ancestor that merely *contains* an element matching the selector. `qp($xml, 'Demographics > Age > Name')->parents('Demographics')` now returns only `<Demographics>`, matching jQuery (#62)
+- Apply the same fix to the other selector-filtered traversal methods in `QueryPath\Helpers\QueryFilters`: `parent()`, `parents()`, `parentsUntil()`, `closest()`, `next()`, `nextAll()`, `nextUntil()`, `prev()`, `prevAll()`, `prevUntil()`, `siblings()`, and `not()` (#62)
+- **Behaviour change:** `parents()` and `parentsUntil()` now return their results in reverse document order with duplicates removed, as jQuery does. Previously a set built from more than one starting element was grouped by starting element (#62)
 - Reorganise, modernise, and repair the `examples/` directory. Each example now lives in its own subdirectory with an `index.php`, and the full set is indexed in `examples/quickstart-guide.md`
 - Convert the remaining legacy examples: `simple_example.php`, `techniques.php`, `svg.php`, `rss.php`, `odt.php`, `parse_php.php`, and `sparql.php`
 - Fix examples that no longer ran: send a `User-Agent` where remote hosts now require one, resolve paths relative to the example rather than the working directory, and stop relying on the removed `qp.php` autoloader and the PHP 8 incompatible `eachLambda()`

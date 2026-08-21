@@ -1161,16 +1161,9 @@ trait QueryFilters
 	/**
 	 * Test whether a single node, taken as an element, matches a CSS selector.
 	 *
-	 * This is deliberately different from running a `find()` (or `is()`) against
-	 * the node: `find()` searches the node's *descendants*, so `<a><b/></a>`
-	 * would report that the `a` element "matches" the selector `b`. Here the
-	 * node itself is the only candidate, so `b` only matches the `b` element.
-	 *
-	 * The DOMTraverser is created in "initialized" mode, which tells it to treat
-	 * the supplied set as the candidate set rather than seeding it with a
-	 * descendant search. Combinators in the selector (e.g. `Demographics > Age`)
-	 * are still evaluated by walking up from the candidate, so full selectors
-	 * keep working.
+	 * The node itself is the only candidate, so this asks "is this node a match?"
+	 * rather than "does this node contain a match?" — which is what running a
+	 * find() against the node would ask.
 	 *
 	 * @param DOMNode $node
 	 *   The node to test.
@@ -1180,20 +1173,11 @@ trait QueryFilters
 	 * @return bool
 	 *   TRUE if the node is an element and matches the selector.
 	 * @throws ParseException
+	 * @see NodeMatcher
 	 */
 	private function matchesNodeSelector($node, $selector): bool
 	{
-		if (! $node instanceof DOMNode || $node->nodeType !== XML_ELEMENT_NODE) {
-			return false;
-		}
-
-		$candidates = new SplObjectStorage();
-		$candidates->offsetSet($node);
-
-		$traverser = new DOMTraverser($candidates, true, $node);
-		$traverser->find($selector);
-
-		return count($traverser->matches()) > 0;
+		return NodeMatcher::matchesNode($node, $selector);
 	}
 
 	/**

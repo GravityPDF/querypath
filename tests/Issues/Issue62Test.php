@@ -216,4 +216,24 @@ class Issue62Test extends TestCase
 		$this->assertEquals(['b', 'b'], $this->tags($qp->not('a')));
 		$this->assertEquals(['a'], $this->tags($qp->not('b')));
 	}
+
+	/**
+	 * The candidate node must not be passed to the traverser as its scope node, or every
+	 * candidate matches :scope and the selector stops filtering anything at all.
+	 *
+	 * @see \QueryPath\Helpers\NodeMatcher
+	 */
+	public function testScopePseudoClassIsResolvedAgainstTheDocument(): void
+	{
+		$xml = '<?xml version="1.0"?><root><a><b><c>x</c></b></a></root>';
+
+		$this->assertSame('root', qp($xml, 'c')->top()->find(':scope')->tag());
+
+		$parents = qp($xml, 'c')->parents(':scope');
+		$this->assertCount(1, $parents, ':scope must match the document element, not every ancestor');
+		$this->assertSame('root', $parents->tag());
+
+		$this->assertTrue(qp($xml, 'root')->is(':scope'));
+		$this->assertFalse(qp($xml, 'c')->is(':scope'));
+	}
 }
