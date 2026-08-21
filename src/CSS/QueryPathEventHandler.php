@@ -372,13 +372,8 @@ class QueryPathEventHandler implements EventHandler, Traverser
 		$found   = new SplObjectStorage();
 		$matches = $this->candidateList();
 		foreach ($matches as $item) {
-			if (strtolower($item->localName) !== 'input') {
-				continue;
-			}
-
-			// An input with no type attribute defaults to a text input.
-			if (! $item->hasAttribute('type') || strtolower($item->getAttribute('type')) === 'text') {
-				$found->attach($item);
+			if (Util::isTextInput($item)) {
+				$found->offsetSet($item);
 			}
 		}
 

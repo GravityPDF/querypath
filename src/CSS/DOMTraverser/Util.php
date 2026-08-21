@@ -516,4 +516,27 @@ class Util
 
 		return [$aVal, $bVal];
 	}
+
+	/**
+	 * Does this node match jQuery's :text pseudo-class?
+	 *
+	 * jQuery's :text selects input elements whose type attribute is absent, or is "text"
+	 * regardless of case. It says nothing about whether a node is a text node.
+	 *
+	 * Both selector engines ask this question, so they share one answer — they are meant to
+	 * agree, and two copies of the rule would be free to drift apart.
+	 *
+	 * @param mixed $node
+	 *
+	 * @return bool
+	 */
+	public static function isTextInput($node): bool
+	{
+		if (! $node instanceof DOMElement || strtolower($node->localName) !== 'input') {
+			return false;
+		}
+
+		// An input with no type attribute defaults to a text input.
+		return ! $node->hasAttribute('type') || strtolower($node->getAttribute('type')) === 'text';
+	}
 }

@@ -24,6 +24,9 @@ QueryPath Changelog
   or processing instruction). Those nodes now simply do not match, instead of calling element-only DOM methods on them.
 - Fix the `:text` pseudo-class so it matches jQuery: it selects `input` elements whose `type` attribute is absent or is
   `text` (case-insensitively). It never indicated, and still does not indicate, whether a node is a text node.
+- `find('*')` now matches the nodes in the match set as well as their descendants, so that a selector can be tested
+  against an element already in hand. Note that #73 replaces this with jQuery's descendant-only `find()`; this entry
+  is provisional and should be dropped if that lands first.
 
 # 4.1.0
 

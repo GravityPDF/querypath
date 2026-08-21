@@ -246,16 +246,7 @@ class PseudoClass
 	 */
 	protected function isTextInput($node): bool
 	{
-		if (strtolower($node->localName) !== 'input') {
-			return false;
-		}
-
-		// An input with no type attribute defaults to a text input.
-		if (! $node->hasAttribute('type')) {
-			return true;
-		}
-
-		return strtolower($node->getAttribute('type')) === 'text';
+		return Util::isTextInput($node);
 	}
 
 	/**
