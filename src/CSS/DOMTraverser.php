@@ -814,8 +814,11 @@ class DOMTraverser implements Traverser
 				continue;
 			}
 
-			// Capture the case where the node itself matches the element.
-			if ($node instanceof DOMElement
+			// jQuery's find() searches descendants only, so a node in the match set is not
+			// a candidate for its own selector. The document element is the exception:
+			// QueryPath seeds the match set with it rather than with the document, so
+			// without this qp($xml)->find('root') could never match.
+			if ($node->parentNode instanceof DOMDocument
 				&& ($element === '*' || $node->tagName === $element)) {
 				$found->offsetSet($node);
 			}
