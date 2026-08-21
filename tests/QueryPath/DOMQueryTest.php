@@ -560,9 +560,54 @@ class DOMQueryTest extends TestCase
 	public function testFilter()
 	{
 		$file = DATA_FILE;
-		$this->assertEquals(1, qp($file)->filter('li')->count());
-		$this->assertEquals(2, qp($file, 'inner')->filter('li')->count());
-		$this->assertEquals('inner-two', qp($file, 'inner')->filter('li')->eq(1)->attr('id'));
+
+		// filter() narrows the current match set to the members that match the selector.
+		// It does not search their descendants: <root> and <inner> are not <li> elements,
+		// so an 'li' filter removes them both.
+		$this->assertEquals(0, qp($file)->filter('li')->count());
+		$this->assertEquals(0, qp($file, 'inner')->filter('li')->count());
+
+		$this->assertEquals(2, qp($file, 'inner')->filter('inner')->count());
+		$this->assertEquals(5, qp($file, 'li')->filter('li')->count());
+
+		$this->assertEquals(1, qp($file, 'inner')->filter('#inner-two')->count());
+		$this->assertEquals('inner-two', qp($file, 'inner')->filter('#inner-two')->attr('id'));
+
+		// The original set's ordering is preserved.
+		$this->assertEquals('inner-one', qp($file, 'inner')->filter('inner')->eq(0)->attr('id'));
+		$this->assertEquals('inner-two', qp($file, 'inner')->filter('inner')->eq(1)->attr('id'));
+	}
+
+	/**
+	 * filter() used to keep any element that *contained* a match, which is what has()
+	 * does. This pins the difference, and documents the migration path for anyone who
+	 * was relying on the old behaviour.
+	 */
+	public function testFilterMatchesTheSetRatherThanItsDescendants()
+	{
+		$file = DATA_FILE;
+
+		$this->assertEquals(0, qp($file, 'inner')->filter('li')->count());
+		$this->assertEquals(2, qp($file, 'inner')->has('li')->count());
+
+		$this->assertEquals(0, qp($file)->filter('li')->count());
+		$this->assertEquals(1, qp($file)->has('li')->count());
+	}
+
+	/**
+	 * A selector that describes a position within the match set has to be evaluated
+	 * against the whole set, not against each member in turn.
+	 */
+	public function testFilterEvaluatesTheSelectorAgainstTheWholeSet()
+	{
+		$file = DATA_FILE;
+
+		$this->assertEquals(5, qp($file, 'li')->filter('li')->count());
+		$this->assertEquals('one', qp($file, 'li')->filter('#one')->attr('id'));
+
+		// :scope refers to the document element, exactly as it does in find().
+		$this->assertEquals(0, qp($file, 'inner')->filter(':scope')->count());
+		$this->assertEquals(1, qp($file, 'root')->filter(':scope')->count());
 	}
 
 	public function testFilterPreg()

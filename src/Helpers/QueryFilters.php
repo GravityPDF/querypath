@@ -4,7 +4,6 @@ namespace QueryPath\Helpers;
 
 use DOMElement;
 use DOMNode;
-use QueryPath\CSS\DOMTraverser;
 use QueryPath\CSS\ParseException;
 use QueryPath\DOMQuery;
 use QueryPath\Exception;
@@ -41,20 +40,18 @@ trait QueryFilters
 	 */
 	public function filter($selector): Query
 	{
-		$found = new SplObjectStorage();
-		$tmp   = new SplObjectStorage();
+		// The whole match set is filtered in one pass rather than one node at a time.
+		// A per-node pass cannot evaluate a selector that describes a position within the
+		// set (:first, :eq(n), :odd, ...), because each node would be the only member of
+		// its own one-element set.
+		$matched = NodeMatcher::filter($this->matches, $selector);
 
+		// Rebuild the set by walking the original, so the caller's ordering is preserved.
+		$found = new SplObjectStorage();
 		foreach ($this->matches as $m) {
-			$tmp->offsetSet($m);
-			// Seems like this should be right... but it fails unit
-			// tests. Need to compare to jQuery.
-			// $query = new \QueryPath\CSS\DOMTraverser($tmp, TRUE, $m);
-			$query = new DOMTraverser($tmp);
-			$query->find($selector);
-			if (count($query->matches())) {
+			if ($matched->offsetExists($m)) {
 				$found->offsetSet($m);
 			}
-			$tmp->offsetUnset($m);
 		}
 
 		return $this->inst($found, null);
@@ -1051,29 +1048,26 @@ trait QueryFilters
 	 */
 	public function children($selector = null): Query
 	{
-		$found  = new SplObjectStorage();
-		$filter = is_string($selector) && strlen($selector) > 0;
-
-		if ($filter) {
-			$tmp = new SplObjectStorage();
-		}
+		$children = new SplObjectStorage();
 		foreach ($this->matches as $m) {
 			foreach ($m->childNodes as $c) {
 				if ($c->nodeType === XML_ELEMENT_NODE) {
-					// This is basically an optimized filter() just for children().
-					if ($filter) {
-						$tmp->offsetSet($c);
-						$query = new DOMTraverser($tmp, true, $c);
-						$query->find($selector);
-						if (count($query->matches()) > 0) {
-							$found->offsetSet($c);
-						}
-						$tmp->offsetUnset($c);
-					} // No filter. Just attach it.
-					else {
-						$found->offsetSet($c);
-					}
+					$children->offsetSet($c);
 				}
+			}
+		}
+
+		if (! is_string($selector) || strlen($selector) === 0) {
+			return $this->inst($children, null);
+		}
+
+		// Filter the children as one set, for the same reason filter() does.
+		$matched = NodeMatcher::filter($children, $selector);
+
+		$found = new SplObjectStorage();
+		foreach ($children as $c) {
+			if ($matched->offsetExists($c)) {
+				$found->offsetSet($c);
 			}
 		}
 
