@@ -1,0 +1,2035 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:ve="http://schemas.openxmlformats.org/markup-compatibility/2006"
+            xmlns:o="urn:schemas-microsoft-com:office:office"
+            xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+            xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml"
+            xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
+            xmlns:w10="urn:schemas-microsoft-com:office:word"
+            xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+            xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml">
+    <w:body>
+        <w:p w:rsidR="00350E5A" w:rsidRPr="00E86EA4" w:rsidRDefault="00C556CB" w:rsidP="00E86EA4">
+            <w:pPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:jc w:val="center"/>
+                <w:rPr>
+                    <w:b/>
+                    <w:sz w:val="36"/>
+                    <w:szCs w:val="36"/>
+                    <w:u w:val="single"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00E86EA4">
+                <w:rPr>
+                    <w:b/>
+                    <w:sz w:val="36"/>
+                    <w:szCs w:val="36"/>
+                    <w:u w:val="single"/>
+                </w:rPr>
+                <w:t>Computer Forensics Class Syllabus</w:t>
+            </w:r>
+            <w:r w:rsidR="00E940D7" w:rsidRPr="00E86EA4">
+                <w:rPr>
+                    <w:b/>
+                    <w:sz w:val="36"/>
+                    <w:szCs w:val="36"/>
+                    <w:u w:val="single"/>
+                </w:rPr>
+                <w:t xml:space="preserve">   - </w:t>
+            </w:r>
+            <w:proofErr w:type="gramStart"/>
+            <w:r w:rsidR="00E940D7" w:rsidRPr="00E86EA4">
+                <w:rPr>
+                    <w:b/>
+                    <w:sz w:val="36"/>
+                    <w:szCs w:val="36"/>
+                    <w:u w:val="single"/>
+                </w:rPr>
+                <w:t>Fall</w:t>
+            </w:r>
+            <w:proofErr w:type="gramEnd"/>
+            <w:r w:rsidR="00E940D7" w:rsidRPr="00E86EA4">
+                <w:rPr>
+                    <w:b/>
+                    <w:sz w:val="36"/>
+                    <w:szCs w:val="36"/>
+                    <w:u w:val="single"/>
+                </w:rPr>
+                <w:t xml:space="preserve"> 2009</w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="00E940D7" w:rsidRDefault="00E940D7" w:rsidP="0012020F">
+            <w:pPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:b/>
+                    <w:sz w:val="28"/>
+                    <w:szCs w:val="28"/>
+                    <w:u w:val="single"/>
+                </w:rPr>
+            </w:pPr>
+        </w:p>
+        <w:p w:rsidR="00E940D7" w:rsidRPr="00E940D7" w:rsidRDefault="00E940D7" w:rsidP="0012020F">
+            <w:pPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:b/>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00E86EA4">
+                <w:rPr>
+                    <w:b/>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                    <w:u w:val="single"/>
+                </w:rPr>
+                <w:t>Course No.:</w:t>
+            </w:r>
+            <w:r>
+                <w:rPr>
+                    <w:b/>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t xml:space="preserve">Comp 340-001 / </w:t>
+            </w:r>
+            <w:r w:rsidR="008F7D09">
+                <w:rPr>
+                    <w:b/>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:t>Comp 488-004</w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="00C556CB" w:rsidRPr="00E940D7" w:rsidRDefault="00C556CB" w:rsidP="0012020F">
+            <w:pPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+        </w:p>
+        <w:p w:rsidR="00E940D7" w:rsidRPr="00E940D7" w:rsidRDefault="00E940D7" w:rsidP="00E940D7">
+            <w:pPr>
+                <w:rPr>
+                    <w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:b/>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                    <w:u w:val="single"/>
+                </w:rPr>
+                <w:t>INSTRUCTOR:</w:t>
+            </w:r>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+            </w:r>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+                    <w:b/>
+                    <w:bCs/>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:t>Scott Jones</w:t>
+            </w:r>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:t xml:space="preserve"> </w:t>
+            </w:r>
+        </w:p>
+        <w:tbl>
+            <w:tblPr>
+                <w:tblW w:w="5000" w:type="pct"/>
+                <w:tblCellSpacing w:w="0" w:type="dxa"/>
+                <w:tblCellMar>
+                    <w:left w:w="0" w:type="dxa"/>
+                    <w:right w:w="0" w:type="dxa"/>
+                </w:tblCellMar>
+                <w:tblLook w:val="04A0"/>
+            </w:tblPr>
+            <w:tblGrid>
+                <w:gridCol w:w="9360"/>
+            </w:tblGrid>
+            <w:tr w:rsidR="00E940D7" w:rsidRPr="00E940D7">
+                <w:trPr>
+                    <w:tblCellSpacing w:w="0" w:type="dxa"/>
+                </w:trPr>
+                <w:tc>
+                    <w:tcPr>
+                        <w:tcW w:w="3500" w:type="pct"/>
+                    </w:tcPr>
+                    <w:tbl>
+                        <w:tblPr>
+                            <w:tblW w:w="0" w:type="auto"/>
+                            <w:tblCellSpacing w:w="0" w:type="dxa"/>
+                            <w:tblCellMar>
+                                <w:top w:w="30" w:type="dxa"/>
+                                <w:left w:w="30" w:type="dxa"/>
+                                <w:bottom w:w="30" w:type="dxa"/>
+                                <w:right w:w="30" w:type="dxa"/>
+                            </w:tblCellMar>
+                            <w:tblLook w:val="04A0"/>
+                        </w:tblPr>
+                        <w:tblGrid>
+                            <w:gridCol w:w="1284"/>
+                            <w:gridCol w:w="3085"/>
+                        </w:tblGrid>
+                        <w:tr w:rsidR="00E940D7" w:rsidRPr="00E940D7">
+                            <w:trPr>
+                                <w:tblCellSpacing w:w="0" w:type="dxa"/>
+                            </w:trPr>
+                            <w:tc>
+                                <w:tcPr>
+                                    <w:tcW w:w="0" w:type="auto"/>
+                                </w:tcPr>
+                                <w:p w:rsidR="00E940D7" w:rsidRPr="00E940D7" w:rsidRDefault="00E940D7"
+                                     w:rsidP="00E940D7">
+                                    <w:pPr>
+                                        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                                        <w:rPr>
+                                            <w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+                                            <w:sz w:val="20"/>
+                                            <w:szCs w:val="20"/>
+                                        </w:rPr>
+                                    </w:pPr>
+                                    <w:r w:rsidRPr="00E940D7">
+                                        <w:rPr>
+                                            <w:rFonts w:eastAsia="Times New Roman" w:cs="Arial"/>
+                                            <w:bCs/>
+                                            <w:sz w:val="20"/>
+                                            <w:szCs w:val="20"/>
+                                        </w:rPr>
+                                        <w:t>Email</w:t>
+                                    </w:r>
+                                    <w:r w:rsidRPr="00E940D7">
+                                        <w:rPr>
+                                            <w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+                                            <w:sz w:val="20"/>
+                                            <w:szCs w:val="20"/>
+                                        </w:rPr>
+                                        <w:t xml:space="preserve"> </w:t>
+                                    </w:r>
+                                </w:p>
+                            </w:tc>
+                            <w:tc>
+                                <w:tcPr>
+                                    <w:tcW w:w="0" w:type="auto"/>
+                                    <w:vAlign w:val="center"/>
+                                </w:tcPr>
+                                <w:p w:rsidR="00E940D7" w:rsidRPr="00E940D7" w:rsidRDefault="00D97E6A"
+                                     w:rsidP="00E940D7">
+                                    <w:pPr>
+                                        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                                        <w:rPr>
+                                            <w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+                                            <w:sz w:val="20"/>
+                                            <w:szCs w:val="20"/>
+                                        </w:rPr>
+                                    </w:pPr>
+                                    <w:hyperlink r:id="rId5" w:history="1">
+                                        <w:r w:rsidR="00E940D7" w:rsidRPr="00E940D7">
+                                            <w:rPr>
+                                                <w:rFonts w:eastAsia="Times New Roman" w:cs="Arial"/>
+                                                <w:color w:val="0000FF"/>
+                                                <w:sz w:val="20"/>
+                                                <w:szCs w:val="20"/>
+                                                <w:u w:val="single"/>
+                                            </w:rPr>
+                                            <w:t>sjone18@luc.edu</w:t>
+                                        </w:r>
+                                    </w:hyperlink>
+                                    <w:r w:rsidR="00E940D7" w:rsidRPr="00E940D7">
+                                        <w:rPr>
+                                            <w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+                                            <w:sz w:val="20"/>
+                                            <w:szCs w:val="20"/>
+                                        </w:rPr>
+                                        <w:t xml:space="preserve"> </w:t>
+                                    </w:r>
+                                </w:p>
+                            </w:tc>
+                        </w:tr>
+                        <w:tr w:rsidR="00E940D7" w:rsidRPr="00E940D7">
+                            <w:trPr>
+                                <w:tblCellSpacing w:w="0" w:type="dxa"/>
+                            </w:trPr>
+                            <w:tc>
+                                <w:tcPr>
+                                    <w:tcW w:w="0" w:type="auto"/>
+                                </w:tcPr>
+                                <w:p w:rsidR="00E940D7" w:rsidRPr="00E940D7" w:rsidRDefault="00E940D7"
+                                     w:rsidP="00E940D7">
+                                    <w:pPr>
+                                        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                                        <w:rPr>
+                                            <w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+                                            <w:sz w:val="20"/>
+                                            <w:szCs w:val="20"/>
+                                        </w:rPr>
+                                    </w:pPr>
+                                    <w:r w:rsidRPr="00E940D7">
+                                        <w:rPr>
+                                            <w:rFonts w:eastAsia="Times New Roman" w:cs="Arial"/>
+                                            <w:bCs/>
+                                            <w:sz w:val="20"/>
+                                            <w:szCs w:val="20"/>
+                                        </w:rPr>
+                                        <w:t>Work Phone</w:t>
+                                    </w:r>
+                                    <w:r w:rsidRPr="00E940D7">
+                                        <w:rPr>
+                                            <w:rFonts w:eastAsia="Times New Roman" w:cs="Arial"/>
+                                            <w:sz w:val="20"/>
+                                            <w:szCs w:val="20"/>
+                                        </w:rPr>
+                                        <w:t xml:space="preserve"> </w:t>
+                                    </w:r>
+                                </w:p>
+                            </w:tc>
+                            <w:tc>
+                                <w:tcPr>
+                                    <w:tcW w:w="0" w:type="auto"/>
+                                    <w:vAlign w:val="center"/>
+                                </w:tcPr>
+                                <w:p w:rsidR="00E940D7" w:rsidRPr="00E940D7" w:rsidRDefault="00E940D7"
+                                     w:rsidP="00E940D7">
+                                    <w:pPr>
+                                        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                                        <w:rPr>
+                                            <w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+                                            <w:sz w:val="20"/>
+                                            <w:szCs w:val="20"/>
+                                        </w:rPr>
+                                    </w:pPr>
+                                    <w:r w:rsidRPr="00E940D7">
+                                        <w:rPr>
+                                            <w:rFonts w:eastAsia="Times New Roman" w:cs="Arial"/>
+                                            <w:sz w:val="20"/>
+                                            <w:szCs w:val="20"/>
+                                        </w:rPr>
+                                        <w:t>312-915-7987</w:t>
+                                    </w:r>
+                                    <w:r w:rsidRPr="00E940D7">
+                                        <w:rPr>
+                                            <w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+                                            <w:sz w:val="20"/>
+                                            <w:szCs w:val="20"/>
+                                        </w:rPr>
+                                        <w:t xml:space="preserve"> </w:t>
+                                    </w:r>
+                                </w:p>
+                            </w:tc>
+                        </w:tr>
+                        <w:tr w:rsidR="00E940D7" w:rsidRPr="00E940D7">
+                            <w:trPr>
+                                <w:tblCellSpacing w:w="0" w:type="dxa"/>
+                            </w:trPr>
+                            <w:tc>
+                                <w:tcPr>
+                                    <w:tcW w:w="0" w:type="auto"/>
+                                </w:tcPr>
+                                <w:p w:rsidR="00E940D7" w:rsidRPr="00E940D7" w:rsidRDefault="00E940D7"
+                                     w:rsidP="00E940D7">
+                                    <w:pPr>
+                                        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                                        <w:rPr>
+                                            <w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+                                            <w:sz w:val="20"/>
+                                            <w:szCs w:val="20"/>
+                                        </w:rPr>
+                                    </w:pPr>
+                                    <w:r w:rsidRPr="00E940D7">
+                                        <w:rPr>
+                                            <w:rFonts w:eastAsia="Times New Roman" w:cs="Arial"/>
+                                            <w:bCs/>
+                                            <w:sz w:val="20"/>
+                                            <w:szCs w:val="20"/>
+                                        </w:rPr>
+                                        <w:t>Office Location</w:t>
+                                    </w:r>
+                                    <w:r w:rsidRPr="00E940D7">
+                                        <w:rPr>
+                                            <w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+                                            <w:sz w:val="20"/>
+                                            <w:szCs w:val="20"/>
+                                        </w:rPr>
+                                        <w:t xml:space="preserve"> </w:t>
+                                    </w:r>
+                                </w:p>
+                            </w:tc>
+                            <w:tc>
+                                <w:tcPr>
+                                    <w:tcW w:w="0" w:type="auto"/>
+                                    <w:vAlign w:val="center"/>
+                                </w:tcPr>
+                                <w:p w:rsidR="00E940D7" w:rsidRPr="00E940D7" w:rsidRDefault="00E940D7"
+                                     w:rsidP="00E940D7">
+                                    <w:pPr>
+                                        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                                        <w:rPr>
+                                            <w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+                                            <w:sz w:val="20"/>
+                                            <w:szCs w:val="20"/>
+                                        </w:rPr>
+                                    </w:pPr>
+                                    <w:r w:rsidRPr="00E940D7">
+                                        <w:rPr>
+                                            <w:rFonts w:eastAsia="Times New Roman" w:cs="Arial"/>
+                                            <w:sz w:val="20"/>
+                                            <w:szCs w:val="20"/>
+                                        </w:rPr>
+                                        <w:t>512D Lewis Tower</w:t>
+                                    </w:r>
+                                    <w:r w:rsidRPr="00E940D7">
+                                        <w:rPr>
+                                            <w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+                                            <w:sz w:val="20"/>
+                                            <w:szCs w:val="20"/>
+                                        </w:rPr>
+                                        <w:t xml:space="preserve"> </w:t>
+                                    </w:r>
+                                </w:p>
+                            </w:tc>
+                        </w:tr>
+                        <w:tr w:rsidR="00E940D7" w:rsidRPr="00E940D7">
+                            <w:trPr>
+                                <w:tblCellSpacing w:w="0" w:type="dxa"/>
+                            </w:trPr>
+                            <w:tc>
+                                <w:tcPr>
+                                    <w:tcW w:w="0" w:type="auto"/>
+                                </w:tcPr>
+                                <w:p w:rsidR="00E940D7" w:rsidRPr="00E940D7" w:rsidRDefault="00E940D7"
+                                     w:rsidP="00E940D7">
+                                    <w:pPr>
+                                        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                                        <w:rPr>
+                                            <w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+                                            <w:sz w:val="20"/>
+                                            <w:szCs w:val="20"/>
+                                        </w:rPr>
+                                    </w:pPr>
+                                    <w:r w:rsidRPr="00E940D7">
+                                        <w:rPr>
+                                            <w:rFonts w:eastAsia="Times New Roman" w:cs="Arial"/>
+                                            <w:bCs/>
+                                            <w:sz w:val="20"/>
+                                            <w:szCs w:val="20"/>
+                                        </w:rPr>
+                                        <w:t>Office Hours</w:t>
+                                    </w:r>
+                                    <w:r w:rsidRPr="00E940D7">
+                                        <w:rPr>
+                                            <w:rFonts w:eastAsia="Times New Roman" w:cs="Arial"/>
+                                            <w:sz w:val="20"/>
+                                            <w:szCs w:val="20"/>
+                                        </w:rPr>
+                                        <w:t xml:space="preserve"> </w:t>
+                                    </w:r>
+                                </w:p>
+                            </w:tc>
+                            <w:tc>
+                                <w:tcPr>
+                                    <w:tcW w:w="0" w:type="auto"/>
+                                    <w:vAlign w:val="center"/>
+                                </w:tcPr>
+                                <w:p w:rsidR="00E940D7" w:rsidRPr="00E940D7" w:rsidRDefault="00E940D7"
+                                     w:rsidP="00E940D7">
+                                    <w:pPr>
+                                        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                                        <w:rPr>
+                                            <w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+                                            <w:sz w:val="20"/>
+                                            <w:szCs w:val="20"/>
+                                        </w:rPr>
+                                    </w:pPr>
+                                    <w:r w:rsidRPr="00E940D7">
+                                        <w:rPr>
+                                            <w:rFonts w:eastAsia="Times New Roman" w:cs="Arial"/>
+                                            <w:sz w:val="20"/>
+                                            <w:szCs w:val="20"/>
+                                        </w:rPr>
+                                        <w:t>6PM to 7PM Wednesdays or by appt.</w:t>
+                                    </w:r>
+                                </w:p>
+                            </w:tc>
+                        </w:tr>
+                    </w:tbl>
+                    <w:p w:rsidR="00E940D7" w:rsidRPr="00E940D7" w:rsidRDefault="00E940D7" w:rsidP="00E940D7">
+                        <w:pPr>
+                            <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                            <w:rPr>
+                                <w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+                                <w:sz w:val="20"/>
+                                <w:szCs w:val="20"/>
+                            </w:rPr>
+                        </w:pPr>
+                    </w:p>
+                </w:tc>
+            </w:tr>
+        </w:tbl>
+        <w:p w:rsidR="00E940D7" w:rsidRPr="00E940D7" w:rsidRDefault="00E940D7" w:rsidP="0012020F">
+            <w:pPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+        </w:p>
+        <w:p w:rsidR="0012020F" w:rsidRPr="00E940D7" w:rsidRDefault="0012020F" w:rsidP="0012020F">
+            <w:pPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:b/>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                    <w:u w:val="single"/>
+                </w:rPr>
+                <w:t>OFFICIAL TEXT:</w:t>
+            </w:r>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                    <w:u w:val="single"/>
+                </w:rPr>
+                <w:t xml:space="preserve"> </w:t>
+            </w:r>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+            </w:r>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t xml:space="preserve">“Computer Evidence Collection and Preservation Second Edition” </w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="0012020F" w:rsidRPr="00E940D7" w:rsidRDefault="0012020F" w:rsidP="0012020F">
+            <w:pPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:proofErr w:type="gramStart"/>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:t>by</w:t>
+            </w:r>
+            <w:proofErr w:type="gramEnd"/>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:t xml:space="preserve"> Christopher L.T. Brown,  ISBN-10: 1-58450-699-7</w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="0012020F" w:rsidRPr="00E940D7" w:rsidRDefault="0012020F" w:rsidP="0012020F">
+            <w:pPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+        </w:p>
+        <w:p w:rsidR="0012020F" w:rsidRPr="00E940D7" w:rsidRDefault="0012020F" w:rsidP="0012020F">
+            <w:pPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:t>The schedule of class readings is officially as follows:</w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="0012020F" w:rsidRPr="00E940D7" w:rsidRDefault="0012020F" w:rsidP="0012020F">
+            <w:pPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+        </w:p>
+        <w:p w:rsidR="00C556CB" w:rsidRPr="00E940D7" w:rsidRDefault="00C556CB" w:rsidP="0012020F">
+            <w:pPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:t>Week</w:t>
+            </w:r>
+            <w:r w:rsidR="00340848" w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+            </w:r>
+            <w:r w:rsidR="00340848" w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>Date</w:t>
+            </w:r>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+            </w:r>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>Book Chapter To Read</w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="00C556CB" w:rsidRPr="00E940D7" w:rsidRDefault="00C556CB" w:rsidP="0012020F">
+            <w:pPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:t>------------------------</w:t>
+            </w:r>
+            <w:r w:rsidR="0012020F" w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:t xml:space="preserve">----------------------------------------------------- </w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="00C556CB" w:rsidRPr="00E940D7" w:rsidRDefault="00340848" w:rsidP="0012020F">
+            <w:pPr>
+                <w:pStyle w:val="ListParagraph"/>
+                <w:numPr>
+                    <w:ilvl w:val="0"/>
+                    <w:numId w:val="1"/>
+                </w:numPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:t>8/26</w:t>
+            </w:r>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+            </w:r>
+            <w:r w:rsidR="00C556CB" w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:t>N/A – Class Intro</w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="00C556CB" w:rsidRPr="00E940D7" w:rsidRDefault="00340848" w:rsidP="0012020F">
+            <w:pPr>
+                <w:pStyle w:val="ListParagraph"/>
+                <w:numPr>
+                    <w:ilvl w:val="0"/>
+                    <w:numId w:val="1"/>
+                </w:numPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:t>9/2</w:t>
+            </w:r>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+            </w:r>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>Chapters 1 &amp; 2</w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="00340848" w:rsidRPr="00E940D7" w:rsidRDefault="00340848" w:rsidP="0012020F">
+            <w:pPr>
+                <w:pStyle w:val="ListParagraph"/>
+                <w:numPr>
+                    <w:ilvl w:val="0"/>
+                    <w:numId w:val="1"/>
+                </w:numPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:t>9/9</w:t>
+            </w:r>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+            </w:r>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>Chapters 3 &amp; 4</w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="00340848" w:rsidRPr="00E940D7" w:rsidRDefault="00340848" w:rsidP="0012020F">
+            <w:pPr>
+                <w:pStyle w:val="ListParagraph"/>
+                <w:numPr>
+                    <w:ilvl w:val="0"/>
+                    <w:numId w:val="1"/>
+                </w:numPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:t>9/16</w:t>
+            </w:r>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>Chapters 5 &amp; 6</w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="00340848" w:rsidRPr="00E940D7" w:rsidRDefault="00340848" w:rsidP="0012020F">
+            <w:pPr>
+                <w:pStyle w:val="ListParagraph"/>
+                <w:numPr>
+                    <w:ilvl w:val="0"/>
+                    <w:numId w:val="1"/>
+                </w:numPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:t>9/23</w:t>
+            </w:r>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>Chapters 7 &amp; 8</w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="00340848" w:rsidRPr="00E940D7" w:rsidRDefault="00340848" w:rsidP="0012020F">
+            <w:pPr>
+                <w:pStyle w:val="ListParagraph"/>
+                <w:numPr>
+                    <w:ilvl w:val="0"/>
+                    <w:numId w:val="1"/>
+                </w:numPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:t>9/30</w:t>
+            </w:r>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>Chapters 9 &amp; 10</w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="00340848" w:rsidRPr="00E940D7" w:rsidRDefault="00340848" w:rsidP="0012020F">
+            <w:pPr>
+                <w:pStyle w:val="ListParagraph"/>
+                <w:numPr>
+                    <w:ilvl w:val="0"/>
+                    <w:numId w:val="1"/>
+                </w:numPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:t>10/7</w:t>
+            </w:r>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>Chapters 11 &amp; 12</w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="00340848" w:rsidRPr="00E940D7" w:rsidRDefault="00340848" w:rsidP="0012020F">
+            <w:pPr>
+                <w:pStyle w:val="ListParagraph"/>
+                <w:numPr>
+                    <w:ilvl w:val="0"/>
+                    <w:numId w:val="1"/>
+                </w:numPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:t>10/14</w:t>
+            </w:r>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>Chapters 13 &amp; 14</w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="00340848" w:rsidRPr="00E940D7" w:rsidRDefault="00340848" w:rsidP="0012020F">
+            <w:pPr>
+                <w:pStyle w:val="ListParagraph"/>
+                <w:numPr>
+                    <w:ilvl w:val="0"/>
+                    <w:numId w:val="1"/>
+                </w:numPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:t>10/21</w:t>
+            </w:r>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>Chapters 15, 16, &amp; 17</w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="00340848" w:rsidRPr="00E940D7" w:rsidRDefault="00340848" w:rsidP="0012020F">
+            <w:pPr>
+                <w:pStyle w:val="ListParagraph"/>
+                <w:numPr>
+                    <w:ilvl w:val="0"/>
+                    <w:numId w:val="1"/>
+                </w:numPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:t>10/28</w:t>
+            </w:r>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>In-class projects</w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="00340848" w:rsidRPr="00E940D7" w:rsidRDefault="00340848" w:rsidP="0012020F">
+            <w:pPr>
+                <w:pStyle w:val="ListParagraph"/>
+                <w:numPr>
+                    <w:ilvl w:val="0"/>
+                    <w:numId w:val="1"/>
+                </w:numPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:t>11/4</w:t>
+            </w:r>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>In-class projects</w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="00340848" w:rsidRPr="00E940D7" w:rsidRDefault="00340848" w:rsidP="0012020F">
+            <w:pPr>
+                <w:pStyle w:val="ListParagraph"/>
+                <w:numPr>
+                    <w:ilvl w:val="0"/>
+                    <w:numId w:val="1"/>
+                </w:numPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:t>11/11</w:t>
+            </w:r>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>In-class projects</w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="00340848" w:rsidRPr="00E940D7" w:rsidRDefault="00340848" w:rsidP="0012020F">
+            <w:pPr>
+                <w:pStyle w:val="ListParagraph"/>
+                <w:numPr>
+                    <w:ilvl w:val="0"/>
+                    <w:numId w:val="1"/>
+                </w:numPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:t>11/18</w:t>
+            </w:r>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>In-class projects</w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="00340848" w:rsidRPr="00E940D7" w:rsidRDefault="00340848" w:rsidP="0012020F">
+            <w:pPr>
+                <w:pStyle w:val="ListParagraph"/>
+                <w:numPr>
+                    <w:ilvl w:val="0"/>
+                    <w:numId w:val="1"/>
+                </w:numPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:t>11/25</w:t>
+            </w:r>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>In-class projects</w:t>
+            </w:r>
+            <w:r w:rsidR="00E86EA4">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:t>*</w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="00340848" w:rsidRPr="00E940D7" w:rsidRDefault="00340848" w:rsidP="0012020F">
+            <w:pPr>
+                <w:pStyle w:val="ListParagraph"/>
+                <w:numPr>
+                    <w:ilvl w:val="0"/>
+                    <w:numId w:val="1"/>
+                </w:numPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:t>12/2</w:t>
+            </w:r>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>In-class projects</w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="00340848" w:rsidRPr="00E940D7" w:rsidRDefault="00340848" w:rsidP="0012020F">
+            <w:pPr>
+                <w:pStyle w:val="ListParagraph"/>
+                <w:numPr>
+                    <w:ilvl w:val="0"/>
+                    <w:numId w:val="1"/>
+                </w:numPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:t>12/9</w:t>
+            </w:r>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>In-class projects</w:t>
+            </w:r>
+            <w:r w:rsidR="0012020F" w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:t>*</w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="00340848" w:rsidRPr="00E940D7" w:rsidRDefault="00340848" w:rsidP="0012020F">
+            <w:pPr>
+                <w:pStyle w:val="ListParagraph"/>
+                <w:numPr>
+                    <w:ilvl w:val="0"/>
+                    <w:numId w:val="1"/>
+                </w:numPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:t>12/16</w:t>
+            </w:r>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>In-class projects</w:t>
+            </w:r>
+            <w:r w:rsidR="00E86EA4">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:t>*</w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="00340848" w:rsidRPr="00E940D7" w:rsidRDefault="00340848" w:rsidP="0012020F">
+            <w:pPr>
+                <w:pStyle w:val="ListParagraph"/>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:ind w:left="1800"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+        </w:p>
+        <w:p w:rsidR="0012020F" w:rsidRPr="00E940D7" w:rsidRDefault="008F7D09" w:rsidP="0012020F">
+            <w:pPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:t xml:space="preserve">Class readings and assignments may change as needed. </w:t>
+            </w:r>
+            <w:r w:rsidR="0012020F" w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:t>12/9/09 is generally designated a rest/study day in the academic calendar, so class may not be
+                    meeting. 12/16/09 is the final Wednesday within this semester and the tentative date for the final
+                    exam. This may be changed with short notice by the school as needed.
+                </w:t>
+            </w:r>
+            <w:r w:rsidR="0057019C" w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:t xml:space="preserve"> To the extent that a given date for class is cancelled by the school for any reason, that week’s reading will be bumped back accordingly.</w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="0012020F" w:rsidRPr="00E940D7" w:rsidRDefault="0012020F" w:rsidP="0012020F">
+            <w:pPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+        </w:p>
+        <w:p w:rsidR="0012020F" w:rsidRPr="00E940D7" w:rsidRDefault="0012020F" w:rsidP="0012020F">
+            <w:pPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:t>As newsworthy events become available, we may supplement our classroom discussions accordingly. I
+                    encourage all students to pay attention to news stories on television or the Internet related to
+                    computer forensics and computer technology in general.
+                </w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="0012020F" w:rsidRPr="00E940D7" w:rsidRDefault="0012020F" w:rsidP="0012020F">
+            <w:pPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+        </w:p>
+        <w:p w:rsidR="0012020F" w:rsidRPr="00E940D7" w:rsidRDefault="0012020F" w:rsidP="0012020F">
+            <w:pPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:b/>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                    <w:u w:val="single"/>
+                </w:rPr>
+                <w:t>IN-CLASS PROJECTS:</w:t>
+            </w:r>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>Starting in week four, this class will begin to conduct in-class work using real-world computer
+                    forensics hardware and/or software. In order to accomplish this, I highly recommend that each
+                    student bring two or more USB thumb drives to class. I recommend that the smaller of the two be
+                    around 512 MB in size and the larger one be at least 2 GB in size.
+                </w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="0057019C" w:rsidRPr="00E940D7" w:rsidRDefault="0057019C" w:rsidP="0012020F">
+            <w:pPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+        </w:p>
+        <w:p w:rsidR="0057019C" w:rsidRDefault="0057019C" w:rsidP="0012020F">
+            <w:pPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:b/>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                    <w:u w:val="single"/>
+                </w:rPr>
+                <w:t>QUIZZES &amp; TESTS:</w:t>
+            </w:r>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>All quizzes and tests will be administered via Blackboard. Without prior arrangements I will not
+                    accept make up quizzes or tests. Emergencies require that I receive an email in a timely fashion (24
+                    hour period) telling me your name, the date you missed class, and explaining to me why I should
+                    allow you to take the quiz or test late. By default my answer will be no. If I allow you to retake
+                    the quiz or test, I reserve the right to deduct points accordingly for your lateness.
+                </w:t>
+            </w:r>
+            <w:r w:rsidR="00C51165">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:t xml:space="preserve"> I reserve the right to give pop quizzes at any time.</w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="00E940D7" w:rsidRPr="00E940D7" w:rsidRDefault="00E940D7" w:rsidP="0012020F">
+            <w:pPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+        </w:p>
+        <w:p w:rsidR="0057019C" w:rsidRPr="00E940D7" w:rsidRDefault="0057019C" w:rsidP="0012020F">
+            <w:pPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:b/>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                    <w:u w:val="single"/>
+                </w:rPr>
+                <w:t>GROUPWORK:</w:t>
+            </w:r>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+            </w:r>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>Each student will be sharing a laptop computer with at least one other student each week. I may
+                    also require students
+                </w:t>
+            </w:r>
+            <w:r w:rsidR="00200AB6" w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:t xml:space="preserve"> to work in larger groups for specific tasks/projects. I reserve the right to ask specific students to swap groups if/when I find that students are not intermingling adequately. In the real world, you do not always get to choose with whom you work, and this class strives to provide real world examples and experience.</w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="00200AB6" w:rsidRPr="00E940D7" w:rsidRDefault="00200AB6" w:rsidP="0012020F">
+            <w:pPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+        </w:p>
+        <w:p w:rsidR="00200AB6" w:rsidRPr="00E940D7" w:rsidRDefault="00200AB6" w:rsidP="0012020F">
+            <w:pPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:b/>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                    <w:u w:val="single"/>
+                </w:rPr>
+                <w:t>GOALS:</w:t>
+            </w:r>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+            </w:r>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t xml:space="preserve">There are a few specific goals for which this class will strive. </w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="00200AB6" w:rsidRPr="00E940D7" w:rsidRDefault="00200AB6" w:rsidP="0012020F">
+            <w:pPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>GOAL 1 – by mid-term, every student will have created at least one or more forensic images</w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="00200AB6" w:rsidRPr="00E940D7" w:rsidRDefault="00200AB6" w:rsidP="0012020F">
+            <w:pPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>GOAL 2 – every student understands how to create basic forensic images</w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="00200AB6" w:rsidRPr="00E940D7" w:rsidRDefault="00200AB6" w:rsidP="0012020F">
+            <w:pPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>GOAL 3 – every student understands the fundamental theories underlying computer forensics</w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="00200AB6" w:rsidRPr="00E940D7" w:rsidRDefault="00200AB6" w:rsidP="0012020F">
+            <w:pPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>GOAL 4 – every student will gain basic skills desired presently by employers for IT staff</w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="00200AB6" w:rsidRPr="00E940D7" w:rsidRDefault="00200AB6" w:rsidP="0012020F">
+            <w:pPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+        </w:p>
+        <w:p w:rsidR="00200AB6" w:rsidRPr="00E940D7" w:rsidRDefault="00E940D7" w:rsidP="0012020F">
+            <w:pPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="008F7D09">
+                <w:rPr>
+                    <w:b/>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                    <w:u w:val="single"/>
+                </w:rPr>
+                <w:t>GRADE SCALE:</w:t>
+            </w:r>
+            <w:r w:rsidRPr="00E940D7">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>Every student EARNS their own grade. The grading scale is as follows:</w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="00E940D7" w:rsidRPr="00E940D7" w:rsidRDefault="00E940D7" w:rsidP="0012020F">
+            <w:pPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+        </w:p>
+        <w:p w:rsidR="00200AB6" w:rsidRDefault="00E940D7" w:rsidP="0012020F">
+            <w:pPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>92+</w:t>
+            </w:r>
+            <w:r>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+            </w:r>
+            <w:r>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>A</w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="00E940D7" w:rsidRDefault="00E940D7" w:rsidP="0012020F">
+            <w:pPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>91</w:t>
+            </w:r>
+            <w:r>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+            </w:r>
+            <w:r>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>A-</w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="00E940D7" w:rsidRDefault="00E940D7" w:rsidP="0012020F">
+            <w:pPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>90</w:t>
+            </w:r>
+            <w:r>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+            </w:r>
+            <w:r>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>B+</w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="00E940D7" w:rsidRDefault="00E940D7" w:rsidP="0012020F">
+            <w:pPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>89 – 84</w:t>
+            </w:r>
+            <w:r>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+            </w:r>
+            <w:r>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>B</w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="00E940D7" w:rsidRDefault="00E940D7" w:rsidP="0012020F">
+            <w:pPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>83</w:t>
+            </w:r>
+            <w:r>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+            </w:r>
+            <w:r>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>B-</w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="00E940D7" w:rsidRDefault="00E940D7" w:rsidP="0012020F">
+            <w:pPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>82</w:t>
+            </w:r>
+            <w:r>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+            </w:r>
+            <w:r>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>C+</w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="00E940D7" w:rsidRDefault="00E940D7" w:rsidP="0012020F">
+            <w:pPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>81</w:t>
+            </w:r>
+            <w:r w:rsidR="008F7D09">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:t>-75</w:t>
+            </w:r>
+            <w:r w:rsidR="008F7D09">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+            </w:r>
+            <w:r w:rsidR="008F7D09">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>C</w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="008F7D09" w:rsidRDefault="008F7D09" w:rsidP="0012020F">
+            <w:pPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>74</w:t>
+            </w:r>
+            <w:r>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+            </w:r>
+            <w:r>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>C-</w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="008F7D09" w:rsidRDefault="008F7D09" w:rsidP="0012020F">
+            <w:pPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>73</w:t>
+            </w:r>
+            <w:r>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+            </w:r>
+            <w:r>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>D+</w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="008F7D09" w:rsidRDefault="008F7D09" w:rsidP="0012020F">
+            <w:pPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>72-67</w:t>
+            </w:r>
+            <w:r>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+            </w:r>
+            <w:r>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>D</w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="008F7D09" w:rsidRDefault="008F7D09" w:rsidP="0012020F">
+            <w:pPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>66</w:t>
+            </w:r>
+            <w:r>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+            </w:r>
+            <w:r>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>D-</w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="008F7D09" w:rsidRDefault="008F7D09" w:rsidP="0012020F">
+            <w:pPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>65 or less</w:t>
+            </w:r>
+            <w:r>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>F</w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="008F7D09" w:rsidRDefault="008F7D09" w:rsidP="0012020F">
+            <w:pPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+        </w:p>
+        <w:p w:rsidR="008F7D09" w:rsidRPr="00E940D7" w:rsidRDefault="008F7D09" w:rsidP="0012020F">
+            <w:pPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="008F7D09">
+                <w:rPr>
+                    <w:b/>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                    <w:u w:val="single"/>
+                </w:rPr>
+                <w:t>Instructor Comments:</w:t>
+            </w:r>
+            <w:r>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:tab/>
+                <w:t>There are no dumb questions, only unasked ones. If you do not understand something it is your
+                    responsibility to let me know. Please ask questions in class, during breaks, after class, and even
+                    via email if you like. I will assume you understand and m
+                </w:t>
+            </w:r>
+            <w:r w:rsidR="001668EB">
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:t>ove on if you do not inform me otherwise</w:t>
+            </w:r>
+            <w:r>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:t>.</w:t>
+            </w:r>
+        </w:p>
+        <w:p w:rsidR="0057019C" w:rsidRDefault="0057019C" w:rsidP="0012020F">
+            <w:pPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+        </w:p>
+        <w:p w:rsidR="008F7D09" w:rsidRPr="00E940D7" w:rsidRDefault="008F7D09" w:rsidP="0012020F">
+            <w:pPr>
+                <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+            </w:pPr>
+            <w:r>
+                <w:rPr>
+                    <w:sz w:val="20"/>
+                    <w:szCs w:val="20"/>
+                </w:rPr>
+                <w:t xml:space="preserve">I welcome feedback from my students. Please feel free to send an email to the above LUC email address. No class-related emails at any other address will be accepted. </w:t>
+            </w:r>
+        </w:p>
+        <w:sectPr w:rsidR="008F7D09" w:rsidRPr="00E940D7" w:rsidSect="00672121">
+            <w:pgSz w:w="12240" w:h="15840"/>
+            <w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="720" w:footer="720"
+                     w:gutter="0"/>
+            <w:cols w:space="720"/>
+            <w:docGrid w:linePitch="360"/>
+        </w:sectPr>
+    </w:body>
+</w:document>

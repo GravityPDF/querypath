@@ -1,0 +1,39 @@
+name: Examples
+
+on:
+  schedule:
+    # Weekly, on Monday morning.
+    - cron: "0 7 * * 1"
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'examples/**'
+      - 'tests/QueryPath/ExampleRunner.php'
+      - 'tests/run-examples.php'
+      - '.github/workflows/examples.yml'
+
+jobs:
+  network:
+    name: Network examples
+    runs-on: ubuntu-latest
+
+    # These call third-party services, so they can fail for reasons that have
+    # nothing to do with a change here. The examples retry when an API asks them
+    # to slow down; anything that still fails is treated as a real problem.
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          ini-values: error_reporting=E_ALL
+          extensions: dom, simplexml, zip, curl
+
+      - name: Install Composer Dependencies
+        uses: ramsey/composer-install@v4
+
+      - name: Run the examples that call remote services
+        run: composer run test:examples:network

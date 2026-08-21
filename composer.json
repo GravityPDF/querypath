@@ -24,7 +24,9 @@
   ],
   "require": {
     "php": "^7.1 || ~8.0.0 || ~8.1.0 || ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
-    "masterminds/html5": "^2.0"
+    "masterminds/html5": "^2.0",
+    "ext-dom": "*",
+    "ext-simplexml": "*"
   },
   "autoload": {
     "psr-4": {
@@ -36,6 +38,7 @@
     ]
   },
   "require-dev": {
+    "ext-zip": "*",
     "mockery/mockery": "^1.1",
     "yoast/phpunit-polyfills": "^1.0",
     "dealerdirect/phpcodesniffer-composer-installer": "^0.7.0",
@@ -49,7 +52,10 @@
   "scripts": {
     "lint": "@php ./vendor/squizlabs/php_codesniffer/bin/phpcs",
     "lint:fix": "@php ./vendor/squizlabs/php_codesniffer/bin/phpcbf",
-    "lint:min-php": "@lint --standard=phpcompat.xml"
+    "lint:min-php": "@lint --standard=phpcompat.xml",
+    "test": "@php ./vendor/bin/phpunit",
+    "test:examples": "@php ./tests/run-examples.php --all",
+    "test:examples:network": "@php ./tests/run-examples.php --network"
   },
   "replace": {
     "arthurkushman/query-path": "3.1.4",

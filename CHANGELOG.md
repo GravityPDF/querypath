@@ -3,7 +3,15 @@ QueryPath Changelog
 
 # Unreleased changes
 
--
+- Reorganise, modernise, and repair the `examples/` directory. Each example now lives in its own subdirectory with an `index.php`, and the full set is indexed in `examples/quickstart-guide.md`
+- Convert the remaining legacy examples: `simple_example.php`, `techniques.php`, `svg.php`, `rss.php`, `odt.php`, `parse_php.php`, and `sparql.php`
+- Fix examples that no longer ran: send a `User-Agent` where remote hosts now require one, resolve paths relative to the example rather than the working directory, and stop relying on the removed `qp.php` autoloader and the PHP 8 incompatible `eachLambda()`
+- Rewrite `examples/quickstart-guide.md`, which documented an autoloader and a set of Composer caveats that no longer apply
+- Remove unused example fixtures (`The_Beatles.rdf`, `testGrid.html`, `out.svg`) and generated output
+- Add `ext-dom` and `ext-simplexml` to the `composer.json` requirements, and `ext-zip` to the dev requirements
+- Add `QueryPathTests\ExamplesTest`, which runs every offline example on each supported PHP version and fails if one stops working. The examples that call third-party services are run by the new `Examples` workflow, weekly and whenever an example changes
+- Rewrite the cURL example against the PubMed E-utilities API. MusicBrainz throttles by IP address, which made the example unusable from any shared address
+- Add `composer run test:examples` (and `test:examples:network`) to run the examples locally
 
 # 4.1.0
 
