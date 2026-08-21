@@ -4,6 +4,7 @@ namespace QueryPath\Helpers;
 
 use DOMElement;
 use DOMNode;
+use QueryPath\CSS\DOMTraverser\Util;
 use QueryPath\CSS\ParseException;
 use QueryPath\DOMQuery;
 use QueryPath\Exception;
@@ -44,17 +45,7 @@ trait QueryFilters
 		// A per-node pass cannot evaluate a selector that describes a position within the
 		// set (:first, :eq(n), :odd, ...), because each node would be the only member of
 		// its own one-element set.
-		$matched = NodeMatcher::filter($this->matches, $selector);
-
-		// Rebuild the set by walking the original, so the caller's ordering is preserved.
-		$found = new SplObjectStorage();
-		foreach ($this->matches as $m) {
-			if ($matched->offsetExists($m)) {
-				$found->offsetSet($m);
-			}
-		}
-
-		return $this->inst($found, null);
+		return $this->inst(NodeMatcher::filter($this->matches, $selector), null);
 	}
 
 	/**
@@ -722,8 +713,9 @@ trait QueryFilters
 				}
 			}
 		} else {
+			$matched = $this->filterCandidates($this->matches, $selector);
 			foreach ($this->matches as $m) {
-				if (! $this->matchesNodeSelector($m, $selector)) {
+				if (! $matched->offsetExists($m)) {
 					$found->offsetSet($m);
 				}
 			}
@@ -831,36 +823,39 @@ trait QueryFilters
 	private function getParentElements(?string $selector, bool $immediate): Query
 	{
 		$found = new SplObjectStorage();
+
+		// parent() stops at the nearest matching ancestor of each element, so its candidates
+		// have to be tested one at a time as the walk reaches them.
+		if ($immediate) {
+			foreach ($this->matches as $m) {
+				while ($m->parentNode && $m->parentNode->nodeType !== XML_DOCUMENT_NODE) {
+					$m = $m->parentNode;
+					// Is there any case where parent node is not an element?
+					if ($m->nodeType === XML_ELEMENT_NODE
+						&& (empty($selector) || $this->matchesNodeSelector($m, $selector))) {
+						$found->offsetSet($m);
+						break;
+					}
+				}
+			}
+
+			return $this->inst($found, null);
+		}
+
 		foreach ($this->matches as $m) {
 			while ($m->parentNode && $m->parentNode->nodeType !== XML_DOCUMENT_NODE) {
 				$m = $m->parentNode;
 				// Is there any case where parent node is not an element?
 				if ($m->nodeType === XML_ELEMENT_NODE) {
-					if (! empty($selector)) {
-						if ($this->matchesNodeSelector($m, $selector)) {
-							$found->offsetSet($m);
-							if ($immediate) {
-								break;
-							}
-						}
-					} else {
-						$found->offsetSet($m);
-						if ($immediate) {
-							break;
-						}
-					}
+					$found->offsetSet($m);
 				}
 			}
 		}
 
-		// jQuery returns the ancestors of a multi-element set in reverse
-		// document order, with duplicates removed. parent() keeps the
-		// legacy per-element ordering.
-		if (! $immediate) {
-			$found = $this->sortReverseDocumentOrder($found);
-		}
-
-		return $this->inst($found, null);
+		// jQuery returns the ancestors of a multi-element set in reverse document order, with
+		// duplicates removed. The selector is applied after that ordering, so a positional
+		// selector counts from the closest ancestor.
+		return $this->inst($this->filterCandidates($this->sortReverseDocumentOrder($found), $selector), null);
 	}
 
 	/**
@@ -931,18 +926,12 @@ trait QueryFilters
 			while (isset($m->nextSibling)) {
 				$m = $m->nextSibling;
 				if ($m->nodeType === XML_ELEMENT_NODE) {
-					if (! empty($selector)) {
-						if ($this->matchesNodeSelector($m, $selector)) {
-							$found->offsetSet($m);
-						}
-					} else {
-						$found->offsetSet($m);
-					}
+					$found->offsetSet($m);
 				}
 			}
 		}
 
-		return $this->inst($found, null);
+		return $this->inst($this->filterCandidates($found, $selector), null);
 	}
 
 	/**
@@ -1014,18 +1003,12 @@ trait QueryFilters
 			while (isset($m->previousSibling)) {
 				$m = $m->previousSibling;
 				if ($m->nodeType === XML_ELEMENT_NODE) {
-					if (! empty($selector)) {
-						if ($this->matchesNodeSelector($m, $selector)) {
-							$found->offsetSet($m);
-						}
-					} else {
-						$found->offsetSet($m);
-					}
+					$found->offsetSet($m);
 				}
 			}
 		}
 
-		return $this->inst($found, null);
+		return $this->inst($this->filterCandidates($found, $selector), null);
 	}
 
 	/**
@@ -1062,16 +1045,7 @@ trait QueryFilters
 		}
 
 		// Filter the children as one set, for the same reason filter() does.
-		$matched = NodeMatcher::filter($children, $selector);
-
-		$found = new SplObjectStorage();
-		foreach ($children as $c) {
-			if ($matched->offsetExists($c)) {
-				$found->offsetSet($c);
-			}
-		}
-
-		return $this->inst($found, null);
+		return $this->inst(NodeMatcher::filter($children, $selector), null);
 	}
 
 	/**
@@ -1140,16 +1114,12 @@ trait QueryFilters
 			$parent = $m->parentNode;
 			foreach ($parent->childNodes as $n) {
 				if ($n->nodeType === XML_ELEMENT_NODE && $n !== $m) {
-					if (! empty($selector) && ! $this->matchesNodeSelector($n, $selector)) {
-						continue;
-					}
-
 					$found->offsetSet($n);
 				}
 			}
 		}
 
-		return $this->inst($found, null);
+		return $this->inst($this->filterCandidates($found, $selector), null);
 	}
 
 	/**
@@ -1177,10 +1147,9 @@ trait QueryFilters
 	/**
 	 * Sort a set of nodes into reverse document order.
 	 *
-	 * jQuery's ancestor traversal methods (parents(), parentsUntil()) return
-	 * their results in reverse document order with duplicates removed. Because
-	 * the results are accumulated per source element, a set built from more than
-	 * one starting element would otherwise be grouped by source element instead.
+	 * jQuery's ancestor traversal methods return their results in reverse document order with
+	 * duplicates removed. Because the results are accumulated per source element, a set built
+	 * from more than one starting element would otherwise be grouped by source element.
 	 *
 	 * @param SplObjectStorage $nodes
 	 *   The nodes to sort. Duplicates are already removed by SplObjectStorage.
@@ -1194,70 +1163,36 @@ trait QueryFilters
 			return $nodes;
 		}
 
-		$indexed = [];
-		foreach ($nodes as $node) {
-			$indexed[] = [$this->documentOrderPath($node), $node];
-		}
-
-		usort($indexed, function ($a, $b) {
-			// Reverse document order, so the comparison operands are swapped.
-			return $this->compareDocumentOrderPaths($b[0], $a[0]);
-		});
+		$ordered = array_reverse(Util::sortDocumentOrder(iterator_to_array($nodes, false)));
 
 		$sorted = new SplObjectStorage();
-		foreach ($indexed as $entry) {
-			$sorted->offsetSet($entry[1]);
+		foreach ($ordered as $node) {
+			$sorted->offsetSet($node);
 		}
 
 		return $sorted;
 	}
 
 	/**
-	 * Build a comparable representation of a node's position in its document.
+	 * Reduce a set of candidates to those matching a selector, preserving their order.
 	 *
-	 * The path is the list of child offsets from the document down to the node,
-	 * which can be compared element by element to determine document order.
+	 * The selector is evaluated against the candidates as one set. Evaluating it per node
+	 * cannot answer a selector that describes a position within the set — :first, :eq(n),
+	 * :odd — because each node would be the only member of its own one-element set. It also
+	 * re-parses the selector once per candidate.
 	 *
-	 * @param DOMNode $node
+	 * @param SplObjectStorage $candidates
+	 * @param string           $selector
 	 *
-	 * @return array
+	 * @return SplObjectStorage
+	 * @throws ParseException
 	 */
-	private function documentOrderPath($node): array
+	private function filterCandidates(SplObjectStorage $candidates, $selector): SplObjectStorage
 	{
-		$path = [];
-		while ($node instanceof DOMNode && $node->parentNode !== null) {
-			$offset  = 0;
-			$sibling = $node->previousSibling;
-			while ($sibling !== null) {
-				++$offset;
-				$sibling = $sibling->previousSibling;
-			}
-			array_unshift($path, $offset);
-			$node = $node->parentNode;
+		if (empty($selector) || count($candidates) === 0) {
+			return $candidates;
 		}
 
-		return $path;
-	}
-
-	/**
-	 * Compare two paths produced by documentOrderPath().
-	 *
-	 * @param array $a
-	 * @param array $b
-	 *
-	 * @return int
-	 *   A negative number if $a precedes $b in the document, positive if it
-	 *   follows it, and zero if they are the same node.
-	 */
-	private function compareDocumentOrderPaths(array $a, array $b): int
-	{
-		$shared = min(count($a), count($b));
-		for ($i = 0; $i < $shared; ++$i) {
-			if ($a[$i] !== $b[$i]) {
-				return $a[$i] < $b[$i] ? -1 : 1;
-			}
-		}
-
-		return count($a) - count($b);
+		return NodeMatcher::filter($candidates, $selector);
 	}
 }

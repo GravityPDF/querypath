@@ -57,8 +57,18 @@ final class NodeMatcher
 
 		$traverser = new DOMTraverser($candidates, true);
 		$traverser->find($selector);
+		$matched = $traverser->matches();
 
-		return $traverser->matches();
+		// Returned in the caller's order rather than the traverser's, so callers do not each
+		// have to re-walk their own input to restore it.
+		$found = new SplObjectStorage();
+		foreach ($nodes as $node) {
+			if ($matched->offsetExists($node)) {
+				$found->offsetSet($node);
+			}
+		}
+
+		return $found;
 	}
 
 	/**
@@ -70,11 +80,6 @@ final class NodeMatcher
 	 * @return bool
 	 * @throws ParseException
 	 */
-	public static function matchesAny(SplObjectStorage $nodes, $selector): bool
-	{
-		return count(self::filter($nodes, $selector)) > 0;
-	}
-
 	/**
 	 * Test whether a single node, taken as an element, matches a selector.
 	 *
@@ -94,6 +99,6 @@ final class NodeMatcher
 		$nodes = new SplObjectStorage();
 		$nodes->offsetSet($node);
 
-		return self::matchesAny($nodes, $selector);
+		return count(self::filter($nodes, $selector)) > 0;
 	}
 }

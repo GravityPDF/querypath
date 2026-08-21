@@ -7,7 +7,9 @@
 
 namespace QueryPath\CSS\DOMTraverser;
 
+use DOMNode;
 use QueryPath\CSS\EventHandler;
+use SplObjectStorage;
 
 /**
  * Utilities for DOM Traversal.
@@ -164,5 +166,121 @@ class Util
 		}
 
 		return [$aVal, $bVal];
+	}
+
+	/**
+	 * Sort nodes into document order.
+	 *
+	 * PHP's DOM has no compareDocumentPosition(), so each node is described by the list of
+	 * child offsets from the document down to it, and those lists are compared element by
+	 * element. Sibling offsets are indexed a whole child list at a time and memoized for the
+	 * duration of the sort — computing them by walking previousSibling per node is quadratic
+	 * on the width of the parent.
+	 *
+	 * The memo lives only as long as the call, so a document mutated between calls cannot
+	 * produce a stale answer.
+	 *
+	 * @param array $nodes
+	 *
+	 * @return array
+	 */
+	public static function sortDocumentOrder(array $nodes): array
+	{
+		if (count($nodes) < 2) {
+			return array_values($nodes);
+		}
+
+		$offsets = new SplObjectStorage();
+		$indexed = [];
+		foreach ($nodes as $node) {
+			$indexed[] = [self::documentOrderPath($node, $offsets), $node];
+		}
+
+		usort($indexed, function ($a, $b) {
+			return self::comparePaths($a[0], $b[0]);
+		});
+
+		$sorted = [];
+		foreach ($indexed as $entry) {
+			$sorted[] = $entry[1];
+		}
+
+		return $sorted;
+	}
+
+	/**
+	 * Describe a node's position as the child offsets from the document down to it.
+	 *
+	 * @param DOMNode          $node
+	 * @param SplObjectStorage $offsets
+	 *
+	 * @return array
+	 */
+	private static function documentOrderPath($node, SplObjectStorage $offsets): array
+	{
+		$path = [];
+		while ($node instanceof DOMNode && $node->parentNode !== null) {
+			$path[] = self::siblingOffset($node, $offsets);
+			$node   = $node->parentNode;
+		}
+
+		// Built leaf-first; array_unshift() per step would be quadratic on depth.
+		return array_reverse($path);
+	}
+
+	/**
+	 * A node's offset among its parent's children.
+	 *
+	 * The parent's whole child list is indexed on the first request, so sorting a wide set of
+	 * siblings costs one pass over the list rather than one pass per node.
+	 *
+	 * @param DOMNode          $node
+	 * @param SplObjectStorage $offsets
+	 *
+	 * @return int
+	 */
+	private static function siblingOffset($node, SplObjectStorage $offsets): int
+	{
+		if ($offsets->offsetExists($node)) {
+			return $offsets[$node];
+		}
+
+		$offset = 0;
+		foreach ($node->parentNode->childNodes as $sibling) {
+			$offsets[$sibling] = $offset++;
+		}
+
+		if ($offsets->offsetExists($node)) {
+			return $offsets[$node];
+		}
+
+		// The node has to be one of its parent's children, but do not assume the DOM handed
+		// back the same PHP object we were given.
+		$offset = 0;
+		for ($sibling = $node->previousSibling; $sibling !== null; $sibling = $sibling->previousSibling) {
+			++$offset;
+		}
+
+		return $offset;
+	}
+
+	/**
+	 * Compare two paths from documentOrderPath().
+	 *
+	 * @param array $a
+	 * @param array $b
+	 *
+	 * @return int
+	 */
+	private static function comparePaths(array $a, array $b): int
+	{
+		$shared = min(count($a), count($b));
+		for ($i = 0; $i < $shared; ++$i) {
+			if ($a[$i] !== $b[$i]) {
+				return $a[$i] < $b[$i] ? -1 : 1;
+			}
+		}
+
+		return count($a) - count($b);
 	}
 }

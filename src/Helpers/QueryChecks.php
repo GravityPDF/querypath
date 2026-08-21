@@ -78,7 +78,7 @@ trait QueryChecks
 
 		// Only the elements in the match set are candidates: a descendant that matches
 		// the selector must not make is() true. See NodeMatcher for the details.
-		return NodeMatcher::matchesAny($this->matches, $selector);
+		return count(NodeMatcher::filter($this->matches, $selector)) > 0;
 	}
 
 	/**
