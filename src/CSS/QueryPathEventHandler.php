@@ -358,6 +358,35 @@ class QueryPathEventHandler implements EventHandler, Traverser
 	}
 
 	/**
+	 * Helper function for the jQuery ':text' pseudo-class.
+	 *
+	 * As in jQuery, ':text' selects `input` elements of type text -- that is, an
+	 * `input` whose `type` attribute is either absent (`text` is the default
+	 * type of an `input`) or is `text`, matched case-insensitively. It does NOT
+	 * indicate whether the node is a text node.
+	 *
+	 * @see https://api.jquery.com/text-selector/
+	 */
+	protected function textInput()
+	{
+		$found   = new SplObjectStorage();
+		$matches = $this->candidateList();
+		foreach ($matches as $item) {
+			if (strtolower($item->localName) !== 'input') {
+				continue;
+			}
+
+			// An input with no type attribute defaults to a text input.
+			if (! $item->hasAttribute('type') || strtolower($item->getAttribute('type')) === 'text') {
+				$found->attach($item);
+			}
+		}
+
+		$this->matches        = $found;
+		$this->findAnyElement = false;
+	}
+
+	/**
 	 * Helper function to find all elements with exact matches.
 	 *
 	 * @deprecated All use cases seem to be covered by attribute().
@@ -553,6 +582,8 @@ class QueryPathEventHandler implements EventHandler, Traverser
 				$this->attribute($name);
 				break;
 			case 'text':
+				$this->textInput();
+				break;
 			case 'radio':
 			case 'checkbox':
 			case 'file':

@@ -20,6 +20,11 @@ QueryPath Changelog
 - Fix processing instructions gaining an extra `?` each time an HTML-parsed document was serialized, so `<?php echo $title; ?>` came back out of `html()`, `innerHTML()`, `innerXML()`, `innerXHTML()`, `xml()`, `html5()`, `innerHTML5()`, and `writeXML()` as `<?php echo $title; ??>`. libxml's HTML parser keeps the closing `?` as part of the node's data, unlike its XML parser and the Masterminds HTML5 parser, so QueryPath now strips it on load. `DOMProcessingInstruction::$data` consequently no longer has a stray `?` on the end for documents read with `htmlqp()` or `qp()` on an `.html` file. Note that this normalisation applies only to documents QueryPath parses itself, and that taking the underlying `DOMDocument` out of QueryPath and calling libxml's own `saveHTML()` on it will emit `<?php ... >` without the terminator, since libxml's HTML serializer never adds one
 - Add `QueryPath\Document`, a `DOMDocument` subclass QueryPath parses into. The type is how QueryPath records that a document's processing instruction data does not carry the closing `?`, which cannot be determined by inspecting the document afterwards. It travels with the document, so every route to a second `DOMQuery` over one document -- iteration, `add()`, `remove()`, `replaceAll()`, `branch()`, `QueryPath::with()`, and the bundled extensions -- serializes it correctly. A `DOMDocument` supplied by the caller is a plain `DOMDocument`, makes no such promise, and is still serialized exactly as it was handed over
 
+- Fix fatal error when running a CSS selector against a match set that contains non-element nodes (text, comment, CDATA
+  or processing instruction). Those nodes now simply do not match, instead of calling element-only DOM methods on them.
+- Fix the `:text` pseudo-class so it matches jQuery: it selects `input` elements whose `type` attribute is absent or is
+  `text` (case-insensitively). It never indicated, and still does not indicate, whether a node is a text node.
+
 # 4.1.0
 
 - Update composer.json to mark library as PHP 8.4 compatible

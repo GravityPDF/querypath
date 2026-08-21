@@ -7,6 +7,7 @@
 
 namespace QueryPath\CSS\DOMTraverser;
 
+use DOMElement;
 use DOMNode;
 use QueryPath\CSS\EventHandler;
 use QueryPath\CSS\ParseException;
@@ -365,6 +366,12 @@ class Util
 	 */
 	public static function matchesAttribute($node, $name, $value = null, $operation = EventHandler::IS_EXACTLY): bool
 	{
+		// Only elements have attributes. Text, comment, CDATA and processing
+		// instruction nodes can never match an attribute selector.
+		if (! $node instanceof DOMElement) {
+			return false;
+		}
+
 		if (! $node->hasAttribute($name)) {
 			return false;
 		}
@@ -386,6 +393,11 @@ class Util
 		$value = null,
 		$operation = EventHandler::IS_EXACTLY
 	) {
+		// Only elements have attributes.
+		if (! $node instanceof DOMElement) {
+			return false;
+		}
+
 		if (! $node->hasAttributeNS($nsuri, $name)) {
 			return false;
 		}

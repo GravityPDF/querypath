@@ -12,6 +12,7 @@
 
 namespace QueryPath\CSS\DOMTraverser;
 
+use DOMElement;
 use QueryPath\CSS\DOMTraverser;
 use QueryPath\CSS\NotImplementedException;
 use QueryPath\CSS\EventHandler;
@@ -46,6 +47,13 @@ class PseudoClass
 	 */
 	public function elementMatches($pseudoclass, $node, $scope, $value = null)
 	{
+		// Pseudo-classes are only ever satisfied by elements. Text, comment,
+		// CDATA and processing instruction nodes have no tag name, attributes
+		// or element children, so they can never match.
+		if (! $node instanceof DOMElement) {
+			return false;
+		}
+
 		$name = strtolower($pseudoclass);
 		// Need to handle known pseudoclasses.
 		switch ($name) {
@@ -154,6 +162,8 @@ class PseudoClass
 			case 'checked':
 				return Util::matchesAttribute($node, $name);
 			case 'text':
+				return $this->isTextInput($node);
+
 			case 'radio':
 			case 'checkbox':
 			case 'file':
@@ -218,6 +228,34 @@ class PseudoClass
 		}
 
 		return false;
+	}
+
+	/**
+	 * Provides jQuery pseudoclass ':text'.
+	 *
+	 * This mirrors jQuery, where `:text` selects `input` elements of type text
+	 * -- that is, an `input` whose `type` attribute is either absent (`text` is
+	 * the default type of an `input`) or is `text`, matched case-insensitively.
+	 *
+	 * It does NOT indicate whether the node is a text node.
+	 *
+	 * @param DOMElement $node
+	 *
+	 * @return bool
+	 * @see https://api.jquery.com/text-selector/
+	 */
+	protected function isTextInput($node): bool
+	{
+		if (strtolower($node->localName) !== 'input') {
+			return false;
+		}
+
+		// An input with no type attribute defaults to a text input.
+		if (! $node->hasAttribute('type')) {
+			return true;
+		}
+
+		return strtolower($node->getAttribute('type')) === 'text';
 	}
 
 	/**

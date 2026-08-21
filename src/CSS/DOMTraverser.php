@@ -7,6 +7,7 @@ namespace QueryPath\CSS;
 
 use DOMDocument;
 use DOMElement;
+use DOMNode;
 use DOMNodeList;
 use DOMXPath;
 use QueryPath\CSS\DOMTraverser\Util;
@@ -375,14 +376,14 @@ class DOMTraverser implements Traverser
 	 * absolutely huge selectors or for versions of PHP tuned to
 	 * strictly limit recursion depth.
 	 *
-	 * @param DOMElement $node
+	 * @param DOMNode $node
 	 *   The DOMNode to check.
 	 * @param             $selector
 	 *
 	 * @return boolean
 	 *   A boolean TRUE if the node matches, false otherwise.
 	 */
-	public function matchesSelector(DOMElement $node, $selector)
+	public function matchesSelector(DOMNode $node, $selector)
 	{
 		return $this->matchesSimpleSelector($node, $selector, 0);
 	}
@@ -394,7 +395,7 @@ class DOMTraverser implements Traverser
 	 * this checks only a simple selector (plus an optional
 	 * combinator).
 	 *
-	 * @param DOMElement $node
+	 * @param DOMNode $node
 	 * @param             $selectors
 	 * @param             $index
 	 *
@@ -402,8 +403,16 @@ class DOMTraverser implements Traverser
 	 *   A boolean TRUE if the node matches, false otherwise.
 	 * @throws NotImplementedException
 	 */
-	public function matchesSimpleSelector(DOMElement $node, $selectors, $index)
+	public function matchesSimpleSelector(DOMNode $node, $selectors, $index)
 	{
+		// Selectors only ever match elements. A match set may legitimately
+		// contain text, comment, CDATA or processing instruction nodes (e.g.
+		// from contents()), and those simply do not match -- rather than
+		// blowing up on the element-only DOM API used below.
+		if (! $node instanceof DOMElement) {
+			return false;
+		}
+
 		$selector = $selectors[$index];
 
 		// A set-level pseudo-class on a non-subject simple selector has already
@@ -465,7 +474,7 @@ class DOMTraverser implements Traverser
 	 * @return boolean
 	 *   TRUE if the next selector(s) match.
 	 */
-	public function combine(DOMElement $node, $selectors, $index)
+	public function combine(DOMNode $node, $selectors, $index)
 	{
 		$selector = $selectors[$index];
 		//$this->debug(implode(' ', $selectors));
@@ -684,6 +693,11 @@ class DOMTraverser implements Traverser
 		// Now we try to find any matching IDs.
 		/** @var DOMElement $node */
 		foreach ($matches as $node) {
+			// Non-element nodes have neither attributes nor element children.
+			if (! $node instanceof DOMElement) {
+				continue;
+			}
+
 			if ($node->getAttribute('id') === $id) {
 				$found->offsetSet($node);
 			}
@@ -728,6 +742,11 @@ class DOMTraverser implements Traverser
 		// Now we try to find any matching IDs.
 		/** @var DOMElement $node */
 		foreach ($matches as $node) {
+			// Non-element nodes have neither attributes nor element children.
+			if (! $node instanceof DOMElement) {
+				continue;
+			}
+
 			// Refactor me!
 			if ($node->hasAttribute('class')) {
 				$intersect = array_intersect($selector->classes, explode(' ', $node->getAttribute('class')));
@@ -793,12 +812,19 @@ class DOMTraverser implements Traverser
 			$element = '*';
 		}
 		$found = $this->newMatches();
-		/** @var DOMDocument $node */
+		/** @var DOMDocument|DOMElement $node */
 		foreach ($matches as $node) {
-			// Capture the case where the initial element is the root element.
-			if ($node->tagName === $element
-				|| ($element === '*' && $node->parentNode instanceof DOMDocument)) {
-				$found->offsetSet($node);
+			// Only elements and documents can contain elements. Text, comment,
+			// CDATA and processing instruction nodes never match, and do not
+			// support the element-only API used below.
+			if (! $node instanceof DOMElement && ! $node instanceof DOMDocument) {
+				continue;
+			}
+
+			// Capture the case where the node itself matches the element.
+			if ($node instanceof DOMElement
+				&& ($element === '*' || $node->tagName === $element)) {
+				$found->attach($node);
 			}
 			$nl = $node->getElementsByTagName($element);
 			if (! empty($nl) && $nl instanceof DOMNodeList) {
