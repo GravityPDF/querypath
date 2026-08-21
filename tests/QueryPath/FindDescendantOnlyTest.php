@@ -60,4 +60,22 @@ class FindDescendantOnlyTest extends TestCase
 		$this->assertCount(1, qp(self::XML, '#a1')->filter('a'));
 		$this->assertSame('a1', qp(self::XML, '#a1')->filter('a')->attr('id'));
 	}
+
+	/**
+	 * The element, ID and class initial matchers each have their own self-test, so all three
+	 * have to agree — otherwise find('#a1') would match a node that find('a') does not.
+	 */
+	public function testIdAndClassSelectorsAreDescendantOnlyToo(): void
+	{
+		$xml = '<?xml version="1.0"?><root><a id="a1" class="c"><a id="a2" class="c"/></a></root>';
+
+		$this->assertCount(0, qp($xml, '#a1')->find('#a1'));
+
+		$found = qp($xml, '#a1')->find('.c');
+		$this->assertCount(1, $found);
+		$this->assertSame('a2', $found->attr('id'));
+
+		// The document element keeps its exception here as well.
+		$this->assertCount(1, qp($xml)->find('#a1'));
+	}
 }
