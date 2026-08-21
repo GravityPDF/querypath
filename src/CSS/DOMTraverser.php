@@ -476,7 +476,9 @@ class DOMTraverser implements Traverser
 		// Now we try to find any matching IDs.
 		/** @var DOMElement $node */
 		foreach ($matches as $node) {
-			if ($node->getAttribute('id') === $id) {
+			// Descendants only, as in find(). The document element is the exception,
+			// because the match set is seeded with it rather than with the document.
+			if ($node->parentNode instanceof DOMDocument && $node->getAttribute('id') === $id) {
 				$found->offsetSet($node);
 			}
 
@@ -521,7 +523,9 @@ class DOMTraverser implements Traverser
 		/** @var DOMElement $node */
 		foreach ($matches as $node) {
 			// Refactor me!
-			if ($node->hasAttribute('class')) {
+			// Descendants only, as in find(). The document element is the exception,
+			// because the match set is seeded with it rather than with the document.
+			if ($node->parentNode instanceof DOMDocument && $node->hasAttribute('class')) {
 				$intersect = array_intersect($selector->classes, explode(' ', $node->getAttribute('class')));
 				if (count($intersect) === count($selector->classes)) {
 					$found->offsetSet($node);
