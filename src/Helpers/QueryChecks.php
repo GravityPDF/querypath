@@ -2,7 +2,9 @@
 
 namespace QueryPath\Helpers;
 
+use DOMElement;
 use DOMNode;
+use QueryPath\CSS\DOMTraverser;
 use QueryPath\CSS\ParseException;
 use QueryPath\DOMQuery;
 use QueryPath\Exception;
@@ -21,20 +23,33 @@ trait QueryChecks
 {
 
 	/**
-	 * Given a selector, this checks to see if the current set has one or more matches.
+	 * Check the current set of elements against a selector, and return TRUE if at least
+	 * one of them matches.
+	 *
+	 * This behaves like jQuery's is(): only the elements <em>in</em> the current match set are
+	 * tested. Neither the descendants nor the ancestors of those elements are considered.
+	 * Use has() if you need to know whether the current set <em>contains</em> something that
+	 * matches a selector.
 	 *
 	 * Unlike jQuery's version, this supports full selectors (not just simple ones).
 	 *
-	 * @param string|DOMNode $selector
-	 *   The selector to search for. As of QueryPath 2.1.1, this also supports passing a
-	 *   DOMNode object.
+	 * Non-element nodes in the match set (text nodes, comments, processing instructions, and
+	 * so on) can never match a CSS selector, and are simply skipped.
+	 *
+	 * @param string|DOMNode|Traversable $selector
+	 *   The selector to test the current match set against. As of QueryPath 2.1.1, this also
+	 *   supports passing a DOMNode object, in which case the current match set must consist of
+	 *   exactly that one node, or a Traversable (e.g. another DOMQuery's match set), in which
+	 *   case the two sets must contain exactly the same nodes.
 	 *
 	 * @return boolean
 	 *   TRUE if one or more elements match. FALSE if no match is found.
 	 * @throws Exception
-	 * @throws Exception
+	 * @throws ParseException
 	 * @see get()
 	 * @see eq()
+	 * @see has()
+	 * @see filter()
 	 */
 	public function is($selector): bool
 	{
@@ -63,7 +78,25 @@ trait QueryChecks
 			throw new Exception('Cannot compare an object to a DOMQuery.');
 		}
 
-		return $this->branch($selector)->count() > 0;
+		// Only elements can be matched against a CSS selector, so anything else in the
+		// match set is discarded before the selector is evaluated.
+		$candidates = new SplObjectStorage();
+		foreach ($this->matches as $match) {
+			if ($match instanceof DOMElement) {
+				$candidates->offsetSet($match);
+			}
+		}
+
+		if (count($candidates) === 0) {
+			return false;
+		}
+
+		// The second argument tells the traverser that the match set is already the set of
+		// candidates, so the selector filters those elements rather than searching below them.
+		$traverser = new DOMTraverser($candidates, true);
+		$traverser->find($selector);
+
+		return count($traverser->matches()) > 0;
 	}
 
 	/**
