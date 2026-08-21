@@ -3,6 +3,10 @@ QueryPath Changelog
 
 # Unreleased changes
 
+- Fix `parents($selector)` so the selector filters the ancestors themselves, instead of matching any ancestor that merely *contains* an element matching the selector. `qp($xml, 'Demographics > Age > Name')->parents('Demographics')` now returns only `<Demographics>`, matching jQuery
+- Apply the same fix to the other selector-filtered traversal methods in `QueryPath\Helpers\QueryFilters`: `parent()`, `parents()`, `parentsUntil()`, `closest()`, `next()`, `nextAll()`, `nextUntil()`, `prev()`, `prevAll()`, `prevUntil()`, `siblings()`, and `not()`
+- **Behaviour change:** `parents()` and `parentsUntil()` now return their results in reverse document order with duplicates removed, as jQuery does. Previously a set built from more than one starting element was grouped by starting element
+
 - Reorganise, modernise, and repair the `examples/` directory. Each example now lives in its own subdirectory with an `index.php`, and the full set is indexed in `examples/quickstart-guide.md`
 - Convert the remaining legacy examples: `simple_example.php`, `techniques.php`, `svg.php`, `rss.php`, `odt.php`, `parse_php.php`, and `sparql.php`
 - Fix examples that no longer ran: send a `User-Agent` where remote hosts now require one, resolve paths relative to the example rather than the working directory, and stop relying on the removed `qp.php` autoloader and the PHP 8 incompatible `eachLambda()`
