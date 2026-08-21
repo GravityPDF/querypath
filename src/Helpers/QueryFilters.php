@@ -3,12 +3,12 @@
 namespace QueryPath\Helpers;
 
 use DOMElement;
-use QueryPath\CSS\DOMTraverser;
+use DOMNode;
+use QueryPath\CSS\DOMTraverser\Util;
 use QueryPath\CSS\ParseException;
 use QueryPath\DOMQuery;
 use QueryPath\Exception;
 use QueryPath\Query;
-use QueryPath\QueryPath;
 use SplObjectStorage;
 use stdClass;
 
@@ -41,23 +41,11 @@ trait QueryFilters
 	 */
 	public function filter($selector): Query
 	{
-		$found = new SplObjectStorage();
-		$tmp   = new SplObjectStorage();
-
-		foreach ($this->matches as $m) {
-			$tmp->offsetSet($m);
-			// Seems like this should be right... but it fails unit
-			// tests. Need to compare to jQuery.
-			// $query = new \QueryPath\CSS\DOMTraverser($tmp, TRUE, $m);
-			$query = new DOMTraverser($tmp);
-			$query->find($selector);
-			if (count($query->matches())) {
-				$found->offsetSet($m);
-			}
-			$tmp->offsetUnset($m);
-		}
-
-		return $this->inst($found, null);
+		// The whole match set is filtered in one pass rather than one node at a time.
+		// A per-node pass cannot evaluate a selector that describes a position within the
+		// set (:first, :eq(n), :odd, ...), because each node would be the only member of
+		// its own one-element set.
+		return $this->inst(NodeMatcher::filter($this->matches, $selector), null);
 	}
 
 	/**
@@ -577,7 +565,7 @@ trait QueryFilters
 			while (isset($m->nextSibling)) {
 				$m = $m->nextSibling;
 				if ($m->nodeType === XML_ELEMENT_NODE) {
-					if (null !== $selector && QueryPath::with($m, null, $this->options)->is($selector) > 0) {
+					if (null !== $selector && $this->matchesNodeSelector($m, $selector)) {
 						break;
 					}
 					$found->offsetSet($m);
@@ -616,7 +604,7 @@ trait QueryFilters
 			while (isset($m->previousSibling)) {
 				$m = $m->previousSibling;
 				if ($m->nodeType === XML_ELEMENT_NODE) {
-					if (null !== $selector && QueryPath::with($m, null, $this->options)->is($selector)) {
+					if (null !== $selector && $this->matchesNodeSelector($m, $selector)) {
 						break;
 					}
 
@@ -654,7 +642,7 @@ trait QueryFilters
 				// Is there any case where parent node is not an element?
 				if ($m->nodeType === XML_ELEMENT_NODE) {
 					if (! empty($selector)) {
-						if (QueryPath::with($m, null, $this->options)->is($selector) > 0) {
+						if ($this->matchesNodeSelector($m, $selector)) {
 							break;
 						}
 						$found->offsetSet($m);
@@ -665,7 +653,7 @@ trait QueryFilters
 			}
 		}
 
-		return $this->inst($found, null);
+		return $this->inst($this->sortReverseDocumentOrder($found), null);
 	}
 
 	/**
@@ -725,8 +713,9 @@ trait QueryFilters
 				}
 			}
 		} else {
+			$matched = $this->filterCandidates($this->matches, $selector);
 			foreach ($this->matches as $m) {
-				if (! QueryPath::with($m, null, $this->options)->is($selector)) {
+				if (! $matched->offsetExists($m)) {
 					$found->offsetSet($m);
 				}
 			}
@@ -756,17 +745,13 @@ trait QueryFilters
 	{
 		$found = new SplObjectStorage();
 		foreach ($this->matches as $m) {
-			if (QueryPath::with($m, null, $this->options)->is($selector) > 0) {
+			if ($this->matchesNodeSelector($m, $selector)) {
 				$found->offsetSet($m);
 			} else {
 				while ($m->parentNode->nodeType !== XML_DOCUMENT_NODE) {
 					$m = $m->parentNode;
 					// Is there any case where parent node is not an element?
-					if ($m->nodeType === XML_ELEMENT_NODE && QueryPath::with(
-						$m,
-						null,
-						$this->options
-					)->is($selector) > 0) {
+					if ($this->matchesNodeSelector($m, $selector)) {
 						$found->offsetSet($m);
 						break;
 					}
@@ -838,29 +823,39 @@ trait QueryFilters
 	private function getParentElements(?string $selector, bool $immediate): Query
 	{
 		$found = new SplObjectStorage();
+
+		// parent() stops at the nearest matching ancestor of each element, so its candidates
+		// have to be tested one at a time as the walk reaches them.
+		if ($immediate) {
+			foreach ($this->matches as $m) {
+				while ($m->parentNode && $m->parentNode->nodeType !== XML_DOCUMENT_NODE) {
+					$m = $m->parentNode;
+					// Is there any case where parent node is not an element?
+					if ($m->nodeType === XML_ELEMENT_NODE
+						&& (empty($selector) || $this->matchesNodeSelector($m, $selector))) {
+						$found->offsetSet($m);
+						break;
+					}
+				}
+			}
+
+			return $this->inst($found, null);
+		}
+
 		foreach ($this->matches as $m) {
 			while ($m->parentNode && $m->parentNode->nodeType !== XML_DOCUMENT_NODE) {
 				$m = $m->parentNode;
 				// Is there any case where parent node is not an element?
 				if ($m->nodeType === XML_ELEMENT_NODE) {
-					if (! empty($selector)) {
-						if (QueryPath::with($m, null, $this->options)->is($selector) > 0) {
-							$found->offsetSet($m);
-							if ($immediate) {
-								break;
-							}
-						}
-					} else {
-						$found->offsetSet($m);
-						if ($immediate) {
-							break;
-						}
-					}
+					$found->offsetSet($m);
 				}
 			}
 		}
 
-		return $this->inst($found, null);
+		// jQuery returns the ancestors of a multi-element set in reverse document order, with
+		// duplicates removed. The selector is applied after that ordering, so a positional
+		// selector counts from the closest ancestor.
+		return $this->inst($this->filterCandidates($this->sortReverseDocumentOrder($found), $selector), null);
 	}
 
 	/**
@@ -890,7 +885,7 @@ trait QueryFilters
 				$m = $m->nextSibling;
 				if ($m->nodeType === XML_ELEMENT_NODE) {
 					if (! empty($selector)) {
-						if (QueryPath::with($m, null, $this->options)->is($selector) > 0) {
+						if ($this->matchesNodeSelector($m, $selector)) {
 							$found->offsetSet($m);
 							break;
 						}
@@ -931,18 +926,12 @@ trait QueryFilters
 			while (isset($m->nextSibling)) {
 				$m = $m->nextSibling;
 				if ($m->nodeType === XML_ELEMENT_NODE) {
-					if (! empty($selector)) {
-						if (QueryPath::with($m, null, $this->options)->is($selector) > 0) {
-							$found->offsetSet($m);
-						}
-					} else {
-						$found->offsetSet($m);
-					}
+					$found->offsetSet($m);
 				}
 			}
 		}
 
-		return $this->inst($found, null);
+		return $this->inst($this->filterCandidates($found, $selector), null);
 	}
 
 	/**
@@ -973,7 +962,7 @@ trait QueryFilters
 				$m = $m->previousSibling;
 				if ($m->nodeType === XML_ELEMENT_NODE) {
 					if (! empty($selector)) {
-						if (QueryPath::with($m, null, $this->options)->is($selector)) {
+						if ($this->matchesNodeSelector($m, $selector)) {
 							$found->offsetSet($m);
 							break;
 						}
@@ -1014,18 +1003,12 @@ trait QueryFilters
 			while (isset($m->previousSibling)) {
 				$m = $m->previousSibling;
 				if ($m->nodeType === XML_ELEMENT_NODE) {
-					if (! empty($selector)) {
-						if (QueryPath::with($m, null, $this->options)->is($selector)) {
-							$found->offsetSet($m);
-						}
-					} else {
-						$found->offsetSet($m);
-					}
+					$found->offsetSet($m);
 				}
 			}
 		}
 
-		return $this->inst($found, null);
+		return $this->inst($this->filterCandidates($found, $selector), null);
 	}
 
 	/**
@@ -1048,33 +1031,21 @@ trait QueryFilters
 	 */
 	public function children($selector = null): Query
 	{
-		$found  = new SplObjectStorage();
-		$filter = is_string($selector) && strlen($selector) > 0;
-
-		if ($filter) {
-			$tmp = new SplObjectStorage();
-		}
+		$children = new SplObjectStorage();
 		foreach ($this->matches as $m) {
 			foreach ($m->childNodes as $c) {
 				if ($c->nodeType === XML_ELEMENT_NODE) {
-					// This is basically an optimized filter() just for children().
-					if ($filter) {
-						$tmp->offsetSet($c);
-						$query = new DOMTraverser($tmp, true, $c);
-						$query->find($selector);
-						if (count($query->matches()) > 0) {
-							$found->offsetSet($c);
-						}
-						$tmp->offsetUnset($c);
-					} // No filter. Just attach it.
-					else {
-						$found->offsetSet($c);
-					}
+					$children->offsetSet($c);
 				}
 			}
 		}
 
-		return $this->inst($found, null);
+		if (! is_string($selector) || strlen($selector) === 0) {
+			return $this->inst($children, null);
+		}
+
+		// Filter the children as one set, for the same reason filter() does.
+		return $this->inst(NodeMatcher::filter($children, $selector), null);
 	}
 
 	/**
@@ -1147,10 +1118,81 @@ trait QueryFilters
 				}
 			}
 		}
-		if (empty($selector)) {
-			return $this->inst($found, null);
+
+		return $this->inst($this->filterCandidates($found, $selector), null);
+	}
+
+	/**
+	 * Test whether a single node, taken as an element, matches a CSS selector.
+	 *
+	 * The node itself is the only candidate, so this asks "is this node a match?"
+	 * rather than "does this node contain a match?" — which is what running a
+	 * find() against the node would ask.
+	 *
+	 * @param DOMNode $node
+	 *   The node to test.
+	 * @param string  $selector
+	 *   A valid CSS selector.
+	 *
+	 * @return bool
+	 *   TRUE if the node is an element and matches the selector.
+	 * @throws ParseException
+	 * @see NodeMatcher
+	 */
+	private function matchesNodeSelector($node, $selector): bool
+	{
+		return NodeMatcher::matchesNode($node, $selector);
+	}
+
+	/**
+	 * Sort a set of nodes into reverse document order.
+	 *
+	 * jQuery's ancestor traversal methods return their results in reverse document order with
+	 * duplicates removed. Because the results are accumulated per source element, a set built
+	 * from more than one starting element would otherwise be grouped by source element.
+	 *
+	 * @param SplObjectStorage $nodes
+	 *   The nodes to sort. Duplicates are already removed by SplObjectStorage.
+	 *
+	 * @return SplObjectStorage
+	 *   The same nodes, in reverse document order.
+	 */
+	private function sortReverseDocumentOrder(SplObjectStorage $nodes): SplObjectStorage
+	{
+		if (count($nodes) < 2) {
+			return $nodes;
 		}
 
-		return $this->inst($found, null)->filter($selector);
+		$ordered = array_reverse(Util::sortDocumentOrder(iterator_to_array($nodes, false)));
+
+		$sorted = new SplObjectStorage();
+		foreach ($ordered as $node) {
+			$sorted->offsetSet($node);
+		}
+
+		return $sorted;
+	}
+
+	/**
+	 * Reduce a set of candidates to those matching a selector, preserving their order.
+	 *
+	 * The selector is evaluated against the candidates as one set. Evaluating it per node
+	 * cannot answer a selector that describes a position within the set — :first, :eq(n),
+	 * :odd — because each node would be the only member of its own one-element set. It also
+	 * re-parses the selector once per candidate.
+	 *
+	 * @param SplObjectStorage $candidates
+	 * @param string           $selector
+	 *
+	 * @return SplObjectStorage
+	 * @throws ParseException
+	 */
+	private function filterCandidates(SplObjectStorage $candidates, $selector): SplObjectStorage
+	{
+		if (empty($selector) || count($candidates) === 0) {
+			return $candidates;
+		}
+
+		return NodeMatcher::filter($candidates, $selector);
 	}
 }
