@@ -12,13 +12,25 @@ class Issue49Test extends TestCase
 	protected const INPUT_HTML = '<div>'
 								 . '<input id="a" type="text" />'
 								 . '<input id="b" />'
-								 . '<input id="c" type="TEXT" />'
+								 . '<input id="c" type="TeXt" />'
 								 . '<input id="d" type="password" />'
 								 . '<input id="e" type="checkbox" />'
 								 . '<input id="f" type="submit" />'
 								 . '<textarea id="g"></textarea>'
 								 . '<button id="h">Go</button>'
 								 . '</div>';
+
+	/**
+	 * Every kind of non-element node the DOM can hand back from contents(), as siblings.
+	 */
+	protected const MIXED_XML = '<?xml version="1.0"?>'
+							   . '<root class="wrap" id="wrap">'
+							   . 'Sample'
+							   . '<!-- A comment -->'
+							   . '<![CDATA[Some data]]>'
+							   . '<?target instruction?>'
+							   . '<span class="wrap" id="child">Child</span>'
+							   . '</root>';
 
 	/**
 	 * Get the ID of every element in the match set.
@@ -87,14 +99,17 @@ class Issue49Test extends TestCase
 
 	public function testTextSelectorMatchesTheInputItself(): void
 	{
-		$this->assertTrue(html5qp('<div><input type="text" /></div>', 'input')->is(':text'));
-		$this->assertTrue(html5qp('<div><input /></div>', 'input')->is(':text'));
-		$this->assertTrue(html5qp('<div><input type="TeXt" /></div>', 'input')->is(':text'));
+		$q = html5qp(self::INPUT_HTML, 'div');
 
-		$this->assertFalse(html5qp('<div><input type="password" /></div>', 'input')->is(':text'));
-		$this->assertFalse(html5qp('<div><input type="checkbox" /></div>', 'input')->is(':text'));
-		$this->assertFalse(html5qp('<div><textarea></textarea></div>', 'textarea')->is(':text'));
-		$this->assertFalse(html5qp('<div><button>Go</button></div>', 'button')->is(':text'));
+		// Explicit type="text", no type at all, and mixed-case type.
+		foreach (['a', 'b', 'c'] as $id) {
+			$this->assertTrue($q->find('#' . $id)->is(':text'), $id);
+		}
+
+		// password, checkbox, submit, textarea, button.
+		foreach (['d', 'e', 'f', 'g', 'h'] as $id) {
+			$this->assertFalse($q->find('#' . $id)->is(':text'), $id);
+		}
 	}
 
 	/**
@@ -110,77 +125,45 @@ class Issue49Test extends TestCase
 	}
 
 	/**
-	 * Any selector run against a match set holding a text node must return a
-	 * sane result rather than fataling on the element-only DOM API.
+	 * Any selector run against a match set holding a non-element node must return a sane result
+	 * rather than fataling on the element-only DOM API.
 	 */
-	public function testSelectorsAgainstATextNodeDoNotThrow(): void
+	public function testSelectorsAgainstNonElementNodesDoNotThrow(): void
 	{
-		$textNode = html5qp('<div class="wrap" id="wrap">Sample<span>Child</span></div>', 'div')
-			->contents()
-			->eq(0);
+		$contents = qp(self::MIXED_XML, 'root')->contents();
 
-		$this->assertInstanceOf(DOMText::class, $textNode->get(0));
+		$kinds = [
+			DOMText::class,
+			DOMComment::class,
+			DOMCdataSection::class,
+			DOMProcessingInstruction::class,
+		];
 
-		$this->assertFalse($textNode->is('*'));
-		$this->assertFalse($textNode->is('span'));
-		$this->assertFalse($textNode->is('.wrap'));
-		$this->assertFalse($textNode->is('#wrap'));
-		$this->assertFalse($textNode->is('[class]'));
-		$this->assertFalse($textNode->is('[class="wrap"]'));
-		$this->assertFalse($textNode->is(':first-child'));
-		$this->assertFalse($textNode->is('div span'));
-
-		$this->assertCount(0, $textNode->find('*'));
-		$this->assertCount(0, $textNode->find('span'));
-		$this->assertCount(0, $textNode->find('.wrap'));
-		$this->assertCount(0, $textNode->find('#wrap'));
-		$this->assertCount(0, $textNode->find('[class]'));
-		$this->assertCount(0, $textNode->filter('*'));
-	}
-
-	public function testSelectorsAgainstACommentNodeDoNotThrow(): void
-	{
-		$comment = html5qp('<div class="wrap" id="wrap"><!-- A comment --><span>Child</span></div>', 'div')
-			->contents()
-			->eq(0);
-
-		$this->assertInstanceOf(DOMComment::class, $comment->get(0));
-
-		$this->assertFalse($comment->is('*'));
-		$this->assertFalse($comment->is('span'));
-		$this->assertFalse($comment->is('.wrap'));
-		$this->assertFalse($comment->is('#wrap'));
-		$this->assertFalse($comment->is('[class]'));
-		$this->assertFalse($comment->is(':text'));
-
-		$this->assertCount(0, $comment->find('*'));
-		$this->assertCount(0, $comment->find('span'));
-		$this->assertCount(0, $comment->find('[class]'));
-	}
-
-	public function testSelectorsAgainstCdataAndProcessingInstructionNodesDoNotThrow(): void
-	{
-		$contents = qp(
-			'<?xml version="1.0"?><root><![CDATA[Some data]]><?target instruction?><child class="c" id="i">Text</child></root>',
-			'root'
-		)->contents();
-
-		$cdata = $contents->eq(0);
-		$pi    = $contents->eq(1);
-
-		$this->assertInstanceOf(DOMCdataSection::class, $cdata->get(0));
-		$this->assertInstanceOf(DOMProcessingInstruction::class, $pi->get(0));
-
-		foreach ([$cdata, $pi] as $node) {
-			$this->assertFalse($node->is('*'));
-			$this->assertFalse($node->is('child'));
-			$this->assertFalse($node->is('.c'));
-			$this->assertFalse($node->is('#i'));
-			$this->assertFalse($node->is('[class]'));
-
-			$this->assertCount(0, $node->find('*'));
-			$this->assertCount(0, $node->find('child'));
+		foreach ($kinds as $index => $class) {
+			$node = $contents->eq($index);
+			$this->assertInstanceOf($class, $node->get(0));
+			$this->assertMatchesNothing($node, $class);
 		}
+	}
+
+	/**
+	 * The full battery, so every node kind is held to the same standard.
+	 *
+	 * @param \QueryPath\DOMQuery $node
+	 * @param string               $kind
+	 */
+	private function assertMatchesNothing($node, $kind): void
+	{
+		$selectors = ['*', 'span', '.wrap', '#wrap', '[class]', '[class="wrap"]', ':first-child', ':text', 'root span'];
+		foreach ($selectors as $selector) {
+			$this->assertFalse($node->is($selector), sprintf('%s must not match is(%s)', $kind, $selector));
+		}
+
+		foreach (['*', 'span', '.wrap', '#wrap', '[class]'] as $selector) {
+			$this->assertCount(0, $node->find($selector), sprintf('%s must not match find(%s)', $kind, $selector));
+		}
+
+		$this->assertCount(0, $node->filter('*'), sprintf('%s must not match filter(*)', $kind));
 	}
 
 	/**
