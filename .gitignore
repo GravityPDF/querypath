@@ -8,7 +8,6 @@ dist
 test/coverage
 test/reports
 test/db
-docs/*
 doc/*
 test/fakepear
 vendor/

@@ -10,7 +10,6 @@ namespace QueryPath\CSS;
  * This class defines the recognized tokens for the parser, and also
  * provides utility functions for error reporting.
  *
- * @ingroup querypath_css
  */
 final class Token
 {

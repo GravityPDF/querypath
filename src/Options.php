@@ -10,23 +10,22 @@ namespace QueryPath;
 /**
  * Manage default options.
  *
- * This class stores the default options for QueryPath. When a new
- * QueryPath object is constructed, options specified here will be
- * used.
+ * This class stores the default options applied to every QueryPath object created afterwards.
  *
- * <b>Details</b>
- * This class defines no options of its own. Instead, it provides a
- * central tool for developers to override options set by QueryPath.
- * When a QueryPath object is created, it will evaluate options in the
- * following order:
+ * It defines no options of its own — it is a central place to override QueryPath's own defaults.
+ * Options are resolved in this order, highest priority first:
  *
- * - Options passed into qp() have highest priority.
- * - Options in QueryPath::Options (this class) have the next highest priority.
- * - If the option is not specified elsewhere, QueryPath will use its own defaults.
+ * 1. Options passed into qp() and the other factories
+ * 2. Options set here
+ * 3. QueryPath's built-in defaults
  *
- * @see     qp()
- * @see     QueryPath::Options::set()
- * @ingroup querypath_util
+ * ```php
+ * QueryPath\Options::set(['format_output' => false]);
+ * QueryPath\Options::merge(['replace_entities' => true]);
+ * ```
+ *
+ * @see qp()
+ * @see https://github.com/GravityPDF/querypath/wiki/Parser-Options
  */
 class Options
 {

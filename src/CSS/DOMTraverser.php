@@ -170,8 +170,7 @@ class DOMTraverser implements Traverser
 	 * by combinators. This determines if a given selector
 	 * matches the given node.
 	 *
-	 * @attention
-	 * Evaluation of selectors is done recursively. Thus the length
+	 * Note: evaluation of selectors is done recursively. Thus the length
 	 * of the selector is limited to the recursion depth allowed by
 	 * the PHP configuration. This should only cause problems for
 	 * absolutely huge selectors or for versions of PHP tuned to
@@ -825,8 +824,8 @@ class DOMTraverser implements Traverser
 	 * Test whether the given node matches the pseudoElements.
 	 *
 	 * If any pseudo-elements are passed, this will test to see
-	 * <i>if conditions obtain that would allow the pseudo-element
-	 * to be created</i>. This does not modify the match in any way.
+	 * *if conditions obtain that would allow the pseudo-element
+	 * to be created*. This does not modify the match in any way.
 	 *
 	 * @param DOMElement $node
 	 * @param             $pseudoElements

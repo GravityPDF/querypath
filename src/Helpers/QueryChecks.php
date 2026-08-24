@@ -11,11 +11,14 @@ use SplObjectStorage;
 use Traversable;
 
 /**
- * Trait QueryChecks
+ * Predicate methods for DOMQuery.
  *
  * @package QueryPath\Helpers
  *
  * @property array matches
+ *
+ * @link https://github.com/GravityPDF/querypath/wiki/Manipulation
+ * @link https://github.com/GravityPDF/querypath/wiki/Traversal-and-Filtering
  */
 trait QueryChecks
 {
@@ -69,11 +72,11 @@ trait QueryChecks
 	/**
 	 * Reduce the elements matched by DOMQuery to only those which contain the given item.
 	 *
-	 * There are two ways in which this is different from jQuery's implementation:
-	 * - We allow ANY DOMNode, not just DOMElements. That means this will work on
-	 *   processor instructions, text nodes, comments, etc.
-	 * - Unlike jQuery, this implementation of has() follows QueryPath standard behavior
-	 *   and modifies the existing object. It does not create a brand new object.
+	 * Unlike jQuery's implementation, this allows ANY DOMNode, not just DOMElements,
+	 * so it works on processing instructions, text nodes, comments, and so on.
+	 *
+	 * Like the other filtering methods, this returns a NEW DOMQuery and leaves the
+	 * object it was called on unchanged.
 	 *
 	 * @param mixed $contained
 	 *     - If $contained is a CSS selector (e.g. '#foo'), this will test to see
@@ -152,8 +155,10 @@ trait QueryChecks
 	/**
 	 * Check to see if the given attribute is present.
 	 *
-	 * This returns TRUE if <em>all</em> selected items have the attribute, or
+	 * This returns TRUE if *all* selected items have the attribute, or
 	 * FALSE if at least one item does not have the attribute.
+	 *
+	 * An empty match set returns TRUE, since no element fails the test.
 	 *
 	 * @param string $attrName
 	 *  The attribute name.

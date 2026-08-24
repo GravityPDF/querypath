@@ -15,18 +15,17 @@
 
 namespace QueryPath\CSS;
 
-/** @addtogroup querypath_css CSS Parsing
+/*
  * QueryPath includes a CSS 3 Selector parser.
- *
  *
  * Typically the parser is not accessed directly. Most developers will use it indirectly from
  * qp(), htmlqp(), or one of the methods on a QueryPath object.
  *
- * This parser is modular and is not tied to QueryPath, so you can use it in your
- * own (non-QueryPath) projects if you wish. To dive in, start with EventHandler, the
- * event interface that works like a SAX API for CSS selectors. If you want to check out
- * the details, check out the parser (QueryPath::CSS::Parser),  scanner
- * (QueryPath::CSS::Scanner), and token list (QueryPath::CSS::Token).
+ * The parser is modular and not tied to QueryPath, so it can be reused in other projects. Start
+ * with EventHandler, the event interface that works like a SAX API for CSS selectors. For the
+ * details, see Parser, Scanner, and Token.
+ *
+ * @see https://github.com/GravityPDF/querypath/wiki/CSS-Selector-Reference
  */
 
 /**
@@ -39,7 +38,6 @@ namespace QueryPath\CSS;
  * This library is inspired by the SAX2 API for parsing XML. Each component of a
  * selector fires an event, passing the necessary data on to the event handler.
  *
- * @ingroup querypath_css
  */
 interface EventHandler
 {

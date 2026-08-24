@@ -12,6 +12,16 @@ use QueryPath\Query;
 use QueryPath\QueryPath;
 use SplObjectStorage;
 
+/**
+ * Document-mutating methods for DOMQuery.
+ *
+ * Most methods here return $this and chain. The exceptions -- replaceWith(),
+ * detach() and remove() -- return a NEW DOMQuery wrapping the removed nodes.
+ *
+ * @package QueryPath\Helpers
+ *
+ * @link https://github.com/GravityPDF/querypath/wiki/Manipulation
+ */
 trait QueryMutators
 {
 
@@ -283,7 +293,7 @@ trait QueryMutators
 	 *  currently wrapped in the DOMQuery object.
 	 *
 	 * @return DOMQuery
-	 *  The DOMQuery object wrapping <b>the items that were removed</b>.
+	 *  The DOMQuery object wrapping **the items that were removed**.
 	 *  This remains consistent with the jQuery API.
 	 * @throws Exception
 	 * @throws ParseException
@@ -316,23 +326,23 @@ trait QueryMutators
 	 *
 	 * For example, consider this:
 	 *
-	 * @code
+	 * ```xml
 	 *   <root><wrapper><content/></wrapper></root>
-	 * @endcode
+	 * ```
 	 *
 	 * Now we can run this code:
-	 * @code
+	 * ```php
 	 *   qp($xml, 'content')->unwrap();
-	 * @endcode
+	 * ```
 	 *
 	 * This will result in:
 	 *
-	 * @code
+	 * ```xml
 	 *   <root><content/></root>
-	 * @endcode
+	 * ```
 	 * This is the opposite of wrap().
 	 *
-	 * <b>The root element cannot be unwrapped.</b> It has no parents.
+	 * **The root element cannot be unwrapped.** It has no parents.
 	 * If you attempt to use unwrap on a root element, this will throw a
 	 * QueryPath::Exception. (You can, however, "Unwrap" a child that is
 	 * a direct descendant of the root element. This will remove the root
@@ -585,10 +595,13 @@ trait QueryMutators
 	/**
 	 * Add a class to all elements in the current DOMQuery.
 	 *
-	 * This searchers for a class attribute on each item wrapped by the current
+	 * This searches for a class attribute on each item wrapped by the current
 	 * DOMNode object. If no attribute is found, a new one is added and its value
 	 * is set to $class. If a class attribute is found, then the value is appended
 	 * on to the end.
+	 *
+	 * No de-duplication is performed: calling addClass('p') twice produces
+	 * class="p p".
 	 *
 	 * @param string $class
 	 *  The name of the class.
@@ -623,19 +636,19 @@ trait QueryMutators
 	 * Example:
 	 * Consider this XML:
 	 *
-	 * @code
+	 * ```xml
 	 * <element class="first second"/>
-	 * @endcode
+	 * ```
 	 *
 	 * Executing this fragment of code will remove only the 'first' class:
-	 * @code
+	 * ```php
 	 * qp(document, 'element')->removeClass('first');
-	 * @endcode
+	 * ```
 	 *
 	 * The resulting XML will be:
-	 * @code
+	 * ```xml
 	 * <element class="second"/>
-	 * @endcode
+	 * ```
 	 *
 	 * To remove the entire 'class' attribute, you should use {@see removeAttr()}.
 	 *
@@ -687,6 +700,10 @@ trait QueryMutators
 	 * If no selector is specified, this will remove all current matches from
 	 * the document.
 	 *
+	 * KNOWN ISSUE: the $selector argument has no effect. The query runs but its
+	 * result is discarded, and whatever was already selected is detached. Use
+	 * find($selector)->detach() instead.
+	 *
 	 * @param string $selector
 	 *  A CSS Selector.
 	 *
@@ -717,10 +734,10 @@ trait QueryMutators
 	}
 
 	/**
-	 * Attach any items from the list if they match the selector.
+	 * Append the nodes remembered by the last destructive operation into $dest.
 	 *
-	 * If no selector is specified, this will remove all current matches from
-	 * the document.
+	 * This reads the internal "last match set" buffer, which detach() and add()
+	 * populate, so it is only meaningful directly after a detach() on this object.
 	 *
 	 * @param DOMQuery $dest
 	 *  A DOMQuery Selector.
@@ -783,6 +800,12 @@ trait QueryMutators
 	 * If no selector is specified, this will remove all current matches from
 	 * the document.
 	 *
+	 * NOTE: when a selector is given this uses QueryPathEventHandler, the legacy
+	 * selector engine, not the DOMTraverser engine that find() uses. The two do not
+	 * always agree -- 'li:lt(2)' matches two elements through find() but removes
+	 * only one here, and selectors such as :any-link throw a ParseException. Prefer
+	 * find($selector)->remove() for anything beyond simple CSS.
+	 *
 	 * @param string $selector
 	 *  A CSS Selector.
 	 *
@@ -840,7 +863,8 @@ trait QueryMutators
 	 * @see        replaceWith()
 	 * @deprecated Due to the fact that this is not a particularly friendly method,
 	 *             and that it can be easily replicated using {@see replaceWith()}, it is to be
-	 *             considered deprecated.
+	 *             considered deprecated. It also uses the legacy QueryPathEventHandler
+	 *             selector engine rather than the one find() uses.
 	 */
 	public function replaceAll($selector, DOMDocument $document): Query
 	{
@@ -996,31 +1020,37 @@ trait QueryMutators
 	 *
 	 * For example, consider this code:
 	 *
-	 * @code
+	 * ```php
 	 * <?php
 	 * qp(HTML_STUB, 'body')->css('background-color','red')->html();
 	 * ?>
-	 * @endcode
+	 * ```
 	 * This will return the following HTML:
-	 * @code
+	 * ```xml
 	 * <body style="background-color: red"/>
-	 * @endcode
+	 * ```
 	 *
 	 * If no parameters are passed into this function, then the current style
 	 * element will be returned unparsed. Example:
-	 * @code
+	 * ```php
 	 * <?php
 	 * qp(HTML_STUB, 'body')->css('background-color','red')->css();
 	 * ?>
-	 * @endcode
+	 * ```
 	 * This will return the following:
-	 * @code
+	 * ```php
 	 * background-color: red
-	 * @endcode
+	 * ```
 	 *
 	 * As of QueryPath 2.1, existing style attributes will be merged with new attributes.
 	 * (In previous versions of QueryPath, a call to css() overwrite the existing style
 	 * values).
+	 *
+	 * NOTE: declarations are pooled across the whole match set. The style attribute of
+	 * every selected element is read into one map, the new declarations are merged in,
+	 * and the combined result is written back to all of them. Two selected elements
+	 * with different starting styles both end up with the union of the two. Apply
+	 * css() one element at a time when that matters.
 	 *
 	 * @param mixed  $name
 	 *  If this is a string, it will be used as a CSS name. If it is an array,

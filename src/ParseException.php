@@ -12,7 +12,6 @@ namespace QueryPath;
  * This will report parser warnings as well as parser errors. It should only be
  * thrown, though, under error conditions.
  *
- * @ingroup querypath_core
  */
 class ParseException extends Exception
 {

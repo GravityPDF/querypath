@@ -1,88 +1,24 @@
 <?php
-/** @file
- * The Query Path package provides tools for manipulating a structured document.
- * Typically, the sort of structured document is one using a Document Object Model
- * (DOM).
- * The two major DOMs are the XML DOM and the HTML DOM. Using Query Path, you can
- * build, parse, search, and modify DOM documents.
+/**
+ * QueryPath builds, parses, searches, and modifies XML and HTML documents through a jQuery-like
+ * fluent API.
  *
- * To use QueryPath, only one file must be imported: qp.php. This file defines
- * the `qp()` function, and also registers an autoloader if necessary.
- *
- * Standard usage:
- *
- * @code
- * <?php
- * require 'qp.php';
+ * ```php
+ * require_once __DIR__ . '/vendor/autoload.php';
  *
  * $xml = '<?xml version="1.0"?><test><foo id="myID"/></test>';
  *
- * // Procedural call a la jQuery:
- * $qp = qp($xml, '#myID');
- * $qp->append('<new><elements/></new>')->writeHTML();
+ * // Procedural, a la jQuery:
+ * qp($xml, '#myID')->append('<new><element/></new>')->top()->writeXML();
  *
- * // Object-oriented version with a factory:
- * $qp = QueryPath::with($xml)->find('#myID')
- * $qp->append('<new><elements/></new>')->writeHTML();
- * ?>
- * @endcode
+ * // Or through the factory:
+ * QueryPath::with($xml)->find('#myID')->append('<new><element/></new>')->top()->writeXML();
+ * ```
  *
- * The above would print (formatted for readability):
- * @code
- * <?xml version="1.0"?>
- * <test>
- *  <foo id="myID">
- *    <new>
- *      <element/>
- *    </new>
- *  </foo>
- * </test>
- * @endcode
- *
- * ## Discovering the Library
- *
- * To gain familiarity with QueryPath, the following three API docs are
- * the best to start with:
- *
- *- qp(): This function constructs new queries, and is the starting point
- *  for manipulating a document. htmlqp() is an alias tuned for HTML
- *  documents (especially old HTML), and QueryPath::with(), QueryPath::withXML()
- *  and QueryPath::withHTML() all perform a similar role, but in a purely
- *  object oriented way.
- *- QueryPath: This is the top-level class for the library. It defines the
- *  main factories and some useful functions.
- *- QueryPath::Query: This defines all of the functions in QueryPath. When
- *  working with HTML and XML, the QueryPath::DOMQuery is the actual
- *  implementation that you work with.
- *
- * Included with the source code for QueryPath is a complete set of unit tests
- * as well as some example files. Those are good resources for learning about
- * how to apply QueryPath's tools. The full API documentation can be generated
- * from these files using Doxygen, or you can view it online at
- * http://api.querypath.org.
- *
- * If you are interested in building extensions for QueryPath, see the
- * QueryPath and QueryPath::Extension classes. There you will find information on adding
- * your own tools to QueryPath.
- *
- * QueryPath also comes with a full CSS 3 selector implementation (now
- * with partial support for the current draft of the CSS 4 selector spec). If
- * you are interested in reusing that in other code, you will want to start
- * with QueryPath::CSS::EventHandler.php, which is the event interface for the parser.
- *
- * All of the code in QueryPath is licensed under an MIT-style license
- * license. All of the code is Copyright, 2012 by Matt Butcher.
- *
- * @author    M Butcher <matt @aleph-null.tv>
+ * @author    M Butcher <matt@aleph-null.tv>
  * @license   MIT
- * @see       QueryPath
- * @see       qp()
- * @see       http://querypath.org The QueryPath home page.
- * @see       http://api.querypath.org An online version of the API docs.
- * @see       http://technosophos.com For how-tos and examples.
  * @copyright Copyright (c) 2009-2012, Matt Butcher.
- * @version   -UNSTABLE% (3.x.x)
- *
+ * @see       https://github.com/GravityPDF/querypath/wiki/Getting-Started
  */
 
 namespace QueryPath;
@@ -91,7 +27,12 @@ use Masterminds\HTML5;
 use QueryPath\ExtensionRegistry;
 
 /**
+ * The top-level class for the library: document factories, extension management, and utilities.
  *
+ * The factories all return a DOMQuery, which is where the bulk of the API lives.
+ *
+ * @see DOMQuery
+ * @see https://github.com/GravityPDF/querypath/wiki/Getting-Started
  */
 class QueryPath
 {
@@ -124,15 +65,13 @@ class QueryPath
 	public const VERSION_MAJOR = 3;
 
 	/**
-	 * This is a stub HTML 4.01 document.
+	 * A stub HTML 4.01 document.
 	 *
-	 * <b>Using {@link QueryPath::XHTML_STUB} is preferred.</b>
+	 * For generating legacy HTML content. Prefer self::HTML5_STUB for new work.
 	 *
-	 * This is primarily for generating legacy HTML content. Modern web applications
-	 * should use QueryPath::XHTML_STUB.
+	 * Use this stub with the HTML family of methods: html(), writeHTML(), innerHTML().
 	 *
-	 * Use this stub with the HTML familiy of methods (QueryPath::Query::html(),
-	 * QueryPath::Query::writeHTML(), QueryPath::Query::innerHTML()).
+	 * @see self::HTML5_STUB
 	 */
 	public const HTML_STUB = '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
   <html lang="en">
@@ -143,6 +82,15 @@ class QueryPath
   <body></body>
   </html>';
 
+	/**
+	 * A stub HTML5 document. This is the stub to prefer for new work.
+	 *
+	 * Use it with html5qp() and the HTML5 family of methods: html5(), writeHTML5().
+	 *
+	 * ```php
+	 * echo html5qp(QueryPath::HTML5_STUB, 'body')->append('<h1>Title</h1>')->top()->html5();
+	 * ```
+	 */
 	public const HTML5_STUB = '<!DOCTYPE html>
     <html>
     <head>
@@ -152,20 +100,16 @@ class QueryPath
     </html>';
 
 	/**
-	 * This is a stub XHTML document.
+	 * A stub XHTML document.
 	 *
-	 * Since XHTML is an XML format, you should use XML functions with this document
-	 * fragment. For example, you should use {@link xml()}, {@link innerXML()}, and
-	 * {@link writeXML()}.
+	 * XHTML is an XML format, so use the XML methods with this fragment: xml(), innerXML(),
+	 * writeXML().
 	 *
-	 * This can be passed into {@link qp()} to begin a new basic HTML document.
+	 * ```php
+	 * $qp = qp(QueryPath::XHTML_STUB); // a new XHTML document
+	 * $qp->writeXML();                 // written as well-formed XHTML
+	 * ```
 	 *
-	 * Example:
-	 *
-	 * @code
-	 * $qp = qp(QueryPath::XHTML_STUB); // Creates a new XHTML document
-	 * $qp->writeXML(); // Writes the document as well-formed XHTML.
-	 * @endcode
 	 * @since 2.0
 	 */
 	public const XHTML_STUB = '<?xml version="1.0"?>
@@ -249,11 +193,11 @@ class QueryPath
 	 * a fine job with pre-HTML5 documents in most cases, though really old HTML
 	 * (like 2.0) may have some substantial quirks.
 	 *
-	 * <b>Supported Options</b>
-	 * Any options supported by HTML5-PHP are allowed here. Additionally, the
-	 * following options have meaning to QueryPath.
-	 * - QueryPath_class
+	 * Because the document is parsed before QueryPath sees it, QueryPath's own parsing options are
+	 * not consulted here. Any option supported by masterminds/html5 may be passed instead, and is
+	 * forwarded to it. QueryPath_class and the output options still apply.
 	 *
+	 * @see https://github.com/GravityPDF/querypath/wiki/Parser-Options
 	 *
 	 * @param mixed  $source
 	 *   A document as an HTML string, or a path/URL. For compatibility with
@@ -292,36 +236,25 @@ class QueryPath
 	/**
 	 * Enable one or more extensions.
 	 *
-	 * Extensions provide additional features to QueryPath. To enable and
-	 * extension, you can use this method.
+	 * Extensions add methods to every DOMQuery created afterwards, so enable them before building
+	 * the objects that use them. Names are fully qualified class names.
 	 *
-	 * In this example, we enable the QPTPL extension:
+	 * ```php
+	 * QueryPath::enable(\QueryPath\Extension\QPXML::class);
 	 *
-	 * @code
-	 * <?php
-	 * QueryPath::enable('\QueryPath\QPTPL');
-	 * ?>
-	 * @endcode
+	 * // or several at once
+	 * QueryPath::enable([
+	 *     \QueryPath\Extension\QPXML::class,
+	 *     \QueryPath\Extension\QPXSL::class,
+	 * ]);
+	 * ```
 	 *
-	 * Note that the name is a fully qualified class name.
-	 *
-	 * We can enable more than one extension at a time like this:
-	 *
-	 * @code
-	 * <?php
-	 * $extensions = array('\QueryPath\QPXML', '\QueryPath\QPDB');
-	 * QueryPath::enable($extensions);
-	 * ?>
-	 * @endcode
-	 *
-	 * @attention If you are not using an autoloader, you will need to
-	 * manually `require` or `include` the files that contain the
-	 * extensions.
+	 * If you are not using an autoloader, `require` the files defining the extensions first.
 	 *
 	 * @param mixed $extensionNames
-	 *   The name of an extension or an array of extension names.
-	 *   QueryPath assumes that these are extension class names,
-	 *   and attempts to register these as QueryPath extensions.
+	 *   An extension class name, or an array of them.
+	 *
+	 * @see https://github.com/GravityPDF/querypath/wiki/Writing-Extensions
 	 */
 	public static function enable($extensionNames): void
 	{
@@ -337,19 +270,14 @@ class QueryPath
 	/**
 	 * Get a list of all of the enabled extensions.
 	 *
-	 * This example dumps a list of extensions to standard output:
-	 *
-	 * @code
-	 * <?php
-	 * $extensions = QueryPath::enabledExtensions();
-	 * print_r($extensions);
-	 * ?>
-	 * @endcode
+	 * ```php
+	 * print_r(QueryPath::enabledExtensions());
+	 * ```
 	 *
 	 * @return array
-	 *   An array of extension names.
+	 *   An array of extension class names.
 	 *
-	 * @see QueryPath::ExtensionRegistry
+	 * @see ExtensionRegistry
 	 */
 	public static function enabledExtensions(): array
 	{

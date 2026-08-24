@@ -16,8 +16,7 @@ use Traversable;
  * A CSS selector is made up of one or more Simple Selectors
  * (SimpleSelector).
  *
- * @attention
- * The Selector data structure is a LIFO (Last in, First out). This is
+ * Note: the Selector data structure is a LIFO (Last in, First out). This is
  * because CSS selectors are best processed "bottom up". Thus, when
  * iterating over 'a>b>c', the iterator will produce:
  * - c
@@ -26,7 +25,7 @@ use Traversable;
  * It is assumed, therefore, that any suitable querying engine will
  * traverse from the bottom (`c`) back up.
  *
- * @b     Usage
+ * **Usage**
  *
  * This class is an event handler. It can be plugged into an Parser and
  * receive the events the Parser generates.
@@ -34,7 +33,7 @@ use Traversable;
  * This class is also an iterator. Once the parser has completed, the
  * captured selectors can be iterated over.
  *
- * @code
+ * ```php
  * <?php
  * $selectorList = new \QueryPath\CSS\Selector();
  * $parser = new \QueryPath\CSS\Parser($selector, $selectorList);
@@ -46,7 +45,7 @@ use Traversable;
  *   print_r($simpleSelector);
  * }
  * ?>
- * @endode
+ * ```
  *
  *
  * @since QueryPath 3.0.0

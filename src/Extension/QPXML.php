@@ -20,7 +20,6 @@ use QueryPath\Extension;
  * @see     QueryPath::Extension
  * @see     QueryPath::ExtensionRegistry::extend()
  * @see     QPXML
- * @ingroup querypath_extensions
  */
 class QPXML implements Extension
 {

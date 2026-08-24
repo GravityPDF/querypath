@@ -9,7 +9,6 @@ namespace QueryPath;
 /**
  * Perform various tasks on HTML/XML entities.
  *
- * @ingroup querypath_util
  */
 class Entities implements EntitiesContract
 {

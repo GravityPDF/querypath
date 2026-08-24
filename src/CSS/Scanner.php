@@ -12,7 +12,6 @@ use QueryPath\Exception;
  *
  * This provides a simple scanner for traversing an input stream.
  *
- * @ingroup querypath_css
  */
 final class Scanner
 {
