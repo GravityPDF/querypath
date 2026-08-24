@@ -700,11 +700,50 @@ class DOMQuery extends DOM
 		}
 
 		if ($first instanceof DOMDocument || $first->isSameNode($first->ownerDocument->documentElement)) {
-			return $this->document->saveHTML();
+			return $this->saveDocumentHTML();
 		}
 
 		// saveHTML cannot take a node and serialize it.
 		return $this->document->saveXML($first);
+	}
+
+	/**
+	 * Serialize the whole document with libxml's HTML serializer.
+	 *
+	 * libxml writes a processing instruction verbatim as `<?target data>` and never appends the
+	 * closing "?" itself, so the terminator has to be put back for the duration of the write and
+	 * taken off again afterwards. A document QueryPath did not parse is written as-is, because it
+	 * makes no promise about where its terminators are.
+	 *
+	 * @param string|null $path
+	 *  When given, the document is written to this file rather than returned.
+	 *
+	 * @return string|int|false
+	 *  The serialized document, or the number of bytes written when $path is given.
+	 *
+	 * @see \QueryPath\Document
+	 */
+	protected function saveDocumentHTML($path = null)
+	{
+		// One walk drives both passes. DOMXPath::query() hands back a static node list and
+		// serializing does not move nodes, so the same list is still good for the restore.
+		$instructions = $this->document instanceof Document
+			? self::processingInstructions($this->document)
+			: [];
+
+		foreach ($instructions as $instruction) {
+			$instruction->data .= '?';
+		}
+
+		try {
+			return $path === null
+				? $this->document->saveHTML()
+				: $this->document->saveHTMLFile($path);
+		} finally {
+			foreach ($instructions as $instruction) {
+				$instruction->data = substr($instruction->data, 0, -1);
+			}
+		}
 	}
 
 	/**
@@ -1335,11 +1374,11 @@ class DOMQuery extends DOM
 	public function writeHTML($path = null)
 	{
 		if ($path === null) {
-			print $this->document->saveHTML();
+			print $this->saveDocumentHTML();
 		} else {
 			try {
 				set_error_handler(['\QueryPath\ParseException', 'initializeFromError']);
-				$this->document->saveHTMLFile($path);
+				$this->saveDocumentHTML($path);
 			} catch (Exception $e) {
 				restore_error_handler();
 				throw $e;

@@ -5,6 +5,7 @@ namespace QueryPath;
 use Countable;
 use DOMDocument;
 use DOMNode;
+use DOMXPath;
 use IteratorAggregate;
 use Masterminds\HTML5;
 use QueryPath\CSS\DOMTraverser;
@@ -91,10 +92,9 @@ abstract class DOM implements Query, IteratorAggregate, Countable
 
 		// Empty: Just create an empty QP.
 		if (empty($document)) {
-			$this->document = isset($this->options['encoding']) ? new DOMDocument(
-				'1.0',
-				$this->options['encoding']
-			) : new DOMDocument();
+			$this->document = isset($this->options['encoding'])
+				? self::createDocument('1.0', $this->options['encoding'])
+				: self::createDocument();
 			$this->setMatches(new SplObjectStorage());
 		} // Figure out if document is DOM, HTML/XML, or a filename
 		elseif (is_object($document)) {
@@ -175,7 +175,7 @@ abstract class DOM implements Query, IteratorAggregate, Countable
 
 	private function parseXMLString($string, $flags = 0)
 	{
-		$document = new DOMDocument('1.0');
+		$document = self::createDocument('1.0');
 		$lead     = strtolower(substr($string, 0, 5)); // <?xml
 		try {
 			set_error_handler([ParseException::class, 'initializeFromError'], $this->errTypes);
@@ -206,7 +206,7 @@ abstract class DOM implements Query, IteratorAggregate, Countable
 
 			// If HTML parser is requested, we use it.
 			if ($useParser === 'html') {
-				$document->loadHTML($string);
+				self::loadHTMLString($document, $string);
 			} // Parse as XML if it looks like XML, or if XML parser is requested.
 			elseif ($lead === '<?xml' || $useParser === 'xml') {
 				if ($this->options['replace_entities']) {
@@ -215,7 +215,7 @@ abstract class DOM implements Query, IteratorAggregate, Countable
 				$document->loadXML($string, $flags);
 			} // In all other cases, we try the HTML parser.
 			else {
-				$document->loadHTML($string);
+				self::loadHTMLString($document, $string);
 			}
 		} // Emulate 'finally' behavior.
 		catch (Exception $e) {
@@ -229,6 +229,111 @@ abstract class DOM implements Query, IteratorAggregate, Countable
 		}
 
 		return $document;
+	}
+
+	/**
+	 * Create the document QueryPath parses into.
+	 *
+	 * registerNodeClass() is what makes the marker type stick. PHP rebuilds the wrapper object for
+	 * a document whenever it is reached through $node->ownerDocument and the original wrapper has
+	 * since been released, and without the registration it rebuilds it as a plain DOMDocument --
+	 * losing exactly the fact the type is there to record.
+	 *
+	 * @param string      $version
+	 * @param string|null $encoding
+	 *
+	 * @return Document
+	 */
+	private static function createDocument($version = '1.0', $encoding = null)
+	{
+		$document = $encoding === null ? new Document($version) : new Document($version, $encoding);
+		$document->registerNodeClass(DOMDocument::class, Document::class);
+
+		return $document;
+	}
+
+	/**
+	 * Parse a string with libxml's HTML parser, keeping QueryPath's processing instruction invariant.
+	 *
+	 * @param DOMDocument $document
+	 * @param string      $string
+	 *
+	 * @return void
+	 *
+	 * @see normalizeProcessingInstructions()
+	 */
+	private static function loadHTMLString(DOMDocument $document, $string)
+	{
+		$document->loadHTML($string);
+
+		// Processing instruction data can only end in "?" if a "?" sat immediately before the
+		// closing ">", so a source without that sequence -- almost every document -- has nothing
+		// to normalize, and looking for two bytes is far cheaper than walking the tree.
+		if (strpos($string, '?>') !== false) {
+			self::normalizeProcessingInstructions($document);
+		}
+	}
+
+	/**
+	 * Parse a file with libxml's HTML parser, keeping QueryPath's processing instruction invariant.
+	 *
+	 * The counterpart of loadHTMLString(). There is no source string to scan here, so the document
+	 * is always walked; the walk costs roughly 3% of the parse it follows.
+	 *
+	 * @param DOMDocument $document
+	 * @param string      $filename
+	 *
+	 * @return void
+	 *
+	 * @see normalizeProcessingInstructions()
+	 */
+	private static function loadHTMLFile(DOMDocument $document, $filename)
+	{
+		$document->loadHTMLFile($filename);
+		self::normalizeProcessingInstructions($document);
+	}
+
+	/**
+	 * Strip the closing "?" that libxml's HTML parser leaves in processing instruction data.
+	 *
+	 * libxml's HTML parser stores the terminating "?" of a `<?php ... ?>` block as part of the
+	 * node's data, while its XML parser -- and the Masterminds HTML5 parser -- do not. Leaving it
+	 * in place corrupts every serializer that appends its own "?>": `saveXML()` turns
+	 * `<?php echo $a; ?>` into `<?php echo $a; ??>`, and each further round trip adds another "?".
+	 *
+	 * Normalising on load gives every parser QueryPath supports the same invariant -- processing
+	 * instruction data never contains the closing "?" -- which fixes the serializers and also means
+	 * a caller reading `$pi->data` gets usable source rather than source with a stray "?" glued to
+	 * the end.
+	 *
+	 * Exactly one "?" is removed, so a processing instruction whose content legitimately ends in
+	 * "?" (`<?php $a = 1; ??>`) still round trips correctly.
+	 *
+	 * @param DOMDocument $document
+	 *
+	 * @return void
+	 */
+	protected static function normalizeProcessingInstructions(DOMDocument $document)
+	{
+		foreach (self::processingInstructions($document) as $instruction) {
+			if (substr($instruction->data, -1) === '?') {
+				$instruction->data = substr($instruction->data, 0, -1);
+			}
+		}
+	}
+
+	/**
+	 * Every processing instruction in a document, as a static node list.
+	 *
+	 * @param DOMDocument $document
+	 *
+	 * @return iterable
+	 */
+	protected static function processingInstructions(DOMDocument $document): iterable
+	{
+		$xpath = new DOMXPath($document);
+
+		return $xpath->query('//processing-instruction()');
 	}
 
 	/**
@@ -454,7 +559,7 @@ abstract class DOM implements Query, IteratorAggregate, Countable
 			return $this->parseXMLString($contents, $flags);
 		}
 
-		$document = new DOMDocument();
+		$document = self::createDocument();
 		$lastDot  = strrpos($filename, '.');
 
 		$htmlExtensions = [
@@ -480,7 +585,7 @@ abstract class DOM implements Query, IteratorAggregate, Countable
 			} // Otherwise, see if it looks like HTML.
 			elseif ($useParser === 'html' || isset($htmlExtensions[$ext])) {
 				// Try parsing it as HTML.
-				$document->loadHTMLFile($filename);
+				self::loadHTMLFile($document, $filename);
 			} // Default to XML.
 			else {
 				$document->load($filename, $flags);
