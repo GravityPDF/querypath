@@ -565,7 +565,10 @@ class DOMTraverser implements Traverser
 	public function combineDirectDescendant($node, $selectors, $index)
 	{
 		$parent = $node->parentNode;
-		if (empty($parent)) {
+		// The parent of the root element is the document, which is not an element and can never
+		// match. combineAdjacent(), combineSibling() and combineAnyDescendant() all skip
+		// non-elements the same way.
+		if (empty($parent) || $parent->nodeType !== XML_ELEMENT_NODE) {
 			return false;
 		}
 
@@ -612,6 +615,12 @@ class DOMTraverser implements Traverser
 	 *
 	 * This should only be executed when not working with
 	 * an existing match set.
+	 *
+	 * A match set handed in from outside may legitimately contain non-element nodes -- text,
+	 * comment, CDATA or processing instruction -- because contents() returns them. Selectors only
+	 * ever match elements, so the three shortcuts below skip anything that is not one rather than
+	 * calling the element-only DOM API on it. Everything downstream of here is therefore elements,
+	 * which is why matchesSimpleSelector() and friends can keep their DOMElement type hints.
 	 *
 	 * @param \QueryPath\CSS\SimpleSelector $selector
 	 * @param SplObjectStorage              $matches
@@ -682,8 +691,11 @@ class DOMTraverser implements Traverser
 		$xpath     = new DOMXPath($this->dom);
 
 		// Now we try to find any matching IDs.
-		/** @var DOMElement $node */
 		foreach ($matches as $node) {
+			if (! $node instanceof DOMElement) {
+				continue;
+			}
+
 			if ($node->getAttribute('id') === $id) {
 				$found->offsetSet($node);
 			}
@@ -726,8 +738,11 @@ class DOMTraverser implements Traverser
 		$xpath     = new DOMXPath($this->dom);
 
 		// Now we try to find any matching IDs.
-		/** @var DOMElement $node */
 		foreach ($matches as $node) {
+			if (! $node instanceof DOMElement) {
+				continue;
+			}
+
 			// Refactor me!
 			if ($node->hasAttribute('class')) {
 				$intersect = array_intersect($selector->classes, explode(' ', $node->getAttribute('class')));
@@ -793,11 +808,14 @@ class DOMTraverser implements Traverser
 			$element = '*';
 		}
 		$found = $this->newMatches();
-		/** @var DOMDocument $node */
 		foreach ($matches as $node) {
-			// Capture the case where the initial element is the root element.
-			if ($node->tagName === $element
-				|| ($element === '*' && $node->parentNode instanceof DOMDocument)) {
+			if (! $node instanceof DOMElement && ! $node instanceof DOMDocument) {
+				continue;
+			}
+
+			// Capture the case where the node itself matches the element.
+			if ($node instanceof DOMElement
+				&& ($element === '*' || $node->tagName === $element)) {
 				$found->offsetSet($node);
 			}
 			$nl = $node->getElementsByTagName($element);
