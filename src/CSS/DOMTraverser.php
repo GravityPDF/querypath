@@ -57,6 +57,15 @@ use SplObjectStorage;
  * - `#myElement` does not get expanded
  * - `#myElement .class` \i may be expanded to `*#myElement *.class`
  *   (which will obviously not perform well).
+ *
+ * \b Positional pseudo-classes
+ *
+ * The jQuery positional pseudo-classes (`:eq()`, `:first`, `:last`, `:lt()`,
+ * `:gt()`, `:odd`, `:even`, and the `:nth()` alias of `:eq()`) are not node
+ * predicates: they index the ordered set the selector matched. They are
+ * therefore stripped out of the per-node match and applied afterwards, to the
+ * document-ordered result set of the simple selector they were written on. See
+ * resolveGroup().
  */
 class DOMTraverser implements Traverser
 {
@@ -66,6 +75,27 @@ class DOMTraverser implements Traverser
 	protected $initialized = true;
 	protected $psHandler;
 	protected $scopeNode;
+
+	/**
+	 * Pre-resolved match sets for simple selectors that carry a set-level
+	 * pseudo-class but are not the subject of the selector.
+	 *
+	 * Keyed by the simple selector's index within the current selector group.
+	 *
+	 * @var SplObjectStorage[]
+	 */
+	protected $setFilterMatches = [];
+
+	/**
+	 * The index of the simple selector currently being resolved.
+	 *
+	 * While resolving index N, the set-level pseudo-classes on index N must
+	 * not be looked up in $setFilterMatches -- that is precisely what is being
+	 * computed.
+	 *
+	 * @var int|null
+	 */
+	protected $resolvingIndex;
 
 	/**
 	 * Build a new DOMTraverser.
@@ -135,27 +165,195 @@ class DOMTraverser implements Traverser
 		$this->selector = $handler;
 
 		//$selector = $handler->toArray();
-		$found = $this->newMatches();
+		$found      = $this->newMatches();
+		$isFiltered = false;
 		foreach ($handler as $selectorGroup) {
-			// Initialize matches if necessary.
-			if ($this->initialized) {
-				$candidates = $this->matches;
-			} else {
-				$candidates = $this->initialMatch($selectorGroup[0], $this->matches);
+			if ($this->groupIsSetFiltered($selectorGroup)) {
+				$isFiltered = true;
 			}
 
-			/** @var DOMElement $candidate */
-			foreach ($candidates as $candidate) {
-				// fprintf(STDOUT, "Testing %s against %s.\n", $candidate->tagName, $selectorGroup[0]);
-				if ($this->matchesSelector($candidate, $selectorGroup)) {
-					// $this->debug('Attaching ' . $candidate->nodeName);
-					$found->offsetSet($candidate);
-				}
+			foreach ($this->resolveGroup($selectorGroup) as $candidate) {
+				// $this->debug('Attaching ' . $candidate->nodeName);
+				$found->offsetSet($candidate);
 			}
 		}
+
+		// Comma-separated groups are filtered independently (as in jQuery), so the
+		// union of the groups is not necessarily in document order. Restore it.
+		if ($isFiltered) {
+			$found = $this->toMatches(Util::sortDocumentOrder(iterator_to_array($found, false)));
+		}
+
 		$this->setMatches($found);
 
 		return $this;
+	}
+
+	/**
+	 * Whether any simple selector in the group carries a set-level pseudo-class.
+	 *
+	 * @param SimpleSelector[] $selectorGroup
+	 *
+	 * @return bool
+	 */
+	protected function groupIsSetFiltered(array $selectorGroup): bool
+	{
+		foreach ($selectorGroup as $simpleSelector) {
+			if ($simpleSelector->hasSetFilterPseudoClasses()) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Resolve a single (comma-delimited) selector group to its matches.
+	 *
+	 * A selector group is stored right-to-left, so index 0 is the subject of
+	 * the selector and higher indexes are its ancestors/siblings.
+	 *
+	 * Positional pseudo-classes filter an ordered set, so any simple selector
+	 * that carries one has to be resolved -- and filtered -- in full before the
+	 * selectors to its right can be evaluated against it. Those sets are
+	 * resolved leftmost-first and cached; matchesSimpleSelector() then answers
+	 * from the cache instead of re-testing the node.
+	 *
+	 * @param SimpleSelector[] $selectorGroup
+	 *
+	 * @return SplObjectStorage
+	 * @throws NotImplementedException
+	 * @throws ParseException
+	 */
+	protected function resolveGroup(array $selectorGroup): SplObjectStorage
+	{
+		$previousFilterMatches  = $this->setFilterMatches;
+		$this->setFilterMatches = [];
+
+		for ($index = count($selectorGroup) - 1; $index > 0; $index--) {
+			if ($selectorGroup[$index]->hasSetFilterPseudoClasses()) {
+				$this->setFilterMatches[$index] = $this->resolveSubject($selectorGroup, $index);
+			}
+		}
+
+		$matches                = $this->resolveSubject($selectorGroup, 0);
+		$this->setFilterMatches = $previousFilterMatches;
+
+		return $matches;
+	}
+
+	/**
+	 * Resolve the set of nodes matching the sub-selector whose subject is $index.
+	 *
+	 * @param SimpleSelector[] $selectorGroup
+	 * @param int              $index
+	 *
+	 * @return SplObjectStorage
+	 * @throws NotImplementedException
+	 * @throws ParseException
+	 */
+	protected function resolveSubject(array $selectorGroup, int $index): SplObjectStorage
+	{
+		// Initialize matches if necessary.
+		if ($index === 0 && $this->initialized) {
+			$candidates = $this->matches;
+		} else {
+			$candidates = $this->initialMatch($selectorGroup[$index], $this->matches);
+		}
+
+		$setFilters           = $selectorGroup[$index]->setFilterPseudoClasses();
+		$previous             = $this->resolvingIndex;
+		$this->resolvingIndex = $index;
+
+		// Without a set-level filter nothing downstream depends on the order or the size of
+		// the result, so it is collected straight into the match storage rather than into an
+		// array that then has to be copied into one.
+		if (empty($setFilters)) {
+			$found = $this->newMatches();
+			/** @var DOMElement $candidate */
+			foreach ($candidates as $candidate) {
+				if ($this->matchesSimpleSelector($candidate, $selectorGroup, $index)) {
+					$found->offsetSet($candidate);
+				}
+			}
+
+			$this->resolvingIndex = $previous;
+
+			return $found;
+		}
+
+		$matched = [];
+		/** @var DOMElement $candidate */
+		foreach ($candidates as $candidate) {
+			if ($this->matchesSimpleSelector($candidate, $selectorGroup, $index)) {
+				$matched[] = $candidate;
+			}
+		}
+
+		$this->resolvingIndex = $previous;
+
+		$matched = Util::sortDocumentOrder($matched);
+		foreach ($setFilters as $pseudoClass) {
+			$matched = $this->applySetFilter($matched, $pseudoClass);
+		}
+
+		return $this->toMatches($matched);
+	}
+
+	/**
+	 * Apply a single set-level pseudo-class to an ordered list of nodes.
+	 *
+	 * @param array $nodes
+	 * @param array $pseudoClass
+	 *
+	 * @return array
+	 * @throws ParseException
+	 */
+	protected function applySetFilter(array $nodes, array $pseudoClass): array
+	{
+		$name  = strtolower($pseudoClass['name']);
+		$value = isset($pseudoClass['value']) ? $pseudoClass['value'] : null;
+
+		if (Util::isPositionalPseudoClass($name)) {
+			return Util::applyPositionalPseudoClass($nodes, $name, $value);
+		}
+
+		// :not(), :has() and :matches() whose argument uses a positional filter.
+		// The argument has to see the whole result set, exactly as jQuery's
+		// :not(:first) does, so run it over this set and keep or drop the result.
+		if (empty($nodes)) {
+			return [];
+		}
+
+		$traverser = new self($this->toMatches($nodes), true, $this->scopeNode);
+		$inner     = $traverser->find($value)->matches();
+
+		$filtered = [];
+		foreach ($nodes as $node) {
+			$isMatch = $inner->offsetExists($node);
+			if ($name === 'not' ? ! $isMatch : $isMatch) {
+				$filtered[] = $node;
+			}
+		}
+
+		return $filtered;
+	}
+
+	/**
+	 * Convert a list of nodes into an SplObjectStorage of matches.
+	 *
+	 * @param array $nodes
+	 *
+	 * @return SplObjectStorage
+	 */
+	protected function toMatches(array $nodes): SplObjectStorage
+	{
+		$matches = $this->newMatches();
+		foreach ($nodes as $node) {
+			$matches->offsetSet($node);
+		}
+
+		return $matches;
 	}
 
 	public function matches()
@@ -207,13 +405,23 @@ class DOMTraverser implements Traverser
 	public function matchesSimpleSelector(DOMElement $node, $selectors, $index)
 	{
 		$selector = $selectors[$index];
+
+		// A set-level pseudo-class on a non-subject simple selector has already
+		// been resolved against the whole ordered set (see resolveGroup()). The
+		// cached set accounts for every selector to the left of $index too, so
+		// there is nothing further to combine.
+		if ($index !== $this->resolvingIndex && isset($this->setFilterMatches[$index])) {
+			return $this->setFilterMatches[$index]->offsetExists($node);
+		}
+
 		// Note that this will short circuit as soon as one of these
 		// returns FALSE.
 		$result = $this->matchElement($node, $selector->element, $selector->ns)
 				  && $this->matchAttributes($node, $selector->attributes)
 				  && $this->matchId($node, $selector->id)
 				  && $this->matchClasses($node, $selector->classes)
-				  && $this->matchPseudoClasses($node, $selector->pseudoClasses)
+				  && (empty($selector->pseudoClasses)
+					|| $this->matchPseudoClasses($node, $selector->nodePseudoClasses()))
 				  && $this->matchPseudoElements($node, $selector->pseudoElements);
 
 		$isNextRule = isset($selectors[++$index]);
@@ -815,7 +1023,8 @@ class DOMTraverser implements Traverser
 			$name = $pseudoClass['name'];
 			// Avoid E_STRICT violation.
 			$value = $pseudoClass['value'] ?? null;
-			$ret   &= $this->psHandler->elementMatches($name, $node, $this->scopeNode, $value);
+
+			$ret &= $this->psHandler->elementMatches($name, $node, $this->scopeNode, $value);
 		}
 
 		return $ret;

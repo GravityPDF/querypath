@@ -104,12 +104,25 @@ class PseudoClass
 			case 'x-reset':
 			case 'scope':
 				return $node->isSameNode($scope);
-			// NON-STANDARD extensions for simple support of even and odd. These
-			// are supported by jQuery, FF, and other user agents.
+			// The jQuery positional pseudo-classes index the *matched set*, not a
+			// node's siblings, so they cannot be answered for a node in isolation.
+			// QueryPath\CSS\DOMTraverser applies them to its ordered result set
+			// once traversal has finished. See Util::applyPositionalPseudoClass().
 			case 'even':
-				return $this->isNthChild($node, 'even');
 			case 'odd':
-				return $this->isNthChild($node, 'odd');
+			case 'lt':
+			case 'gt':
+			case 'nth':
+			case 'eq':
+			case 'first':
+			case 'last':
+				throw new NotImplementedException(
+					sprintf(
+						':%s filters an ordered result set and cannot be evaluated against a single node. '
+						. 'Use a Traverser, which applies it after traversal.',
+						$name
+					)
+				);
 			case 'nth-child':
 				return $this->isNthChild($node, $value);
 			case 'nth-last-child':
@@ -125,27 +138,8 @@ class PseudoClass
 			case 'only-of-type':
 				return $this->isFirstOfType($node) && $this->isLastOfType($node);
 
-			// Additional pseudo-classes defined in jQuery:
-			case 'lt':
-				// I'm treating this as "less than or equal to".
-				$rule = sprintf('-n + %d', (int) $value);
-
-				// $rule = '-n+15';
-				return $this->isNthChild($node, $rule);
-			case 'gt':
-				// I'm treating this as "greater than"
-				// return $this->nodePositionFromEnd($node) > (int) $value;
-				return $this->nodePositionFromStart($node) > (int) $value;
-			case 'nth':
-			case 'eq':
-				$rule = (int) $value;
-
-				return $this->isNthChild($node, $rule);
-			case 'first':
-				return $this->isNthChild($node, 1);
 			case 'first-child':
 				return $this->isFirst($node);
-			case 'last':
 			case 'last-child':
 				return $this->isLast($node);
 			case 'only-child':
@@ -415,16 +409,15 @@ class PseudoClass
 	 * Provides nth-child and also the functionality required for:
 	 *
 	 *- nth-last-child
-	 *- even
-	 *- odd
-	 *- first
-	 *- last
-	 *- eq
-	 *- nth
 	 *- nth-of-type
 	 *- first-of-type
 	 *- last-of-type
 	 *- nth-last-of-type
+	 *
+	 * Note that the jQuery positional pseudo-classes (:even, :odd, :first,
+	 * :last, :eq(), :nth(), :lt(), :gt()) are NOT handled here. They index the
+	 * matched set rather than an element's siblings, and are applied to the
+	 * result set by the traverser.
 	 *
 	 * See also QueryPath::CSS::DOMTraverser::Util::parseAnB().
 	 *

@@ -4,6 +4,7 @@ namespace QueryPathTests\CSS;
 
 use DOMDocument;
 use QueryPath\CSS\DOMTraverser\PseudoClass;
+use QueryPath\CSS\NotImplementedException;
 use QueryPath\CSS\ParseException;
 use QueryPathTests\TestCase;
 
@@ -227,40 +228,39 @@ class PseudoClassTest extends TestCase
 		$this->assertTrue($ret);
 	}
 
-	public function testFirst()
+	/**
+	 * The jQuery positional pseudo-classes index the matched set, not a node's
+	 * siblings, so PseudoClass cannot answer them for a node in isolation.
+	 *
+	 * @dataProvider positionalPseudoClassProvider
+	 *
+	 * @param string $name
+	 * @param mixed  $value
+	 */
+	public function testPositionalPseudoClassesAreNotNodePredicates($name, $value)
 	{
-		$ps  = new PseudoClass();
+		$this->expectException(NotImplementedException::class);
+
 		$xml = '<?xml version="1.0"?><root><p><q/></p><a></a><b/></root>';
 
 		[$ele, $root] = $this->doc($xml, 'q');
-		$ret = $ps->elementMatches('first', $ele, $root);
-		$this->assertTrue($ret);
+		$ps = new PseudoClass();
 
-		[$ele, $root] = $this->doc($xml, 'p');
-		$ret = $ps->elementMatches('first', $ele, $root);
-		$this->assertTrue($ret);
-
-		[$ele, $root] = $this->doc($xml, 'b');
-		$ret = $ps->elementMatches('first', $ele, $root);
-		$this->assertFalse($ret);
+		$ps->elementMatches($name, $ele, $root, $value);
 	}
 
-	public function testLast()
+	public function positionalPseudoClassProvider(): array
 	{
-		$ps  = new PseudoClass();
-		$xml = '<?xml version="1.0"?><root><p><q/></p><a></a><b/></root>';
-
-		[$ele, $root] = $this->doc($xml, 'q');
-		$ret = $ps->elementMatches('last', $ele, $root);
-		$this->assertTrue($ret);
-
-		[$ele, $root] = $this->doc($xml, 'p');
-		$ret = $ps->elementMatches('last', $ele, $root);
-		$this->assertFalse($ret);
-
-		[$ele, $root] = $this->doc($xml, 'b');
-		$ret = $ps->elementMatches('last', $ele, $root);
-		$this->assertTrue($ret);
+		return [
+			['first', null],
+			['last', null],
+			['even', null],
+			['odd', null],
+			['eq', '1'],
+			['nth', '1'],
+			['lt', '2'],
+			['gt', '2'],
+		];
 	}
 
 	public function testNot()
@@ -481,54 +481,6 @@ class PseudoClassTest extends TestCase
 		$this->assertEquals($matchesCount, $i, 'Invalid matches count');
 	}
 
-	public function testEven()
-	{
-		$xml = '<?xml version="1.0"?><root>';
-		$xml .= str_repeat('<a/><b/><c/><d/>', 5);
-		$xml .= '</root>';
-
-		$ps = new PseudoClass();
-		[$ele, $root] = $this->doc($xml, 'root');
-		$nl = $root->childNodes;
-
-		$i       = 0;
-		$expects = ['b', 'd'];
-		foreach ($nl as $n) {
-			$res = $ps->elementMatches('even', $n, $root);
-			if ($res) {
-				++$i;
-				$name = $n->tagName;
-				$this->assertContains($name, $expects, 'Expected a or c, got ' . $name);
-			}
-		}
-		$this->assertEquals(10, $i, ' even is ten items.');
-	}
-
-	public function testOdd()
-	{
-		$xml = '<?xml version="1.0"?><root>';
-		$xml .= str_repeat('<a/><b/><c/><d/>', 5);
-		$xml .= '</root>';
-
-		$ps = new PseudoClass();
-		[$ele, $root] = $this->doc($xml, 'root');
-		$nl = $root->childNodes;
-
-		// Odd
-		$i       = 0;
-		$expects = ['a', 'c'];
-		$j       = 0;
-		foreach ($nl as $n) {
-			$res = $ps->elementMatches('odd', $n, $root);
-			if ($res) {
-				++$i;
-				$name = $n->tagName;
-				$this->assertContains($name, $expects, sprintf('Expected b or d, got %s in slot %s', $name, ++$j));
-			}
-		}
-		$this->assertEquals(10, $i, 'Ten odds.');
-	}
-
 	public function testNthOfTypeChild()
 	{
 		$xml = '<?xml version="1.0"?><root>';
@@ -640,83 +592,6 @@ class PseudoClassTest extends TestCase
 	public function testXReset() {
 	}
 	 */
-	public function testLt()
-	{
-		$xml = '<?xml version="1.0"?><root>';
-		$xml .= str_repeat('<a/><a/><a/><a/>', 5);
-		$xml .= '</root>';
-
-		$ps = new PseudoClass();
-		[$ele, $root] = $this->doc($xml, 'root');
-		$nl = $root->childNodes;
-
-		// Odd
-		$i = 0;
-		foreach ($nl as $n) {
-			$res = $ps->elementMatches('lt', $n, $root, '15');
-			if ($res) {
-				++$i;
-				$name = $n->tagName;
-			}
-		}
-		$this->assertEquals(15, $i, 'Less than or equal to 15.');
-	}
-
-	public function testGt()
-	{
-		$xml = '<?xml version="1.0"?><root>';
-		$xml .= str_repeat('<a/><a/><a/><a/>', 5);
-		$xml .= '</root>';
-
-		$ps = new PseudoClass();
-		[$ele, $root] = $this->doc($xml, 'root');
-		$nl = $root->childNodes;
-
-		// Odd
-		$i = 0;
-		foreach ($nl as $n) {
-			$res = $ps->elementMatches('gt', $n, $root, '15');
-			if ($res) {
-				++$i;
-				$name = $n->tagName;
-			}
-		}
-		$this->assertEquals(5, $i, 'Greater than the 15th element.');
-	}
-
-	public function testEq()
-	{
-		$xml = '<?xml version="1.0"?><root>';
-		$xml .= str_repeat('<a/><b/><c/><a/>', 5);
-		$xml .= '</root>';
-
-		$ps = new PseudoClass();
-		[$ele, $root] = $this->doc($xml, 'root');
-		$nl = $root->childNodes;
-
-		$i = 0;
-		foreach ($nl as $n) {
-			$res = $ps->elementMatches('eq', $n, $root, '15');
-			if ($res) {
-				++$i;
-				$name = $n->tagName;
-				$this->assertEquals('c', $name);
-			}
-		}
-		$this->assertEquals(1, $i, 'The 15th element.');
-
-		$i = 0;
-		foreach ($nl as $n) {
-			$res = $ps->elementMatches('nth', $n, $root, '15');
-			if ($res) {
-				++$i;
-				$name = $n->tagName;
-				$this->assertEquals('c', $name);
-			}
-		}
-		$this->assertEquals(1, $i, 'The 15th element.');
-	}
-
 	public function testAnyLink()
 	{
 		$ps  = new PseudoClass();

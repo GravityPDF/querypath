@@ -184,8 +184,8 @@
  * - root: The root element of the document
  * - x-root: The root element that was passed into QueryPath's constructor
  * - x-reset: Same as above.
- * - even: All even elements in a set. First element is odd.
- * - odd: Odd elements in a set. First element is odd.
+ * - even: Matched elements at an even index (0, 2, 4, ...) of the matched set.
+ * - odd: Matched elements at an odd index (1, 3, 5, ...) of the matched set.
  * - nth-child: Every nth child in a set.
  * - nth-last-child: Every nth child in a set, counting from the end.
  * - nth-of-type: Every nth tag in a set.
@@ -198,12 +198,20 @@
  * - only-of-type: Matches only if it is the only child of the given tag in a set.
  * - empty: Selects only empty elements.
  * - not: The negation operator, takes a CSS3 selector, e.g. <code>:not(strong>a)</code>.
- * - lt: Items in a set whose index is less than the given integer, e.g. <code>lt(3)</code>
- * - gt: Items in a set whose index is greater than the given integer, e.g. <code>gt(3)</code>
- * - nth: The nth item in a set, e.g. <code>nth(3)</code>
- * - eq: The nth item in a set, e.g. <code>eq(3)</code>
- * - first: The first item in a set.
- * - last: The last item in a set.
+ * - lt: Items in the matched set whose index is less than the given integer, e.g. <code>lt(3)</code>
+ * - gt: Items in the matched set whose index is greater than the given integer, e.g. <code>gt(3)</code>
+ * - nth: The item at the given index of the matched set. An alias of eq.
+ * - eq: The item at the given index of the matched set, e.g. <code>eq(3)</code> is the fourth match.
+ * - first: The first item in the matched set.
+ * - last: The last item in the matched set.
+ *
+ * The eight pseudo-classes above (even, odd, lt, gt, nth, eq, first, last) are
+ * the jQuery positional filters. As in jQuery, they are ZERO-INDEXED and they
+ * index the *matched set* -- the ordered list of elements the selector found --
+ * not an element's position among its siblings. A negative index counts back
+ * from the end of the set. To select by sibling position, use the CSS
+ * structural pseudo-classes (:nth-child(), :first-child, :nth-of-type(), ...),
+ * which are one-indexed.
  * - parent: Matches if the item is a parent of child elements.
  * - enabled: Matches (form) items that are enabled
  * - disabled: Matches form items that are disabled
