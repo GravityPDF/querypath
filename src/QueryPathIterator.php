@@ -18,7 +18,6 @@ use SplObjectStorage;
  * a QueryPathIterator. QueryPath does this when its QueryPath::getIterator()
  * method is called.
  *
- * @ingroup querypath_util
  */
 class QueryPathIterator extends IteratorIterator
 {

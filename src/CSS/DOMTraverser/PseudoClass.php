@@ -41,7 +41,7 @@ class PseudoClass
 	 * @return bool
 	 * @throws NotImplementedException
 	 * @throws ParseException
-	 * @retval boolean
+	 * @return boolean
 	 *   TRUE if the node matches, FALSE otherwise.
 	 */
 	public function elementMatches($pseudoclass, $node, $scope, $value = null)

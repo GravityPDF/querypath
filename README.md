@@ -113,11 +113,32 @@ try {
 
 See the [examples directory files](https://github.com/GravityPDF/querypath/tree/main/examples) for more usages.
 
-## Online Manual
+## Documentation
 
-The legacy QueryPath manual has been automatically generated from inline DocBlocks using phpDocumentor, and can be found at [http://querypath.org](http://querypath.org/).
+| Page | What's in it |
+|---|---|
+| [Getting Started](https://github.com/GravityPDF/querypath/wiki/Getting-Started) | The three factories, chaining, and how object identity works |
+| [CSS Selector Reference](https://github.com/GravityPDF/querypath/wiki/CSS-Selector-Reference) | Every supported selector, with the jQuery differences called out |
+| [Parser Options](https://github.com/GravityPDF/querypath/wiki/Parser-Options) | Every option `qp()`, `htmlqp()` and `html5qp()` accept |
+| [Writing Extensions](https://github.com/GravityPDF/querypath/wiki/Writing-Extensions) | Adding your own methods to the fluent API |
 
-> ⚠️ querypath.org is not built or maintained by Gravity PDF, and we have no access to manage or change the website. [Help writing new documentation in the repo's Wiki is wanted](https://github.com/GravityPDF/querypath/wiki).
+The full API reference:
+
+| Page | What's in it |
+|---|---|
+| [API Reference](https://github.com/GravityPDF/querypath/wiki/API-Reference) | Every method, alphabetically, with a known-issues summary |
+| [Traversal and Filtering](https://github.com/GravityPDF/querypath/wiki/Traversal-and-Filtering) | Choosing which elements are selected |
+| [Manipulation](https://github.com/GravityPDF/querypath/wiki/Manipulation) | Changing the document |
+| [Markup and Text](https://github.com/GravityPDF/querypath/wiki/Markup-and-Text) | Reading and writing content |
+| [Document and Utility](https://github.com/GravityPDF/querypath/wiki/Document-and-Utility) | The match set, the DOM, options, and errors |
+
+These pages are the source of truth and live in [`docs/`](docs) in this repository — the wiki is
+generated from them, so **edit `docs/` and open a pull request** rather than editing the wiki
+directly. Contributions are very welcome.
+
+> ⚠️ The legacy manual at [querypath.org](http://querypath.org/) was generated from QueryPath 2.x
+> DocBlocks by phpDocumentor. It is not built or maintained by Gravity PDF, we have no access to
+> change it, and parts of it are now wrong — prefer the pages above.
 
 ## General Troubleshooting
 

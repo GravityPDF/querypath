@@ -13,11 +13,16 @@ use SplObjectStorage;
 use stdClass;
 
 /**
- * Trait QueryFilters
+ * Traversal and filtering methods for DOMQuery.
+ *
+ * Every method here except each() returns a NEW DOMQuery and leaves the object it
+ * was called on unchanged.
  *
  * @package QueryPath\Helpers
  *
  * @property array matches
+ *
+ * @link https://github.com/GravityPDF/querypath/wiki/Traversal-and-Filtering
  */
 trait QueryFilters
 {
@@ -72,9 +77,9 @@ trait QueryFilters
 	 *
 	 * Example:
 	 *
-	 * @code
+	 * ```php
 	 * qp('li')->filterLambda('qp($item)->attr("id") == "test"');
-	 * @endcode
+	 * ```
 	 *
 	 * The above would filter down the list to only an item whose ID is
 	 * 'text'.
@@ -90,8 +95,9 @@ trait QueryFilters
 	 * @see filterCallback()
 	 * @see filter()
 	 * @deprecated
-	 *   Since PHP 5.3 supports anonymous functions -- REAL Lambdas -- this
-	 *   method is not necessary and should be avoided.
+	 *   Non-functional on PHP 8.0 and later: this is built on create_function(),
+	 *   which was removed in PHP 8.0, so any call raises an Error. Use
+	 *   filterCallback() with a closure.
 	 */
 	public function filterLambda($fn): Query
 	{
@@ -113,27 +119,27 @@ trait QueryFilters
 	 * Only items that match the given regular expression will be kept. All others will
 	 * be removed.
 	 *
-	 * The regular expression is run against the <i>text content</i> (the PCDATA) of the
+	 * The regular expression is run against the *text content* (the PCDATA) of the
 	 * elements. This is a way of filtering elements based on their content.
 	 *
 	 * Example:
 	 *
-	 * @code
+	 * ```xml
 	 *  <?xml version="1.0"?>
-	 *  <div>Hello <i>World</i></div>
-	 * @endcode
+	 *  <div>Hello *World*</div>
+	 * ```
 	 *
-	 * @code
+	 * ```php
 	 *  <?php
 	 *    // This will be 1.
 	 *    qp($xml, 'div')->filterPreg('/World/')->matches->count();
 	 *  ?>
-	 * @endcode
+	 * ```
 	 *
-	 * The return value above will be 1 because the text content of @codeqp($xml, 'div')@endcode is
-	 * @codeHello World@endcode.
+	 * The return value above will be 1 because the text content of `qp($xml, 'div')` is
+	 * `Hello World`.
 	 *
-	 * Compare this to the behavior of the <em>:contains()</em> CSS3 pseudo-class.
+	 * Compare this to the behavior of the *:contains()* CSS3 pseudo-class.
 	 *
 	 * @param string $regex
 	 *  A regular expression.
@@ -356,8 +362,9 @@ trait QueryFilters
 	 * @return DOMQuery
 	 *  The DOMQuery object.
 	 * @deprecated
-	 *   Since PHP 5.3 supports anonymous functions -- REAL Lambdas -- this
-	 *   method is not necessary and should be avoided.
+	 *   Non-functional on PHP 8.0 and later: this is built on create_function(),
+	 *   which was removed in PHP 8.0, so any call raises an Error. Use each()
+	 *   with a closure.
 	 * @see each()
 	 * @see filterLambda()
 	 * @see filterCallback()
@@ -378,7 +385,11 @@ trait QueryFilters
 	}
 
 	/**
-	 * Get the even elements, so counter-intuitively 1, 3, 5, etc.
+	 * Get the elements at odd indexes -- the 2nd, 4th, 6th and so on.
+	 *
+	 * The name refers to the 1-based ordinal, not the 0-based index, which is the
+	 * opposite of what most callers expect. Use the :nth-child(even) selector for
+	 * the CSS meaning.
 	 *
 	 * @return DOMQuery
 	 *  A DOMQuery wrapping all of the children.
@@ -406,7 +417,11 @@ trait QueryFilters
 	}
 
 	/**
-	 * Get the odd elements, so counter-intuitively 0, 2, 4, etc.
+	 * Get the elements at even indexes -- the 1st, 3rd, 5th and so on.
+	 *
+	 * The name refers to the 1-based ordinal, not the 0-based index, which is the
+	 * opposite of what most callers expect. Use the :nth-child(odd) selector for
+	 * the CSS meaning.
 	 *
 	 * @return DOMQuery
 	 *  A DOMQuery wrapping all of the children.
@@ -461,6 +476,9 @@ trait QueryFilters
 	/**
 	 * Get the first child of the matching element.
 	 *
+	 * KNOWN ISSUE: this stops after the first matched element, so it returns at most
+	 * one node however many elements are selected. lastChild() returns one per
+	 * element. Use children()->first() for consistent behaviour.
 	 *
 	 * @return DOMQuery
 	 *  A DOMQuery wrapping all of the children.
@@ -692,6 +710,11 @@ trait QueryFilters
 
 	/**
 	 * Filter a list to contain only items that do NOT match.
+	 *
+	 * Accepts a CSS selector, a DOMElement, or an array of DOMNodes.
+	 *
+	 * KNOWN ISSUE: passing an SplObjectStorage inverts the test -- it keeps only the
+	 * nodes in the storage instead of removing them. Pass an array instead.
 	 *
 	 * @param string $selector
 	 *  A selector to use as a negation filter. If the filter is matched, the

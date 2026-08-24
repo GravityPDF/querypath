@@ -21,7 +21,6 @@ use QueryPath\Exception;
  * used, for example, as a basis for writing a DOM query engine based on
  * CSS.
  *
- * @ingroup querypath_css
  */
 class Parser
 {

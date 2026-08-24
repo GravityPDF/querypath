@@ -43,7 +43,6 @@ use XSLTProcessor;
  * is written to XML using {@link QueryPath::writeXML()}.
  * </code>
  *
- * @ingroup querypath_extensions
  */
 class QPXSL implements Extension
 {
@@ -62,12 +61,12 @@ class QPXSL implements Extension
 	 * execute it on the current source document.
 	 *
 	 * @param mixed $style
-	 *  This takes a QueryPath object or <em>any</em> of the types that the
+	 *  This takes a QueryPath object or *any* of the types that the
 	 *  {@link qp()} function can take.
 	 *
 	 * @return QueryPath
 	 *  A QueryPath object wrapping the transformed document. Note that this is a
-	 *  <i>different</em> document than the original. As such, it has no history.
+	 *  *different* document than the original. As such, it has no history.
 	 *  You cannot call {@link QueryPath::end()} to undo a transformation. (However,
 	 *  the original source document will remain unchanged.)
 	 */

@@ -18,7 +18,7 @@
  *  - All pseudo-elements require the double-colon (::) notation. This breaks
  *    backward compatibility with the 2.1 spec, but it makes visible the issue
  *    that pseudo-elements cannot be effectively used with most of the present
- *    library. They return <b>stdClass objects with a text property</b> (QP > 1.3)
+ *    library. They return **stdClass objects with a text property** (QP > 1.3)
  *    instead of elements.
  *  - The pseudo-classes first-of-type, nth-of-type and last-of-type may or may
  *    not conform to the specification. The spec is unclear.
@@ -60,17 +60,16 @@ use stdClass;
  *
  * To use this handler:
  *
- * @code
+ * ```php
  * $filter = '#id'; // Some CSS selector
  * $handler = new QueryPathEventHandler(DOMNode $dom);
  * $parser = new Parser();
  * $parser->parse($filter, $handler);
  * $matches = $handler->getMatches();
- * @endcode
+ * ```
  *
  * $matches will be an array of zero or more DOMElement objects.
  *
- * @ingroup querypath_css
  */
 class QueryPathEventHandler implements EventHandler, Traverser
 {

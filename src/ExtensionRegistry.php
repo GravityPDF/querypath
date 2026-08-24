@@ -23,7 +23,6 @@ use ReflectionClass;
  * This class provides lower-level interaction with the extension
  * mechanism.
  *
- * @ingroup querypath_extensions
  */
 class ExtensionRegistry
 {

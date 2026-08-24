@@ -115,7 +115,7 @@ class Util
 	 * @param $rule
 	 *  Some rule in the an+b format.
 	 *
-	 * @retval array
+	 * @return array
 	 *  `array($aVal, $bVal)` of the two values.
 	 * @return array
 	 */

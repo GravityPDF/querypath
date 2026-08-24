@@ -1,0 +1,66 @@
+name: Wiki Sync
+
+# The wiki is generated from docs/ in this repository. Pages edited directly in
+# the GitHub wiki UI are overwritten the next time this runs.
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/**'
+      - '.github/workflows/wiki-sync.yml'
+  workflow_dispatch:
+
+# Only one sync at a time — two concurrent pushes would race on the wiki remote.
+concurrency:
+  group: wiki-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    name: Push docs/ to the wiki
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Clone the wiki
+        run: |
+          git clone \
+            "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.wiki.git" \
+            wiki
+
+      - name: Copy docs/ over the wiki
+        run: |
+          # Everything tracked in the wiki is replaced by docs/, so a page
+          # deleted from docs/ is deleted from the wiki too. .git is preserved.
+          find wiki -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
+          cp -R docs/. wiki/
+
+      - name: Rewrite internal links for the wiki
+        run: |
+          # In docs/ the cross-links carry a .md suffix so they resolve when the
+          # files are browsed in the repository. The wiki addresses the same
+          # pages without it, so strip the suffix on the way through.
+          find wiki -name '*.md' -exec \
+            sed -i -E 's/\]\(([A-Za-z0-9_.-]+)\.md(#[A-Za-z0-9_-]+)?\)/](\1\2)/g' {} +
+
+      - name: Commit and push
+        working-directory: wiki
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          if git diff --quiet && git diff --staged --quiet && [ -z "$(git status --porcelain)" ]; then
+            echo "Wiki already matches docs/ — nothing to push."
+            exit 0
+          fi
+
+          git add -A
+          git commit -m "Sync wiki from docs/ (${GITHUB_SHA::7})"
+          git push origin HEAD

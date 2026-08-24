@@ -1,14 +1,9 @@
 <?php
 /**
- * @file
  * This houses the class formerly called QueryPath.
  *
- * As of QueryPath 3.0.0, the class was renamed QueryPath::DOMQuery. This
- * was done for a few reasons:
- * - The library has been refactored, and it made more sense to call the top
- *   level class QueryPath. This is not the top level class.
- * - There have been requests for a JSONQuery class, which would be the
- *   natural complement of DOMQuery.
+ * As of QueryPath 3.0.0, the class was renamed QueryPath\DOMQuery, because the
+ * library had been refactored and the top-level class is QueryPath, not this one.
  */
 
 namespace QueryPath;
@@ -32,19 +27,21 @@ use Traversable;
 /**
  * The DOMQuery object is the primary tool in this library.
  *
- * To create a new DOMQuery, use QueryPath::with() or qp() function.
+ * To create a new DOMQuery, use the QueryPath::with() static method or the qp(),
+ * htmlqp() or html5qp() functions.
  *
- * If you are new to these documents, start at the QueryPath.php page.
- * There you will find a quick guide to the tools contained in this project.
+ * Most methods return a NEW DOMQuery and leave the object they were called on
+ * unchanged. The ones that mutate in place are noted individually; see the API
+ * reference for the full breakdown.
  *
  * A note on serialization: Query uses DOM classes internally, and those
  * do not serialize well at all. In addition, DOMQuery may contain many
  * extensions, and there is no guarantee that extensions can serialize. The
  * moral of the story: Don't serialize DOMQuery.
  *
- * @see     qp()
- * @see     QueryPath.php
- * @ingroup querypath_core
+ * @see qp()
+ * @link https://github.com/GravityPDF/querypath/wiki/API-Reference           Every method, alphabetically
+ * @link https://github.com/GravityPDF/querypath/wiki/Getting-Started         Introduction and chaining semantics
  */
 class DOMQuery extends DOM
 {
@@ -102,9 +99,9 @@ class DOMQuery extends DOM
 	 * This sets the current match to the document's root element. For
 	 * practical purposes, this is the same as:
 	 *
-	 * @code
+	 * ```php
 	 * qp($someDoc)->find(':root');
-	 * @endcode
+	 * ```
 	 * However, since it doesn't invoke a parser, it has less overhead. It also
 	 * works in cases where the QueryPath has been reduced to zero elements (a
 	 * case that is not handled by find(':root') because there is no element
@@ -133,12 +130,9 @@ class DOMQuery extends DOM
 	 * @return DOMQuery
 	 * @throws CSS\ParseException
 	 * @see  is()
-	 * @todo If a find() returns zero matches, then a subsequent find() will
-	 *       also return zero matches, even if that find has a selector like :root.
-	 *       The reason for this is that the {@link QueryPathEventHandler} does
-	 *       not set the root of the document tree if it cannot find any elements
-	 *       from which to determine what the root is. The workaround is to use
-	 *       {@link top()} to select the root element again.
+	 * If a find() returns zero matches, a subsequent find() also returns zero
+	 * matches, even for a selector such as :root -- there are no elements left to
+	 * search from. Use top() to select the root element again.
 	 * @see  filter()
 	 */
 	public function find($selector): Query
@@ -217,7 +211,8 @@ class DOMQuery extends DOM
 	/**
 	 * Get the number of elements currently wrapped by this object.
 	 *
-	 * Note that there is no length property on this object.
+	 * The public $length property holds the same number and is kept in sync
+	 * by setMatches().
 	 *
 	 * @return int
 	 *  Number of items in the object.
@@ -234,11 +229,11 @@ class DOMQuery extends DOM
 	 * Since DOMQuery is Countable, the PHP count() function can also
 	 * be used on a DOMQuery.
 	 *
-	 * @code
+	 * ```php
 	 * <?php
 	 *  count(qp($xml, 'div'));
 	 * ?>
-	 * @endcode
+	 * ```
 	 *
 	 * @return int
 	 *  The number of matches in the DOMQuery.
@@ -357,7 +352,7 @@ class DOMQuery extends DOM
 	 * return an array with the MIME type and the application data.
 	 *
 	 * When called with both $attr and $data, it will inject the data into all selected elements
-	 * So @code$qp->dataURL('src', file_get_contents('my.png'), 'image/png')@endcode will inject
+	 * So `$qp->dataURL('src', file_get_contents('my.png'), 'image/png')` will inject
 	 * the given PNG image into the selected elements.
 	 *
 	 * The current implementation only knows how to encode and decode Base 64 data.
@@ -381,9 +376,10 @@ class DOMQuery extends DOM
 	 *    A valid context. Use this only if you need to pass a stream context. This is only necessary
 	 *    if $data is a URL. (See {@link stream_context_create()}).
 	 *
-	 * @return DOMQuery|string
-	 *    If this is called as a setter, this will return a DOMQuery object. Otherwise, it
-	 *    will attempt to fetch data out of the attribute and return that.
+	 * @return DOMQuery|array|null
+	 *    If this is called as a setter, this will return a DOMQuery object. As a getter it
+	 *    returns an array with 'mime' and 'data' keys, or NULL when the attribute is absent
+	 *    or is not a base64 data URL.
 	 * @see   http://en.wikipedia.org/wiki/Data:_URL
 	 * @see   attr()
 	 * @since 2.1
@@ -425,8 +421,7 @@ class DOMQuery extends DOM
 	 * is passed in as the second parameter then QueryPath will re-order
 	 * the DOM, too.
 	 *
-	 * @attention
-	 * DOM re-ordering is done by finding the location of the original first
+	 * Note: DOM re-ordering is done by finding the location of the original first
 	 * item in the list, and then placing the sorted list at that location.
 	 *
 	 * The argument $compartor is a callback, such as a function name or a
@@ -434,7 +429,7 @@ class DOMQuery extends DOM
 	 * as DOMNodes, or wrap in QueryPath objects.
 	 *
 	 * A simple callback:
-	 * @code
+	 * ```php
 	 * <?php
 	 * $comp = function (\DOMNode $a, \DOMNode $b) {
 	 *   if ($a->textContent == $b->textContent) {
@@ -444,13 +439,13 @@ class DOMQuery extends DOM
 	 * };
 	 * $qp = QueryPath::with($xml, $selector)->sort($comp);
 	 * ?>
-	 * @endcode
+	 * ```
 	 *
 	 * The above sorts the matches into lexical order using the text of each node.
 	 * If you would prefer to work with QueryPath objects instead of DOMNode
 	 * objects, you may prefer something like this:
 	 *
-	 * @code
+	 * ```php
 	 * <?php
 	 * $comp = function (\DOMNode $a, \DOMNode $b) {
 	 *   $qpa = qp($a);
@@ -464,7 +459,7 @@ class DOMQuery extends DOM
 	 *
 	 * $qp = QueryPath::with($xml, $selector)->sort($comp);
 	 * ?>
-	 * @endcode
+	 * ```
 	 *
 	 * @param callback $comparator
 	 *   A callback. This will be called during sorting to compare two DOMNode
@@ -474,7 +469,8 @@ class DOMQuery extends DOM
 	 *   the DOM at the position of the original first element.
 	 *
 	 * @return DOMQuery
-	 *   This object.
+	 *   A NEW DOMQuery holding the sorted match set. The object this was called
+	 *   on keeps its original order.
 	 * @throws CSS\ParseException
 	 */
 	public function sort($comparator, $modifyDOM = false): Query
@@ -562,7 +558,7 @@ class DOMQuery extends DOM
 	/**
 	 * Revert to the previous set of matches.
 	 *
-	 * <b>DEPRECATED</b> Do not use.
+	 * **DEPRECATED** Do not use.
 	 *
 	 * This will revert back to the last set of matches (before the last
 	 * "destructive" set of operations). This undoes any change made to the set of
@@ -577,16 +573,17 @@ class DOMQuery extends DOM
 	 * Only one level of changes is stored. Reverting beyond that will result in
 	 * an empty set of matches. Example:
 	 *
-	 * @code
+	 * ```php
 	 * // The line below returns the same thing as qp(document, 'p');
 	 * qp(document, 'p')->find('div')->end();
-	 * // This returns an empty array:
-	 * qp(document, 'p')->end();
-	 * // This returns an empty array:
-	 * qp(document, 'p')->find('div')->find('span')->end()->end();
-	 * @endcode
 	 *
-	 * The last one returns an empty array because only one level of changes is stored.
+	 * // Only one level of history is kept, so the second end() cannot rewind
+	 * // any further:
+	 * qp(document, 'p')->find('div')->find('span')->end()->end();
+	 * ```
+	 *
+	 * Calling end() on a freshly constructed object rewinds to the document element,
+	 * not to an empty set.
 	 *
 	 * @return DOMQuery
 	 *  A DOMNode object reflecting the list of matches prior to the last destructive
@@ -610,9 +607,9 @@ class DOMQuery extends DOM
 	 *
 	 * Example:
 	 *
-	 * @code
+	 * ```php
 	 * qp(document, 'p')->find('div')->andSelf();
-	 * @endcode
+	 * ```
 	 *
 	 * The code above will contain a list of all p elements and all div elements that
 	 * are beneath p elements.
@@ -647,10 +644,10 @@ class DOMQuery extends DOM
 	 * If no markup is given, this will return a string representing the child
 	 * markup of the first node.
 	 *
-	 * <b>Important:</b> This differs from jQuery's html() function. This function
-	 * returns <i>the current node</i> and all of its children. jQuery returns only
+	 * **Important:** This differs from jQuery's html() function. This function
+	 * returns *the current node* and all of its children. jQuery returns only
 	 * the children. This means you do not need to do things like this:
-	 * @code$qp->parent()->html()@endcode.
+	 * `$qp->parent()->html()`.
 	 *
 	 * By default, this is HTML 4.01, not XHTML. Use {@link xml()} for XHTML.
 	 *
@@ -759,26 +756,26 @@ class DOMQuery extends DOM
 	/**
 	 * Fetch the HTML contents INSIDE of the first DOMQuery item.
 	 *
-	 * <b>This behaves the way jQuery's @codehtml()@endcode function behaves.</b>
+	 * **This behaves the way jQuery's `html()` function behaves.**
 	 *
 	 * This gets all children of the first match in DOMQuery.
 	 *
 	 * Consider this fragment:
 	 *
-	 * @code
+	 * ```xml
 	 * <div>
 	 * test <p>foo</p> test
 	 * </div>
-	 * @endcode
+	 * ```
 	 *
 	 * We can retrieve just the contents of this code by doing something like
 	 * this:
-	 * @code
+	 * ```php
 	 * qp($xml, 'div')->innerHTML();
-	 * @endcode
+	 * ```
 	 *
 	 * This would return the following:
-	 * @codetest <p>foo</p> test@endcode
+	 * `test <p>foo</p> test`
 	 *
 	 * @return string|null
 	 *  Returns a string representation of the child nodes of the first
@@ -946,10 +943,11 @@ class DOMQuery extends DOM
 	}
 
 	/**
-	 * Get the text contents from just child elements.
+	 * Get the text contents of the descendants of the current element.
 	 *
-	 * This is a specialized variant of textImplode() that implodes text for just the
-	 * child elements of the current element.
+	 * A specialized variant of textImplode(). Despite the name, this is implemented
+	 * with the XPath expression 'descendant::text()', so it collects text from the
+	 * whole subtree, not only the immediate children.
 	 *
 	 * @param string $separator
 	 *  The separator that will be inserted between found text content.
@@ -1004,7 +1002,7 @@ class DOMQuery extends DOM
 	 *
 	 * If no text is given, this will return the concatenated text before each selected element.
 	 *
-	 * @code
+	 * ```php
 	 * <?php
 	 * $xml = '<?xml version="1.0"?><root>Foo<a>Bar</a><b/></root>';
 	 *
@@ -1014,7 +1012,7 @@ class DOMQuery extends DOM
 	 * // This will insert 'Baz' right before <b/>.
 	 * qp($xml, 'b')->textBefore('Baz');
 	 * ?>
-	 * @endcode
+	 * ```
 	 *
 	 * @param string|null $text
 	 *  If this is set, it will be inserted before each node in the current set of
@@ -1052,9 +1050,9 @@ class DOMQuery extends DOM
 	 *
 	 * If no text is given, this will return the concatenated text after each selected element.
 	 *
-	 * @code
+	 * ```php
 	 * <?php
-	 * $xml = '<?xml version="1.0"?><root>Foo<a>Bar</a><b>Baz</b><c/></root>';
+	 * $xml = '<?xml version="1.0"?><root>Foo<a>Bar</a>**Baz**<c/></root>';
 	 *
 	 * // This will return 'Baz'
 	 * qp($xml, 'a')->textAfter();
@@ -1062,7 +1060,7 @@ class DOMQuery extends DOM
 	 * // This will insert 'Bin' right after <c/>.
 	 * qp($xml, 'c')->textAfter('Bin');
 	 * ?>
-	 * @endcode
+	 * ```
 	 *
 	 * @param string|null $text
 	 *  If this is set, it will be inserted after each node in the current set of
@@ -1356,6 +1354,11 @@ class DOMQuery extends DOM
 	 * This works the same as the other write* functions, but it encodes the output
 	 * as HTML5 with UTF-8.
 	 *
+	 * Unlike writeXML(), writeHTML() and writeXHTML(), this returns NULL rather than
+	 * the DOMQuery, so it cannot be chained. A path that cannot be written surfaces
+	 * as a TypeError from the underlying HTML5 library, not as a QueryPath exception.
+	 *
+	 * @return void
 	 * @throws Exception
 	 *  In the event that a file cannot be written, an Exception will be thrown.
 	 * @see innerHTML5()
@@ -1379,9 +1382,9 @@ class DOMQuery extends DOM
 	 *
 	 * Typically, you should use this instead of {@link writeHTML()}.
 	 *
-	 * Currently, this functions identically to {@link toXML()} <i>except that</i>
-	 * it always uses closing tags (e.g. always @code<script></script>@endcode,
-	 * never @code<script/>@endcode). It will
+	 * Currently, this functions identically to {@link toXML()} *except that*
+	 * it always uses closing tags (e.g. always `<script></script>`,
+	 * never `<script/>`). It will
 	 * write the file as well-formed XML. No XHTML schema validation is done.
 	 *
 	 * @param string|null $path
@@ -1417,30 +1420,29 @@ class DOMQuery extends DOM
 	 * to operate on the same DOMNode object, but the elements inside of the DOMQuery
 	 * are copies of those before the call to cloneAll().
 	 *
-	 * This, on the other hand, copies <i>the DOMQuery</i>, but keeps valid
+	 * This, on the other hand, copies *the DOMQuery*, but keeps valid
 	 * references to the document and the wrapped elements. A new query branch is
 	 * created, but any changes will be written back to the same document.
 	 *
 	 * In practice, this comes in handy when you want to do multiple queries on a part
-	 * of the document, but then return to a previous set of matches. (see {@link QPTPL}
-	 * for examples of this in practice).
+	 * of the document, but then return to a previous set of matches.
 	 *
 	 * Example:
 	 *
-	 * @code
+	 * ```php
 	 * <?php
 	 * $qp = qp( QueryPath::HTML_STUB);
 	 * $branch = $qp->branch();
 	 * $branch->find('title')->text('Title');
 	 * $qp->find('body')->text('This is the body')->writeHTML;
 	 * ?>
-	 * @endcode
+	 * ```
 	 *
 	 * Notice that in the code, each of the DOMQuery objects is doing its own
 	 * query. However, both are modifying the same document. The result of the above
 	 * would look something like this:
 	 *
-	 * @code
+	 * ```xml
 	 * <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 	 * <html xmlns="http://www.w3.org/1999/xhtml">
 	 * <head>
@@ -1449,7 +1451,7 @@ class DOMQuery extends DOM
 	 * </head>
 	 * <body>This is the body</body>
 	 * </html>
-	 * @endcode
+	 * ```
 	 *
 	 * Notice that while $qp and $banch were performing separate queries, they
 	 * both modified the same document.
@@ -1506,8 +1508,7 @@ class DOMQuery extends DOM
 	/**
 	 * Perform a deep clone of each node in the DOMQuery.
 	 *
-	 * @attention
-	 *   This is an in-place modification of the current QueryPath object.
+	 * Note: this is an in-place modification of the current QueryPath object.
 	 *
 	 * This does not clone the DOMQuery object, but instead clones the
 	 * list of nodes wrapped by the DOMQuery. Every element is deeply
