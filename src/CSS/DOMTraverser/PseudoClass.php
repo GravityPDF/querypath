@@ -12,6 +12,7 @@
 
 namespace QueryPath\CSS\DOMTraverser;
 
+use DOMElement;
 use QueryPath\CSS\DOMTraverser;
 use QueryPath\CSS\NotImplementedException;
 use QueryPath\CSS\EventHandler;
@@ -160,6 +161,8 @@ class PseudoClass
 			case 'checked':
 				return Util::matchesAttribute($node, $name);
 			case 'text':
+				return Util::isTextInput($node);
+
 			case 'radio':
 			case 'checkbox':
 			case 'file':
