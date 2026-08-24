@@ -1383,12 +1383,9 @@ class DOMQueryTest extends TestCase
 	{
 		$xml = '<?xml version="1.0"?><html><head><title>foo</title></head><body>bar</body></html>';
 
-		if (! ob_start()) {
-			die("Could not start OB.");
-		}
-		qp($xml, 'tml')->writeXML();
-		$out = ob_get_contents();
-		ob_end_clean();
+		$out = $this->capture(function () use ($xml) {
+			qp($xml, 'tml')->writeXML();
+		});
 
 		// We expect an XML declaration at the top.
 		$this->assertEquals('<?xml', substr($out, 0, 5));
@@ -1401,12 +1398,9 @@ class DOMQueryTest extends TestCase
     <![CDATA[This is CDATA]]>
     <title>foo</title></head><body>bar</body></html>';
 
-		if (! ob_start()) {
-			die("Could not start OB.");
-		}
-		qp($xml, 'tml')->writeXML();
-		$out = ob_get_contents();
-		ob_end_clean();
+		$out = $this->capture(function () use ($xml) {
+			qp($xml, 'tml')->writeXML();
+		});
 
 		// We expect an XML declaration at the top.
 		$this->assertEquals('<?xml', substr($out, 0, 5));
@@ -1423,12 +1417,9 @@ class DOMQueryTest extends TestCase
 	{
 		$xml = '<?xml version="1.0"?><html><head><title>foo</title></head><body>bar</body></html>';
 
-		if (! ob_start()) {
-			die("Could not start OB.");
-		}
-		qp($xml, 'tml')->writeXHTML();
-		$out = ob_get_contents();
-		ob_end_clean();
+		$out = $this->capture(function () use ($xml) {
+			qp($xml, 'tml')->writeXHTML();
+		});
 
 		// We expect an XML declaration at the top.
 		$this->assertEquals('<?xml', substr($out, 0, 5));
@@ -1441,12 +1432,9 @@ class DOMQueryTest extends TestCase
     <![CDATA[This is CDATA]]>
     <title>foo</title></head><body>bar</body></html>';
 
-		if (! ob_start()) {
-			die('Could not start OB.');
-		}
-		qp($xml, 'html')->writeXHTML();
-		$out = ob_get_contents();
-		ob_end_clean();
+		$out = $this->capture(function () use ($xml) {
+			qp($xml, 'html')->writeXHTML();
+		});
 
 		// We expect an XML declaration at the top.
 		$this->assertEquals('<?xml', substr($out, 0, 5));
@@ -1460,12 +1448,9 @@ class DOMQueryTest extends TestCase
 
 		// Regression for issue #10 (keep closing tags in XHTML)
 		$xhtml = '<?xml version="1.0"?><html><head><title>foo</title><script></script><br/></head><body>bar</body></html>';
-		if (! ob_start()) {
-			die("Could not start OB.");
-		}
-		qp($xhtml, 'html')->writeXHTML();
-		$out = ob_get_contents();
-		ob_end_clean();
+		$out = $this->capture(function () use ($xhtml) {
+			qp($xhtml, 'html')->writeXHTML();
+		});
 
 		$pattern = '/<\/script>/';
 		$this->assertMatchesRegularExpression($pattern, $out, 'Should be closing script tag.');
@@ -1514,12 +1499,9 @@ class DOMQueryTest extends TestCase
 	{
 		$xml = '<html><head><title>foo</title></head><body>bar</body></html>';
 
-		if (! ob_start()) {
-			die("Could not start OB.");
-		}
-		qp($xml, 'tml')->writeHTML();
-		$out = ob_get_contents();
-		ob_end_clean();
+		$out = $this->capture(function () use ($xml) {
+			qp($xml, 'tml')->writeHTML();
+		});
 
 		// We expect a doctype declaration at the top.
 		$this->assertEquals('<!DOC', substr($out, 0, 5));
@@ -1530,12 +1512,9 @@ class DOMQueryTest extends TestCase
     --></script>
     </head><body>bar</body></html>';
 
-		if (! ob_start()) {
-			die("Could not start OB.");
-		}
-		qp($xml, 'tml')->writeHTML();
-		$out = ob_get_contents();
-		ob_end_clean();
+		$out = $this->capture(function () use ($xml) {
+			qp($xml, 'tml')->writeHTML();
+		});
 
 		// We expect a doctype declaration at the top.
 		$this->assertEquals('<!DOC', substr($out, 0, 5));
@@ -1546,12 +1525,9 @@ class DOMQueryTest extends TestCase
     ]]></script>
     </head><body>bar</body></html>';
 
-		if (! ob_start()) {
-			die("Could not start OB.");
-		}
-		qp($xml, 'tml')->writeHTML();
-		$out = ob_get_contents();
-		ob_end_clean();
+		$out = $this->capture(function () use ($xml) {
+			qp($xml, 'tml')->writeHTML();
+		});
 
 		// We expect a doctype declaration at the top.
 		$this->assertEquals('<!DOC', substr($out, 0, 5));

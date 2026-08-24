@@ -42,9 +42,9 @@ try {
 	 * PHP blocks survive parsing as processing instruction nodes, so they can be
 	 * located with XPath and inspected like any other node.
 	 *
-	 * The `data` property of the node holds the PHP source. libxml stores the
-	 * trailing "?" of the closing tag as part of that data and puts the ">" back
-	 * on when the document is written out, so trim it off before displaying it.
+	 * The `data` property of the node holds the PHP source. QueryPath normalises
+	 * it on load, so the closing "?" of the "?>" is never part of the data no
+	 * matter which parser read the document.
 	 */
 	echo '<h2>The PHP blocks in the template</h2>';
 
@@ -53,9 +53,9 @@ try {
 	echo '<ol>';
 
 	foreach ($blocks as $block) {
-		$code = rtrim(trim($block->get(0)->data), '?');
+		$code = trim($block->get(0)->data);
 
-		echo '<li><code>' . htmlspecialchars(trim($code)) . '</code></li>';
+		echo '<li><code>' . htmlspecialchars($code) . '</code></li>';
 	}
 
 	echo '</ol>';
@@ -64,11 +64,12 @@ try {
 	 * Because it is a normal DOM, the template can be rewritten too. Here a new
 	 * menu item is added and the heading is retitled.
 	 *
-	 * Use writeHTML() (or writeXML()) to serialize a template containing PHP
-	 * blocks - it hands the document back to libxml, which restores the closing
-	 * "?>" correctly. Capturing it with an output buffer makes it easy to send
-	 * the result somewhere other than standard output, such as back to disk with
-	 * file_put_contents().
+	 * Every serializer restores the closing "?>" of a PHP block, so a template
+	 * can be written back out in whichever format suits: writeHTML(), writeXML(),
+	 * and writeHTML5() print it, and html(), xml(), and html5() return it as a
+	 * string. Capturing writeHTML() with an output buffer, as below, makes it
+	 * easy to send the result somewhere other than standard output, such as back
+	 * to disk with file_put_contents().
 	 */
 	echo '<h2>Rewriting the template</h2>';
 
