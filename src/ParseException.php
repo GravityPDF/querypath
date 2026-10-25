@@ -44,7 +44,6 @@ class ParseException extends Exception
 
 	public static function initializeFromError($errno, $errstr, $errfile, $errline, $context = null)
 	{
-		$class = __CLASS__;
-		throw new $class($errno, (int) $errstr, $errfile, $errline);
+		throw new static($errstr, $errno, $errfile, $errline);
 	}
 }
