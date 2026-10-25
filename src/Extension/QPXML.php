@@ -192,7 +192,7 @@ class QPXML implements Extension
 		if (isset($text)) {
 			foreach ($this->qp->get() as $element) {
 				if ($nsUri === null && strpos($text, ':') !== false) {
-					$ns    = array_shift(explode(':', $text));
+					$ns    = strstr($text, ':', true);
 					$nsUri = $element->ownerDocument->lookupNamespaceURI($ns);
 
 					if ($nsUri === null) {
