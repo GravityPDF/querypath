@@ -4,18 +4,21 @@ on: [ pull_request ]
 
 jobs:
   phpunit:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os || 'ubuntu-latest' }}
     strategy:
       matrix:
         php-versions: [ '7.1', '7.2', '7.3', '7.4', '8.0', '8.1', '8.2', '8.3', '8.4', '8.5' ]
         include:
-          - php: '8.3'
+          # libxml2 2.14+ (ubuntu-26.04 onwards) parses HTML as HTML5, which skips the tests for
+          # libxml's older HTML parser, so the coverage job stays on a runner that still has it.
+          - php-versions: '8.3'
+            os: ubuntu-24.04
             report: true
 
     name: PHP ${{ matrix.php-versions }} PHPUnit Test
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -43,7 +46,7 @@ jobs:
 
       - name: Check Code Coverage
         if: ${{ matrix.report }}
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         with:
           directory: ./coverage/
           token: ${{ secrets.CODECOV_TOKEN }}
