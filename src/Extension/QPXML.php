@@ -144,7 +144,7 @@ class QPXML implements Extension
 			foreach ($ele->childNodes as $node) {
 				if ($node->nodeType == XML_PI_NODE) {
 					if (isset($prefix)) {
-						if ($node->tagName == $prefix) {
+						if ($node->target === $prefix) {
 							return $node->textContent;
 						}
 					} else {
