@@ -776,6 +776,28 @@ class DOMQueryTest extends TestCase
 	{
 		$file = DATA_FILE;
 		$this->assertEquals('li', qp($file, 'li')->tag());
+		$this->assertSame('', qp($file, 'nonexistent')->tag());
+	}
+
+	public function tagFirstMatchProvider(): array
+	{
+		return [
+			'text'                   => ['text<a/>', ''],
+			'comment'                => ['<!-- c --><a/>', ''],
+			'processing instruction' => ['<?pi data?><a/>', ''],
+			'element'                => ['<a/>text', 'a'],
+		];
+	}
+
+	/**
+	 * Issue #93
+	 *
+	 * @dataProvider tagFirstMatchProvider
+	 */
+	public function testTagFirstMatchOfContents($children, $expected)
+	{
+		$qp = qp('<?xml version="1.0"?><root>' . $children . '</root>', 'root')->contents();
+		$this->assertSame($expected, $qp->tag());
 	}
 
 	public function testAppend()
