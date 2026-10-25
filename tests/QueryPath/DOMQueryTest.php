@@ -526,6 +526,122 @@ class DOMQueryTest extends TestCase
 		$this->assertFalse($qp->get(0)->hasAttribute('class'));
 	}
 
+	/**
+	 * Match sets from contents() that mix an element with non-element nodes.
+	 *
+	 * @return array
+	 *   The XML, and whether the element is the first node of the set.
+	 */
+	public function nonElementMatchSetProvider(): array
+	{
+		$element = '<a class="c" x="1" style="color: blue;"/>';
+		$others  = [
+			'text'                   => 'text',
+			'comment'                => '<!--comment-->',
+			'CDATA'                  => '<![CDATA[cdata]]>',
+			'processing instruction' => '<?pi data?>',
+		];
+
+		$sets = [];
+		foreach ($others as $kind => $node) {
+			$sets[$kind . ' first'] = ['<?xml version="1.0"?><root>' . $node . $element . '</root>', false];
+		}
+		$sets['non-elements after an element'] = [
+			'<?xml version="1.0"?><root>' . $element . implode('', $others) . '</root>',
+			true,
+		];
+
+		return $sets;
+	}
+
+	/**
+	 * The contents() of the provider's root, and the <a> element among them.
+	 *
+	 * @return array
+	 */
+	private function contentsWithElement($xml): array
+	{
+		$qp = qp($xml, 'root')->contents();
+
+		return [$qp, $qp->top('a')->get(0)];
+	}
+
+	/**
+	 * @dataProvider nonElementMatchSetProvider
+	 */
+	public function testAttrWithNonElementNodes($xml, $elementFirst)
+	{
+		[$qp, $a] = $this->contentsWithElement($xml);
+
+		$this->assertSame($elementFirst ? '1' : null, $qp->attr('x'));
+		$this->assertSame($elementFirst ? ['class' => 'c', 'x' => '1', 'style' => 'color: blue;'] : null, $qp->attr());
+		$this->assertSame($qp->get(0)->nodeType, $qp->attr('nodeType'));
+
+		$this->assertSame($qp, $qp->attr('y', '2'));
+		$this->assertSame('2', $a->getAttribute('y'));
+
+		$this->assertSame($qp, $qp->attr(['z' => '3']));
+		$this->assertSame('3', $a->getAttribute('z'));
+	}
+
+	/**
+	 * @dataProvider nonElementMatchSetProvider
+	 */
+	public function testCssWithNonElementNodes($xml, $elementFirst)
+	{
+		[$qp, $a] = $this->contentsWithElement($xml);
+
+		$this->assertSame($qp, $qp->css('margin', '0'));
+		$this->assertSame('color: blue;margin: 0;', $a->getAttribute('style'));
+		$this->assertSame($elementFirst ? 'color: blue;margin: 0;' : null, $qp->css());
+	}
+
+	/**
+	 * @dataProvider nonElementMatchSetProvider
+	 */
+	public function testClassMethodsWithNonElementNodes($xml)
+	{
+		[$qp, $a] = $this->contentsWithElement($xml);
+
+		$this->assertTrue($qp->hasClass('c'));
+		$this->assertFalse($qp->hasClass('d'));
+
+		$this->assertSame($qp, $qp->addClass('d'));
+		$this->assertSame('c d', $a->getAttribute('class'));
+
+		$this->assertSame($qp, $qp->removeClass('c'));
+		$this->assertSame('d', $a->getAttribute('class'));
+
+		$this->assertSame($qp, $qp->removeClass());
+		$this->assertFalse($a->hasAttribute('class'));
+	}
+
+	/**
+	 * @dataProvider nonElementMatchSetProvider
+	 */
+	public function testHasAttrAndRemoveAttrWithNonElementNodes($xml)
+	{
+		[$qp, $a] = $this->contentsWithElement($xml);
+
+		$this->assertTrue($qp->hasAttr('x'));
+		$this->assertFalse($qp->hasAttr('y'));
+
+		$this->assertSame($qp, $qp->removeAttr('x'));
+		$this->assertFalse($a->hasAttribute('x'));
+		$this->assertFalse($qp->hasAttr('x'));
+	}
+
+	/**
+	 * @dataProvider nonElementMatchSetProvider
+	 */
+	public function testFirstAndLastWithNonElementNodes($xml)
+	{
+		[$qp, $a] = $this->contentsWithElement($xml);
+
+		$this->assertSame([$a], $qp->first()->get());
+		$this->assertSame([$a], $qp->last()->get());
+	}
+
 	public function testEq()
 	{
 		$file = DATA_FILE;
@@ -780,25 +896,14 @@ class DOMQueryTest extends TestCase
 		$this->assertSame('', qp($file, 'nonexistent')->tag());
 	}
 
-	public function tagFirstMatchProvider(): array
-	{
-		return [
-			'text'                   => ['text<a/>', ''],
-			'comment'                => ['<!-- c --><a/>', ''],
-			'processing instruction' => ['<?pi data?><a/>', ''],
-			'element'                => ['<a/>text', 'a'],
-		];
-	}
-
 	/**
 	 * Issue #93
 	 *
-	 * @dataProvider tagFirstMatchProvider
+	 * @dataProvider nonElementMatchSetProvider
 	 */
-	public function testTagFirstMatchOfContents($children, $expected)
+	public function testTagFirstMatchOfContents($xml, $elementFirst)
 	{
-		$qp = qp('<?xml version="1.0"?><root>' . $children . '</root>', 'root')->contents();
-		$this->assertSame($expected, $qp->tag());
+		$this->assertSame($elementFirst ? 'a' : '', qp($xml, 'root')->contents()->tag());
 	}
 
 	public function testAppend()

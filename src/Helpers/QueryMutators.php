@@ -602,7 +602,7 @@ trait QueryMutators
 	 */
 	public function addClass($class)
 	{
-		foreach ($this->matches as $m) {
+		foreach ($this->elements() as $m) {
 			if ($m->hasAttribute('class')) {
 				$val = $m->getAttribute('class');
 				$m->setAttribute('class', $val . ' ' . $class);
@@ -651,12 +651,12 @@ trait QueryMutators
 	public function removeClass($class = false): Query
 	{
 		if (empty($class)) {
-			foreach ($this->matches as $m) {
+			foreach ($this->elements() as $m) {
 				$m->removeAttribute('class');
 			}
 		} else {
 			$to_remove = array_filter(explode(' ', $class));
-			foreach ($this->matches as $m) {
+			foreach ($this->elements() as $m) {
 				if ($m->hasAttribute('class')) {
 					$vals = array_filter(explode(' ', $m->getAttribute('class')));
 					$buf  = [];
@@ -922,7 +922,8 @@ trait QueryMutators
 	 * - If $name is a string and is set, then the attribute value will be returned.
 	 *
 	 * When an attribute value is retrieved, only the attribute value of the FIRST
-	 * match is returned.
+	 * match is returned, or NULL if that match is not an element. Setters skip
+	 * matches that are not elements.
 	 *
 	 * @param mixed  $name
 	 *   The name of the attribute or an associative array of name/value pairs.
@@ -941,10 +942,10 @@ trait QueryMutators
 	{
 		// Default case: Return all attributes as an assoc array.
 		if (is_null($name)) {
-			if ($this->matches->count() === 0) {
+			$ele = $this->firstElement();
+			if ($ele === null) {
 				return null;
 			}
-			$ele    = $this->getFirstMatch();
 			$buffer = [];
 
 			// This does not appear to be part of the DOM
@@ -958,8 +959,8 @@ trait QueryMutators
 
 		// multi-setter
 		if (is_array($name)) {
-			foreach ($name as $k => $v) {
-				foreach ($this->matches as $m) {
+			foreach ($this->elements() as $m) {
+				foreach ($name as $k => $v) {
 					$m->setAttribute($k, $v);
 				}
 			}
@@ -968,7 +969,7 @@ trait QueryMutators
 		}
 		// setter
 		if (isset($value)) {
-			foreach ($this->matches as $m) {
+			foreach ($this->elements() as $m) {
 				$m->setAttribute($name, $value);
 			}
 
@@ -986,7 +987,9 @@ trait QueryMutators
 		}
 
 		// Always return first match's attr.
-		return $this->getFirstMatch()->getAttribute($name);
+		$first = $this->firstElement();
+
+		return $first === null ? null : $first->getAttribute($name);
 	}
 
 	/**
@@ -1039,7 +1042,7 @@ trait QueryMutators
 
 		// Get any existing CSS.
 		$css = [];
-		foreach ($this->matches as $match) {
+		foreach ($this->elements() as $match) {
 			$style = $match->getAttribute('style');
 			if (! empty($style)) {
 				// XXX: Is this sufficient?

@@ -4,6 +4,7 @@ namespace QueryPath;
 
 use Countable;
 use DOMDocument;
+use DOMElement;
 use DOMNode;
 use DOMXPath;
 use IteratorAggregate;
@@ -636,5 +637,37 @@ abstract class DOM implements Query, IteratorAggregate, Countable
 				return $m;
 			}
 		}
+	}
+
+	/**
+	 * Iterate over the matches that are elements, in document order.
+	 *
+	 * Skips text, comment, CDATA and processing instruction matches (from
+	 * contents(), for example).
+	 *
+	 * @return iterable|DOMElement[]
+	 */
+	protected function elements(): iterable
+	{
+		foreach ($this->matches as $m) {
+			if ($m instanceof DOMElement) {
+				yield $m;
+			}
+		}
+	}
+
+	/**
+	 * The first match, or NULL if the set is empty or the first match is not an element.
+	 *
+	 * @return DOMElement|null
+	 */
+	protected function firstElement()
+	{
+		if ($this->matches->count() === 0) {
+			return null;
+		}
+		$first = $this->getFirstMatch();
+
+		return $first instanceof DOMElement ? $first : null;
 	}
 }
