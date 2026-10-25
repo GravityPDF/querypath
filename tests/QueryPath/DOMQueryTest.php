@@ -779,6 +779,25 @@ class DOMQueryTest extends TestCase
 	{
 		$file = DATA_FILE;
 		$this->assertEquals('li', qp($file, 'li')->tag());
+		$this->assertSame('', qp($file, 'nonexistent')->tag());
+	}
+
+	/**
+	 * Issue #93
+	 */
+	public function testTagNonElementFirstMatch()
+	{
+		$qp = qp('<?xml version="1.0"?><root>text<a/></root>', 'root')->contents();
+		$this->assertSame('', $qp->tag());
+
+		$qp = qp('<?xml version="1.0"?><root><!-- c --><a/></root>', 'root')->contents();
+		$this->assertSame('', $qp->tag());
+
+		$qp = qp('<?xml version="1.0"?><root><?pi data?><a/></root>', 'root')->contents();
+		$this->assertSame('', $qp->tag());
+
+		$qp = qp('<?xml version="1.0"?><root><a/>text</root>', 'root')->contents();
+		$this->assertSame('a', $qp->tag());
 	}
 
 	public function testAppend()
