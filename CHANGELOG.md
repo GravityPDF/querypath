@@ -23,6 +23,7 @@ QueryPath Changelog
 - Fix `QPXML::pi($prefix)` always returning `NULL` with an "Undefined property" warning instead of the matching processing instruction's text (issue #79)
 - Fix fatal error when running a CSS selector against a match set that contains non-element nodes (text, comment, CDATA or processing instruction), as `contents()` returns. Those nodes now simply do not match, instead of calling element-only DOM methods on them
 - Fix `find('a > b')` throwing a `TypeError` when the left-hand side matched the root element, whose parent is the document rather than an element
+- Fix `QPXML::createElement()` emitting an "Only variables should be passed by reference" notice for a namespace-prefixed element name without an explicit namespace URI (issue #82)
 - Fix the `:text` pseudo-class so it matches jQuery: it selects `input` elements whose `type` attribute is absent or is `text` (case-insensitively). It never indicated, and still does not indicate, whether a node is a text node
 - `find('*')` now matches the nodes in the match set as well as their descendants, so that a selector can be tested against an element already in hand
 
