@@ -31,6 +31,7 @@ QueryPath Changelog
 - Fix `QueryPath\ParseException` and `QueryPath\IOException` losing the PHP warning they were raised from (issue #91). The message was the error number, as in `2 (/path/to/src/DOMQuery.php: 1343)`, and the code was always `0`. The message now carries the warning text and the code is the PHP error level (for example `E_WARNING`), so code that matches on the old message text will need updating
 - Fix `tag()` emitting an "Undefined property" warning and returning `NULL` when the first match is not an element, such as a text, comment or processing instruction node returned by `contents()`. It now returns an empty string, as it does for an empty match set (issue #93)
 - Fix QueryPath's error handler staying installed for the rest of the request when an exception other than a `QueryPath\Exception` (a `TypeError`, or one thrown by a stream wrapper, for example) escaped from parsing a document, inserting markup, or `writeXML()`/`writeHTML()` (issue #95)
+- Fix `writeHTML()` throwing `QueryPath\ParseException` instead of `QueryPath\IOException` when the file cannot be written, as `writeXML()` and `writeHTML5()` do (issue #92). `IOException` extends `ParseException`, so existing `catch (ParseException $e)` blocks still catch it
 
 # 4.1.0
 

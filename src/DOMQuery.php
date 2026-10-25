@@ -1376,7 +1376,7 @@ class DOMQuery extends DOM
 		if ($path === null) {
 			print $this->saveDocumentHTML();
 		} else {
-			self::withErrorHandler(ParseException::class, function () use ($path) {
+			self::withErrorHandler(IOException::class, function () use ($path) {
 				$this->saveDocumentHTML($path);
 			});
 		}
