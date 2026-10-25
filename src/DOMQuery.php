@@ -14,6 +14,7 @@
 namespace QueryPath;
 
 use DOMDocument;
+use DOMElement;
 use DOMNode;
 use DOMXPath;
 use QueryPath\CSS\DOMTraverser;
@@ -547,7 +548,9 @@ class DOMQuery extends DOM
 	 * The tag name of the first element in the list.
 	 *
 	 * This returns the tag name of the first element in the list of matches. If
-	 * the list is empty, an empty string will be used.
+	 * the list is empty, or the first match is not an element (for example, a
+	 * text, comment or processing instruction node returned by contents()), an
+	 * empty string will be used.
 	 *
 	 * @return string
 	 *  The tag name of the first element in the list.
@@ -556,7 +559,9 @@ class DOMQuery extends DOM
 	 */
 	public function tag()
 	{
-		return ($this->matches->count() > 0) ? $this->getFirstMatch()->tagName : '';
+		$first = ($this->matches->count() > 0) ? $this->getFirstMatch() : null;
+
+		return ($first instanceof DOMElement) ? $first->tagName : '';
 	}
 
 	/**

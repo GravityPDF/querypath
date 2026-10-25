@@ -28,6 +28,7 @@ QueryPath Changelog
 - `find('*')` now matches the nodes in the match set as well as their descendants, so that a selector can be tested against an element already in hand
 - `writeHTML5()` now returns the `DOMQuery` like the other `write*()` methods, and throws `QueryPath\IOException` instead of a `TypeError` when the file cannot be written (issue #80)
 - Fix `QueryPath\ParseException` and `QueryPath\IOException` losing the PHP warning they were raised from (issue #91). The message was the error number, as in `2 (/path/to/src/DOMQuery.php: 1343)`, and the code was always `0`. The message now carries the warning text and the code is the PHP error level (for example `E_WARNING`), so code that matches on the old message text will need updating
+- Fix `tag()` emitting an "Undefined property" warning and returning `NULL` when the first match is not an element, such as a text, comment or processing instruction node returned by `contents()`. It now returns an empty string, as it does for an empty match set (issue #93)
 
 # 4.1.0
 
