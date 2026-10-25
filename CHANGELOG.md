@@ -24,6 +24,7 @@ QueryPath Changelog
 - Fix `find('a > b')` throwing a `TypeError` when the left-hand side matched the root element, whose parent is the document rather than an element
 - Fix the `:text` pseudo-class so it matches jQuery: it selects `input` elements whose `type` attribute is absent or is `text` (case-insensitively). It never indicated, and still does not indicate, whether a node is a text node
 - `find('*')` now matches the nodes in the match set as well as their descendants, so that a selector can be tested against an element already in hand
+- `writeHTML5()` now returns the `DOMQuery` like the other `write*()` methods, and throws `QueryPath\IOException` instead of a `TypeError` when the file cannot be written (issue #80)
 
 # 4.1.0
 
