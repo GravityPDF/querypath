@@ -39,6 +39,16 @@ class QPXMLTest extends TestCase
 	{
 		$this->assertEquals('This is a processing instruction.', trim(qp($this->file, 'third')->pi()));
 		$msg = "Message";
-		$this->assertEquals($msg, qp($this->file, 'second')->pi('qp', $msg)->top()->find('second')->pi());
+		$this->assertEquals($msg, qp($this->file, 'second')->pi('qp', $msg)->top()->find('second')->pi('qp'));
+	}
+
+	public function testProcessingInstructionByPrefix()
+	{
+		$xml = '<?xml version="1.0"?><root><?first one?><?second two?></root>';
+
+		$qp = qp($xml, 'root');
+
+		$this->assertEquals('two', $qp->pi('second'));
+		$this->assertNull($qp->pi('missing'));
 	}
 }

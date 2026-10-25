@@ -142,15 +142,8 @@ class QPXML implements Extension
 		}
 		foreach ($this->qp->get() as $ele) {
 			foreach ($ele->childNodes as $node) {
-				if ($node->nodeType == XML_PI_NODE) {
-					if (isset($prefix)) {
-						if ($node->tagName == $prefix) {
-							return $node->textContent;
-						}
-					} else {
-						// Return first match.
-						return $node->textContent;
-					}
+				if ($node->nodeType == XML_PI_NODE && ($prefix === null || $node->target === $prefix)) {
+					return $node->textContent;
 				}
 			} // foreach
 		} // foreach
