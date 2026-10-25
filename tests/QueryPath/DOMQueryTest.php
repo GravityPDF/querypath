@@ -1512,12 +1512,7 @@ class DOMQueryTest extends TestCase
 	{
 		$this->expectException(IOException::class);
 
-		try {
-			qp()->writeXML('./test/no-writing.xml');
-		} catch (Exception $e) {
-			//print $e->getMessage();
-			throw $e;
-		}
+		qp()->writeXML('./test/no-writing.xml');
 	}
 
 	public function testFailWriteXMLReportsWarning()
@@ -1534,24 +1529,14 @@ class DOMQueryTest extends TestCase
 	{
 		$this->expectException(IOException::class);
 
-		try {
-			qp()->writeXHTML('./test/no-writing.xml');
-		} catch (IOException $e) {
-			//print $e->getMessage();
-			throw $e;
-		}
+		qp()->writeXHTML('./test/no-writing.xml');
 	}
 
 	public function testFailWriteHTML()
 	{
 		$this->expectException(IOException::class);
 
-		try {
-			qp('<?xml version="1.0"?><foo/>')->writeXML('./test/no-writing.xml');
-		} catch (IOException $e) {
-			// print $e->getMessage();
-			throw $e;
-		}
+		htmlqp('<html><body><p>bar</p></body></html>')->writeHTML('./test/no-writing.html');
 	}
 
 	public function testFailWriteHTML5()
