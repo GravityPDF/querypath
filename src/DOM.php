@@ -177,9 +177,7 @@ abstract class DOM implements Query, IteratorAggregate, Countable
 	{
 		$document = self::createDocument('1.0');
 		$lead     = strtolower(substr($string, 0, 5)); // <?xml
-		try {
-			set_error_handler([ParseException::class, 'initializeFromError'], $this->errTypes);
-
+		self::withErrorHandler(ParseException::class, function () use ($document, $string, $flags, $lead) {
 			if (isset($this->options['convert_to_encoding'])) {
 				// Is there another way to do this?
 
@@ -217,12 +215,7 @@ abstract class DOM implements Query, IteratorAggregate, Countable
 			else {
 				self::loadHTMLString($document, $string);
 			}
-		} // Emulate 'finally' behavior.
-		catch (Exception $e) {
-			restore_error_handler();
-			throw $e;
-		}
-		restore_error_handler();
+		}, $this->errTypes);
 
 		if (empty($document)) {
 			throw new ParseException('Unknown parser exception.');
@@ -453,15 +446,9 @@ abstract class DOM implements Query, IteratorAggregate, Countable
 			}
 
 			$frag = $this->document->createDocumentFragment();
-			try {
-				set_error_handler([ParseException::class, 'initializeFromError'], $this->errTypes);
+			self::withErrorHandler(ParseException::class, function () use ($frag, $item) {
 				$frag->appendXML($item);
-			} // Simulate a finally block.
-			catch (Exception $e) {
-				restore_error_handler();
-				throw $e;
-			}
-			restore_error_handler();
+			}, $this->errTypes);
 
 			return $frag;
 		}
@@ -496,6 +483,28 @@ abstract class DOM implements Query, IteratorAggregate, Countable
 		// What should we do here?
 		//var_dump($item);
 		throw new Exception('Cannot prepare item of unsupported type: ' . gettype($item));
+	}
+
+	/**
+	 * Run a callback with PHP errors converted into exceptions.
+	 *
+	 * @param string   $exceptionClass
+	 *  ParseException or a subclass, whose initializeFromError() handles the errors.
+	 * @param callable $callback
+	 * @param int      $types
+	 *  The error levels to convert.
+	 *
+	 * @return mixed
+	 *  Whatever the callback returns.
+	 */
+	protected static function withErrorHandler($exceptionClass, callable $callback, $types = E_ALL)
+	{
+		set_error_handler([$exceptionClass, 'initializeFromError'], $types);
+		try {
+			return $callback();
+		} finally {
+			restore_error_handler();
+		}
 	}
 
 	/**
@@ -537,17 +546,9 @@ abstract class DOM implements Query, IteratorAggregate, Countable
 		// If a context is specified, we basically have to do the reading in
 		// two steps:
 		if (! empty($context)) {
-			try {
-				set_error_handler(['\QueryPath\ParseException', 'initializeFromError'], $this->errTypes);
-				$contents = file_get_contents($filename, false, $context);
-			}
-				// Apparently there is no 'finally' in PHP, so we have to restore the error
-				// handler this way:
-			catch (Exception $e) {
-				restore_error_handler();
-				throw $e;
-			}
-			restore_error_handler();
+			$contents = self::withErrorHandler(ParseException::class, function () use ($filename, $context) {
+				return file_get_contents($filename, false, $context);
+			}, $this->errTypes);
 
 			if ($contents == false) {
 				throw new ParseException(sprintf(
@@ -576,27 +577,16 @@ abstract class DOM implements Query, IteratorAggregate, Countable
 
 		$ext = $lastDot !== false ? strtolower(substr($filename, $lastDot)) : '';
 
-		try {
-			set_error_handler([ParseException::class, 'initializeFromError'], $this->errTypes);
+		// An explicit parser setting wins; otherwise go by the file extension, defaulting to XML.
+		$asHtml = $useParser === 'html' || ($useParser !== 'xml' && isset($htmlExtensions[$ext]));
 
-			// If the parser is explicitly set to XML, use that parser.
-			if ($useParser === 'xml') {
-				$document->load($filename, $flags);
-			} // Otherwise, see if it looks like HTML.
-			elseif ($useParser === 'html' || isset($htmlExtensions[$ext])) {
-				// Try parsing it as HTML.
+		self::withErrorHandler(ParseException::class, function () use ($document, $filename, $flags, $asHtml) {
+			if ($asHtml) {
 				self::loadHTMLFile($document, $filename);
-			} // Default to XML.
-			else {
+			} else {
 				$document->load($filename, $flags);
 			}
-
-		} // Emulate 'finally' behavior.
-		catch (Exception $e) {
-			restore_error_handler();
-			throw $e;
-		}
-		restore_error_handler();
+		}, $this->errTypes);
 
 		return $document;
 	}
