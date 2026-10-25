@@ -1343,14 +1343,9 @@ class DOMQuery extends DOM
 		if ($path === null) {
 			print $this->document->saveXML(null, $options);
 		} else {
-			try {
-				set_error_handler([IOException::class, 'initializeFromError']);
+			self::withErrorHandler(IOException::class, function () use ($path, $options) {
 				$this->document->save($path, $options);
-			} catch (Exception $e) {
-				restore_error_handler();
-				throw $e;
-			}
-			restore_error_handler();
+			});
 		}
 
 		return $this;
@@ -1381,14 +1376,9 @@ class DOMQuery extends DOM
 		if ($path === null) {
 			print $this->saveDocumentHTML();
 		} else {
-			try {
-				set_error_handler(['\QueryPath\ParseException', 'initializeFromError']);
+			self::withErrorHandler(ParseException::class, function () use ($path) {
 				$this->saveDocumentHTML($path);
-			} catch (Exception $e) {
-				restore_error_handler();
-				throw $e;
-			}
-			restore_error_handler();
+			});
 		}
 
 		return $this;
@@ -1418,12 +1408,9 @@ class DOMQuery extends DOM
 			// Print the document to stdout.
 			print $html5->saveHTML($this->document);
 		} else {
-			set_error_handler([IOException::class, 'initializeFromError']);
-			try {
+			self::withErrorHandler(IOException::class, function () use ($html5, $path) {
 				$html5->save($this->document, $path);
-			} finally {
-				restore_error_handler();
-			}
+			});
 		}
 
 		return $this;

@@ -16,6 +16,7 @@ use QueryPath\Options;
 use QueryPath\ParseException;
 use QueryPath\QueryPath;
 use QueryPath\DOMQuery;
+use RuntimeException;
 use SplDoublyLinkedList;
 use stdClass;
 
@@ -1542,6 +1543,55 @@ class DOMQueryTest extends TestCase
 		$this->expectException(IOException::class);
 
 		html5qp('<html><body>bar</body></html>')->writeHTML5('./test/no-writing.html');
+	}
+
+	public function throwingCallProvider(): array
+	{
+		$url = ThrowingStreamWrapper::PROTOCOL . '://out';
+
+		return [
+			'writeXML'          => [function () use ($url) {
+				qp('<?xml version="1.0"?><foo/>')->writeXML($url);
+			}],
+			'writeHTML'         => [function () use ($url) {
+				htmlqp('<p>bar</p>')->writeHTML($url);
+			}],
+			'writeHTML5'        => [function () use ($url) {
+				html5qp('<p>bar</p>')->writeHTML5($url);
+			}],
+			'load with context' => [function () use ($url) {
+				qp($url . '.xml', null, ['context' => stream_context_create()]);
+			}],
+		];
+	}
+
+	/**
+	 * A throwable QueryPath does not convert must not leave its error handler installed.
+	 *
+	 * @dataProvider throwingCallProvider
+	 *
+	 * @param callable $callback
+	 */
+	public function testErrorHandlerRestoredAfterForeignThrowable(callable $callback)
+	{
+		$sentinel = function () {
+			return false;
+		};
+
+		stream_wrapper_register(ThrowingStreamWrapper::PROTOCOL, ThrowingStreamWrapper::class);
+		set_error_handler($sentinel);
+		try {
+			$callback();
+			$this->fail('Expected a RuntimeException.');
+		} catch (RuntimeException $e) {
+			$current = set_error_handler(null);
+			restore_error_handler();
+		} finally {
+			restore_error_handler();
+			stream_wrapper_unregister(ThrowingStreamWrapper::PROTOCOL);
+		}
+
+		$this->assertSame($sentinel, $current);
 	}
 
 	public function testWriteHTML5()
