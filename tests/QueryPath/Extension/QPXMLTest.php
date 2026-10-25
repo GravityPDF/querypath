@@ -38,6 +38,45 @@ class QPXMLTest extends TestCase
 		$this->assertEquals('x:item', $element->nodeName);
 	}
 
+	public function testCreateElementWithPrefixDeclaredBelowRoot()
+	{
+		$xml = '<?xml version="1.0"?><root xmlns:x="urn:x"><child xmlns:y="urn:y"/></root>';
+
+		// A prefix declared on the matched element is in scope for it.
+		$element = qp($xml, 'child')->createElement('y:item')->get(0);
+		$this->assertEquals('urn:y', $element->namespaceURI);
+		$this->assertEquals('y:item', $element->nodeName);
+
+		// So is one declared on the root.
+		$element = qp($xml, 'child')->createElement('x:item')->get(0);
+		$this->assertEquals('urn:x', $element->namespaceURI);
+	}
+
+	public function testCreateElementWithPrefixOutOfScope()
+	{
+		$xml = '<?xml version="1.0"?><root><a xmlns:y="urn:y"/><b/></root>';
+
+		$this->expectException(\QueryPath\Exception::class);
+		$this->expectExceptionMessage('Undefined namespace for: y:item');
+		qp($xml, 'b')->createElement('y:item');
+	}
+
+	public function testCreateElementUsesFirstMatch()
+	{
+		$xml = '<?xml version="1.0"?><root><a xmlns:y="urn:a"/><b xmlns:y="urn:b"/></root>';
+
+		$element = qp($xml, 'a, b')->createElement('y:item');
+		$this->assertCount(1, $element);
+		$this->assertEquals('urn:a', $element->get(0)->namespaceURI);
+	}
+
+	public function testCreateElementWithNoMatches()
+	{
+		$xml = '<?xml version="1.0"?><root xmlns:x="urn:x"/>';
+
+		$this->assertCount(0, qp($xml, 'missing')->createElement('x:item'));
+	}
+
 	public function testComment()
 	{
 		$this->assertEquals('This is a comment.', trim(qp($this->file, 'root')->comment()));
