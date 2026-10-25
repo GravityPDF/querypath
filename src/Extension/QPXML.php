@@ -73,18 +73,7 @@ class QPXML implements Extension
 			return $this->qp;
 		}
 
-		// Look for CDATA sections.
-		foreach ($this->qp->get() as $ele) {
-			foreach ($ele->childNodes as $node) {
-				if ($node->nodeType === XML_CDATA_SECTION_NODE) {
-					// Return first match.
-					return $node->textContent;
-				}
-			}
-		}
-
-		return null;
-		// Nothing found
+		return $this->firstChildText(XML_CDATA_SECTION_NODE);
 	}
 
 	/**
@@ -117,18 +106,32 @@ class QPXML implements Extension
 
 			return $this->qp;
 		}
-		foreach ($this->qp->get() as $ele) {
-			foreach ($ele->childNodes as $node) {
-				if ($node->nodeType == XML_COMMENT_NODE) {
-					// Return first match.
-					return $node->textContent;
-				}
-			}
-		}
+
+		return $this->firstChildText(XML_COMMENT_NODE);
 	}
 
 	/**
-	 * Get or set a processor instruction.
+	 * Get or set a processing instruction.
+	 *
+	 * If $text is passed in (and is not NULL), this will add a processing instruction
+	 * with the target $prefix and the data $text to every match in the set.
+	 *
+	 * If no text is passed in, this will return the data of the first processing
+	 * instruction in the set of matches, limited to those with the target $prefix
+	 * if one is given. If none is found, NULL will be returned.
+	 *
+	 * @param string $prefix
+	 *  The target of the processing instruction (the `xml-stylesheet` in
+	 *  `<?xml-stylesheet ...?>`). When getting, NULL matches any target.
+	 * @param string $text
+	 *  The data of the processing instruction. If set, a new processing instruction
+	 *  will be created in every item wrapped by the current {@link QueryPath}.
+	 *
+	 * @return mixed
+	 *  If $text is set, this will return a {@link QueryPath}. If no text is set, this
+	 *  will return the string value of the first matching processing instruction, or
+	 *  NULL if none is found.
+	 * @see comment()
 	 */
 	public function pi($prefix = null, $text = null)
 	{
@@ -140,13 +143,31 @@ class QPXML implements Extension
 
 			return $this->qp;
 		}
+
+		return $this->firstChildText(XML_PI_NODE, $prefix);
+	}
+
+	/**
+	 * Get the text of the first child node of the given type in the set of matches.
+	 *
+	 * @param int $nodeType
+	 *  One of the XML_*_NODE constants.
+	 * @param string $target
+	 *  If set, only processing instructions with this target match.
+	 *
+	 * @return string|null
+	 */
+	private function firstChildText($nodeType, $target = null)
+	{
 		foreach ($this->qp->get() as $ele) {
 			foreach ($ele->childNodes as $node) {
-				if ($node->nodeType == XML_PI_NODE && ($prefix === null || $node->target === $prefix)) {
+				if ($node->nodeType === $nodeType && ($target === null || $node->target === $target)) {
 					return $node->textContent;
 				}
-			} // foreach
-		} // foreach
+			}
+		}
+
+		return null;
 	}
 
 	public function toXml()
