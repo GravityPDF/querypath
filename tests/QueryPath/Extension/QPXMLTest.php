@@ -39,17 +39,16 @@ class QPXMLTest extends TestCase
 	{
 		$this->assertEquals('This is a processing instruction.', trim(qp($this->file, 'third')->pi()));
 		$msg = "Message";
-		$this->assertEquals($msg, qp($this->file, 'second')->pi('qp', $msg)->top()->find('second')->pi());
+		$this->assertEquals($msg, qp($this->file, 'second')->pi('qp', $msg)->top()->find('second')->pi('qp'));
 	}
 
 	public function testProcessingInstructionByPrefix()
 	{
 		$xml = '<?xml version="1.0"?><root><?first one?><?second two?></root>';
 
-		$this->assertEquals('two', qp($xml, 'root')->pi('second'));
-		$this->assertNull(qp($xml, 'root')->pi('missing'));
+		$qp = qp($xml, 'root');
 
-		// A processing instruction written by prefix can be read back by the same prefix.
-		$this->assertEquals('Message', qp($this->file, 'second')->pi('qp', 'Message')->top()->find('second')->pi('qp'));
+		$this->assertEquals('two', $qp->pi('second'));
+		$this->assertNull($qp->pi('missing'));
 	}
 }
