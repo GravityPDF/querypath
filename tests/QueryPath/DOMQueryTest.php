@@ -1497,6 +1497,30 @@ class DOMQueryTest extends TestCase
 		}
 	}
 
+	public function testFailWriteHTML5()
+	{
+		$this->expectException(IOException::class);
+
+		html5qp('<html><body>bar</body></html>')->writeHTML5('./test/no-writing.html');
+	}
+
+	public function testWriteHTML5()
+	{
+		$qp = html5qp('<html><body>bar</body></html>');
+
+		// Writing to stdout returns the DOMQuery, so it can be chained.
+		$out = $this->capture(function () use ($qp) {
+			$this->assertSame($qp, $qp->writeHTML5());
+		});
+		$this->assertStringContainsString('<body>bar</body>', $out);
+
+		// Writing to a file returns the DOMQuery as well.
+		$name = './' . __FUNCTION__ . '.html';
+		$this->assertSame($qp, $qp->writeHTML5($name));
+		$this->assertStringContainsString('<body>bar</body>', file_get_contents($name));
+		unlink($name);
+	}
+
 	public function testWriteHTML()
 	{
 		$xml = '<html><head><title>foo</title></head><body>bar</body></html>';

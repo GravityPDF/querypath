@@ -1395,6 +1395,12 @@ class DOMQuery extends DOM
 	 * This works the same as the other write* functions, but it encodes the output
 	 * as HTML5 with UTF-8.
 	 *
+	 * @param string|null $path
+	 *  The path to the file into which the HTML5 should be written. If
+	 *  this is NULL, data will be written to STDOUT.
+	 *
+	 * @return DOMQuery
+	 *  The DOMQuery object, unmodified.
 	 * @throws Exception
 	 *  In the event that a file cannot be written, an Exception will be thrown.
 	 * @see innerHTML5()
@@ -1406,11 +1412,16 @@ class DOMQuery extends DOM
 		if ($path === null) {
 			// Print the document to stdout.
 			print $html5->saveHTML($this->document);
-
-			return;
+		} else {
+			set_error_handler([IOException::class, 'initializeFromError']);
+			try {
+				$html5->save($this->document, $path);
+			} finally {
+				restore_error_handler();
+			}
 		}
 
-		$html5->save($this->document, $path);
+		return $this;
 	}
 
 	/**
