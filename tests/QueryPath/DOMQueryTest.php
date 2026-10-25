@@ -311,6 +311,17 @@ class DOMQueryTest extends TestCase
 		}
 	}
 
+	public function testFailedParseReportsWarning()
+	{
+		try {
+			qp('<?xml version="1.0"?><foo><bar>foonator;</foo>', null);
+			$this->fail('Expected a ParseException.');
+		} catch (ParseException $e) {
+			$this->assertStringContainsString('DOMDocument::loadXML()', $e->getMessage());
+			$this->assertSame(E_WARNING, $e->getCode());
+		}
+	}
+
 	public function testIgnoreParserWarnings()
 	{
 		$qp = @qp('<html><body><b><i>BAD!</b></i></body>', null, ['ignore_parser_warnings' => true]);
@@ -1470,6 +1481,17 @@ class DOMQueryTest extends TestCase
 		} catch (Exception $e) {
 			//print $e->getMessage();
 			throw $e;
+		}
+	}
+
+	public function testFailWriteXMLReportsWarning()
+	{
+		try {
+			qp()->writeXML('./test/no-writing.xml');
+			$this->fail('Expected an IOException.');
+		} catch (IOException $e) {
+			$this->assertStringContainsString('DOMDocument::save(./test/no-writing.xml)', $e->getMessage());
+			$this->assertSame(E_WARNING, $e->getCode());
 		}
 	}
 
