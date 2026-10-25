@@ -100,4 +100,36 @@ class QPXMLTest extends TestCase
 		$this->assertEquals('two', $qp->pi('second'));
 		$this->assertNull($qp->pi('missing'));
 	}
+
+	public function testGettersReturnNullWhenNothingFound()
+	{
+		$xml = '<?xml version="1.0"?><root><a>text<b><![CDATA[nested]]><!--nested--><?nested pi?></b></a></root>';
+
+		// Only child nodes of the matches are searched, not deeper descendants.
+		$qp = qp($xml, 'a');
+		$this->assertNull($qp->cdata());
+		$this->assertNull($qp->comment());
+		$this->assertNull($qp->pi());
+		$this->assertNull($qp->pi('nested'));
+
+		$qp = qp($xml, 'missing');
+		$this->assertNull($qp->cdata());
+		$this->assertNull($qp->comment());
+		$this->assertNull($qp->pi());
+	}
+
+	public function testGettersReturnFirstFoundAcrossMatches()
+	{
+		$xml = '<?xml version="1.0"?><root>'
+			. '<a/>'
+			. '<a><![CDATA[one]]><!--one--><?x one?><?y one?></a>'
+			. '<a><![CDATA[two]]><!--two--><?x two?><?y two?></a>'
+			. '</root>';
+
+		$qp = qp($xml, 'a');
+		$this->assertEquals('one', $qp->cdata());
+		$this->assertEquals('one', $qp->comment());
+		$this->assertEquals('one', $qp->pi());
+		$this->assertEquals('one', $qp->pi('y'));
+	}
 }
