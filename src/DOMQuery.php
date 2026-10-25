@@ -1377,7 +1377,7 @@ class DOMQuery extends DOM
 			print $this->saveDocumentHTML();
 		} else {
 			try {
-				set_error_handler(['\QueryPath\ParseException', 'initializeFromError']);
+				set_error_handler([IOException::class, 'initializeFromError']);
 				$this->saveDocumentHTML($path);
 			} catch (Exception $e) {
 				restore_error_handler();

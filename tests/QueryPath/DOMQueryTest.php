@@ -1512,7 +1512,7 @@ class DOMQueryTest extends TestCase
 		$this->expectException(IOException::class);
 
 		try {
-			qp('<?xml version="1.0"?><foo/>')->writeXML('./test/no-writing.xml');
+			htmlqp('<html><body><p>bar</p></body></html>')->writeHTML('./test/no-writing.html');
 		} catch (IOException $e) {
 			// print $e->getMessage();
 			throw $e;

@@ -28,6 +28,7 @@ QueryPath Changelog
 - `find('*')` now matches the nodes in the match set as well as their descendants, so that a selector can be tested against an element already in hand
 - `writeHTML5()` now returns the `DOMQuery` like the other `write*()` methods, and throws `QueryPath\IOException` instead of a `TypeError` when the file cannot be written (issue #80)
 - Fix `QueryPath\ParseException` and `QueryPath\IOException` losing the PHP warning they were raised from (issue #91). The message was the error number, as in `2 (/path/to/src/DOMQuery.php: 1343)`, and the code was always `0`. The message now carries the warning text and the code is the PHP error level (for example `E_WARNING`), so code that matches on the old message text will need updating
+- Fix `writeHTML()` throwing `QueryPath\ParseException` instead of `QueryPath\IOException` when the file cannot be written, as `writeXML()` and `writeHTML5()` do (issue #92). `IOException` extends `ParseException`, so existing `catch (ParseException $e)` blocks still catch it
 
 # 4.1.0
 
