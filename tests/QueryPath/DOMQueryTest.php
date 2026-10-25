@@ -1508,13 +1508,11 @@ class DOMQueryTest extends TestCase
 	{
 		$qp = html5qp('<html><body>bar</body></html>');
 
-		$out = $this->capture(function () use ($qp, &$result) {
-			$result = $qp->writeHTML5();
-		});
-
 		// Writing to stdout returns the DOMQuery, so it can be chained.
+		$out = $this->capture(function () use ($qp) {
+			$this->assertSame($qp, $qp->writeHTML5());
+		});
 		$this->assertStringContainsString('<body>bar</body>', $out);
-		$this->assertSame($qp, $result);
 
 		// Writing to a file returns the DOMQuery as well.
 		$name = './' . __FUNCTION__ . '.html';

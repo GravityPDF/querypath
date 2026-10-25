@@ -1413,14 +1413,12 @@ class DOMQuery extends DOM
 			// Print the document to stdout.
 			print $html5->saveHTML($this->document);
 		} else {
+			set_error_handler([IOException::class, 'initializeFromError']);
 			try {
-				set_error_handler([IOException::class, 'initializeFromError']);
 				$html5->save($this->document, $path);
-			} catch (Exception $e) {
+			} finally {
 				restore_error_handler();
-				throw $e;
 			}
-			restore_error_handler();
 		}
 
 		return $this;
