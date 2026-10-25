@@ -28,6 +28,16 @@ class QPXMLTest extends TestCase
 		$this->assertEquals($msg, qp($this->file, 'second')->cdata($msg)->top()->find('second')->cdata());
 	}
 
+	public function testCreateElementWithPrefix()
+	{
+		$xml = '<?xml version="1.0"?><root xmlns:x="urn:x"/>';
+
+		// The namespace URI is looked up from the prefix of the element name.
+		$element = qp($xml, 'root')->createElement('x:item')->get(0);
+		$this->assertEquals('urn:x', $element->namespaceURI);
+		$this->assertEquals('x:item', $element->nodeName);
+	}
+
 	public function testComment()
 	{
 		$this->assertEquals('This is a comment.', trim(qp($this->file, 'root')->comment()));
