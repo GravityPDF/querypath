@@ -311,6 +311,15 @@ class DOMQueryTest extends TestCase
 		}
 	}
 
+	public function testFailedParseReportsWarning()
+	{
+		$this->expectException(ParseException::class);
+		$this->expectExceptionMessage('DOMDocument::loadXML()');
+		$this->expectExceptionCode(E_WARNING);
+
+		qp('<?xml version="1.0"?><foo><bar>foonator;</foo>', null);
+	}
+
 	public function testIgnoreParserWarnings()
 	{
 		$qp = @qp('<html><body><b><i>BAD!</b></i></body>', null, ['ignore_parser_warnings' => true]);
@@ -1486,6 +1495,16 @@ class DOMQueryTest extends TestCase
 			//print $e->getMessage();
 			throw $e;
 		}
+	}
+
+	public function testFailWriteXMLReportsWarning()
+	{
+		$this->expectException(IOException::class);
+		// PHP 8.6 dropped the call's arguments from warnings: "DOMDocument::save(): ...".
+		$this->expectExceptionMessageMatches('/DOMDocument::save\\((?:\\.\\/test\\/no-writing\\.xml)?\\): [Ff]ailed to open stream/');
+		$this->expectExceptionCode(E_WARNING);
+
+		qp()->writeXML('./test/no-writing.xml');
 	}
 
 	public function testFailWriteXHTML()
