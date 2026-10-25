@@ -174,40 +174,41 @@ class QPXML implements Extension
 	/**
 	 * Create an element with the given namespace.
 	 *
+	 * The element is created in the document of the first matched element. If
+	 * $text has a prefix and no $nsUri is given, the prefix is resolved against
+	 * the namespaces in scope on that element.
+	 *
 	 * @param string $text
 	 * @param string $nsUri
 	 *   The namespace URI for the given element.
 	 *
 	 * @return DOMQuery
+	 *   The new element, or an empty DOMQuery if there are no matches.
+	 * @throws Exception
+	 *   If the prefix of $text is not bound to a namespace on the first match.
 	 */
 	public function createElement($text, $nsUri = null)
 	{
-		if (isset($text)) {
-			foreach ($this->qp->get() as $element) {
-				if ($nsUri === null && strpos($text, ':') !== false) {
-					$ns    = strstr($text, ':', true);
-					$nsUri = $element->ownerDocument->lookupNamespaceURI($ns);
+		$element = $this->qp->get(0);
+		if (! isset($text) || $element === null) {
+			return new DOMQuery();
+		}
 
-					if ($nsUri === null) {
-						throw new Exception("Undefined namespace for: " . $text);
-					}
-				}
+		if ($nsUri === null && strpos($text, ':') !== false) {
+			$nsUri = $element->lookupNamespaceURI(strstr($text, ':', true));
 
-				$node = null;
-				if ($nsUri !== null) {
-					$node = $element->ownerDocument->createElementNS(
-						$nsUri,
-						$text
-					);
-				} else {
-					$node = $element->ownerDocument->createElement($text);
-				}
-
-				return QueryPath::with($node);
+			if ($nsUri === null) {
+				throw new Exception("Undefined namespace for: " . $text);
 			}
 		}
 
-		return new DOMQuery();
+		if ($nsUri !== null) {
+			$node = $element->ownerDocument->createElementNS($nsUri, $text);
+		} else {
+			$node = $element->ownerDocument->createElement($text);
+		}
+
+		return QueryPath::with($node);
 	}
 
 	/**
