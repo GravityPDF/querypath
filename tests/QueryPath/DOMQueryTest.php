@@ -287,6 +287,8 @@ class DOMQueryTest extends TestCase
 
 	public function testFailedParseHTMLElement()
 	{
+		$this->requireLegacyHtmlParser();
+
 		$this->expectException(ParseException::class);
 
 		try {
