@@ -42,12 +42,10 @@ class QPXMLTest extends TestCase
 	{
 		$xml = '<?xml version="1.0"?><root xmlns:x="urn:x"><child xmlns:y="urn:y"/></root>';
 
-		// A prefix declared on the matched element is in scope for it.
 		$element = qp($xml, 'child')->createElement('y:item')->get(0);
 		$this->assertEquals('urn:y', $element->namespaceURI);
 		$this->assertEquals('y:item', $element->nodeName);
 
-		// So is one declared on the root.
 		$element = qp($xml, 'child')->createElement('x:item')->get(0);
 		$this->assertEquals('urn:x', $element->namespaceURI);
 	}

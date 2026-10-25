@@ -5,10 +5,7 @@ namespace QueryPathTests;
 use RuntimeException;
 
 /**
- * A stream wrapper that throws when a stream is opened.
- *
- * Gives a way to raise an exception that is not a QueryPath\Exception from inside libxml's and
- * PHP's own file handling.
+ * A stream wrapper that throws a non-QueryPath exception when a stream is opened.
  */
 class ThrowingStreamWrapper
 {

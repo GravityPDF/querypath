@@ -577,16 +577,13 @@ abstract class DOM implements Query, IteratorAggregate, Countable
 
 		$ext = $lastDot !== false ? strtolower(substr($filename, $lastDot)) : '';
 
-		self::withErrorHandler(ParseException::class, function () use ($document, $filename, $flags, $useParser, $htmlExtensions, $ext) {
-			// If the parser is explicitly set to XML, use that parser.
-			if ($useParser === 'xml') {
-				$document->load($filename, $flags);
-			} // Otherwise, see if it looks like HTML.
-			elseif ($useParser === 'html' || isset($htmlExtensions[$ext])) {
-				// Try parsing it as HTML.
+		// An explicit parser setting wins; otherwise go by the file extension, defaulting to XML.
+		$asHtml = $useParser === 'html' || ($useParser !== 'xml' && isset($htmlExtensions[$ext]));
+
+		self::withErrorHandler(ParseException::class, function () use ($document, $filename, $flags, $asHtml) {
+			if ($asHtml) {
 				self::loadHTMLFile($document, $filename);
-			} // Default to XML.
-			else {
+			} else {
 				$document->load($filename, $flags);
 			}
 		}, $this->errTypes);

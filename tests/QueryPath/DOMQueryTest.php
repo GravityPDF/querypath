@@ -314,13 +314,11 @@ class DOMQueryTest extends TestCase
 
 	public function testFailedParseReportsWarning()
 	{
-		try {
-			qp('<?xml version="1.0"?><foo><bar>foonator;</foo>', null);
-			$this->fail('Expected a ParseException.');
-		} catch (ParseException $e) {
-			$this->assertStringContainsString('DOMDocument::loadXML()', $e->getMessage());
-			$this->assertSame(E_WARNING, $e->getCode());
-		}
+		$this->expectException(ParseException::class);
+		$this->expectExceptionMessage('DOMDocument::loadXML()');
+		$this->expectExceptionCode(E_WARNING);
+
+		qp('<?xml version="1.0"?><foo><bar>foonator;</foo>', null);
 	}
 
 	public function testIgnoreParserWarnings()
@@ -782,22 +780,25 @@ class DOMQueryTest extends TestCase
 		$this->assertSame('', qp($file, 'nonexistent')->tag());
 	}
 
+	public function tagFirstMatchProvider(): array
+	{
+		return [
+			'text'                   => ['text<a/>', ''],
+			'comment'                => ['<!-- c --><a/>', ''],
+			'processing instruction' => ['<?pi data?><a/>', ''],
+			'element'                => ['<a/>text', 'a'],
+		];
+	}
+
 	/**
 	 * Issue #93
+	 *
+	 * @dataProvider tagFirstMatchProvider
 	 */
-	public function testTagNonElementFirstMatch()
+	public function testTagFirstMatchOfContents($children, $expected)
 	{
-		$qp = qp('<?xml version="1.0"?><root>text<a/></root>', 'root')->contents();
-		$this->assertSame('', $qp->tag());
-
-		$qp = qp('<?xml version="1.0"?><root><!-- c --><a/></root>', 'root')->contents();
-		$this->assertSame('', $qp->tag());
-
-		$qp = qp('<?xml version="1.0"?><root><?pi data?><a/></root>', 'root')->contents();
-		$this->assertSame('', $qp->tag());
-
-		$qp = qp('<?xml version="1.0"?><root><a/>text</root>', 'root')->contents();
-		$this->assertSame('a', $qp->tag());
+		$qp = qp('<?xml version="1.0"?><root>' . $children . '</root>', 'root')->contents();
+		$this->assertSame($expected, $qp->tag());
 	}
 
 	public function testAppend()
@@ -1496,47 +1497,30 @@ class DOMQueryTest extends TestCase
 	{
 		$this->expectException(IOException::class);
 
-		try {
-			qp()->writeXML('./test/no-writing.xml');
-		} catch (Exception $e) {
-			//print $e->getMessage();
-			throw $e;
-		}
+		qp()->writeXML('./test/no-writing.xml');
 	}
 
 	public function testFailWriteXMLReportsWarning()
 	{
-		try {
-			qp()->writeXML('./test/no-writing.xml');
-			$this->fail('Expected an IOException.');
-		} catch (IOException $e) {
-			$this->assertStringContainsString('DOMDocument::save(./test/no-writing.xml)', $e->getMessage());
-			$this->assertSame(E_WARNING, $e->getCode());
-		}
+		$this->expectException(IOException::class);
+		$this->expectExceptionMessage('DOMDocument::save(./test/no-writing.xml)');
+		$this->expectExceptionCode(E_WARNING);
+
+		qp()->writeXML('./test/no-writing.xml');
 	}
 
 	public function testFailWriteXHTML()
 	{
 		$this->expectException(IOException::class);
 
-		try {
-			qp()->writeXHTML('./test/no-writing.xml');
-		} catch (IOException $e) {
-			//print $e->getMessage();
-			throw $e;
-		}
+		qp()->writeXHTML('./test/no-writing.xml');
 	}
 
 	public function testFailWriteHTML()
 	{
 		$this->expectException(IOException::class);
 
-		try {
-			htmlqp('<html><body><p>bar</p></body></html>')->writeHTML('./test/no-writing.html');
-		} catch (IOException $e) {
-			// print $e->getMessage();
-			throw $e;
-		}
+		htmlqp('<html><body><p>bar</p></body></html>')->writeHTML('./test/no-writing.html');
 	}
 
 	public function testFailWriteHTML5()
