@@ -289,7 +289,7 @@ class Issue65Test extends TestCase
 	}
 
 	/**
-	 * remove() runs the legacy selector engine and returns a new DOMQuery over the same document.
+	 * remove() returns a new DOMQuery over the same document.
 	 */
 	public function testRemoveKeepsTheDocumentSerializingCorrectly()
 	{

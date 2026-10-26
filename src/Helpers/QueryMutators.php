@@ -5,7 +5,6 @@ namespace QueryPath\Helpers;
 use DOMDocument;
 use DOMDocumentFragment;
 use QueryPath\CSS\ParseException;
-use QueryPath\CSS\QueryPathEventHandler;
 use QueryPath\DOMQuery;
 use QueryPath\Exception;
 use QueryPath\Query;
@@ -795,14 +794,7 @@ trait QueryMutators
 	 */
 	public function remove($selector = null): Query
 	{
-		if (! empty($selector)) {
-			// Do a non-destructive find.
-			$query = new QueryPathEventHandler($this->matches);
-			$query->find($selector);
-			$matches = $query->getMatches();
-		} else {
-			$matches = $this->matches;
-		}
+		$matches = empty($selector) ? $this->matches : $this->find($selector)->matches;
 
 		$found = new SplObjectStorage();
 		foreach ($matches as $item) {
@@ -846,10 +838,7 @@ trait QueryMutators
 	{
 		$replacement = $this->matches->count() > 0 ? $this->getFirstMatch() : $this->document->createTextNode('');
 
-		$c = new QueryPathEventHandler($document);
-		$c->find($selector);
-		$temp = $c->getMatches();
-		foreach ($temp as $item) {
+		foreach (QueryPath::with($document, $selector, $this->options)->get() as $item) {
 			$node = $replacement->cloneNode();
 			$node = $document->importNode($node);
 			$item->parentNode->replaceChild($node, $item);

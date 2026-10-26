@@ -75,6 +75,7 @@ use stdClass;
  * $matches will be an array of zero or more DOMElement objects.
  *
  * @ingroup querypath_css
+ * @deprecated QueryPath no longer uses this engine. Use {@see DOMTraverser}, which backs find().
  */
 class QueryPathEventHandler implements EventHandler, Traverser
 {

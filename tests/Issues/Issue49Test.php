@@ -113,10 +113,9 @@ class Issue49Test extends TestCase
 	}
 
 	/**
-	 * remove() runs the selector through the legacy CSS engine, which must agree
-	 * with find().
+	 * remove() must agree with find().
 	 */
-	public function testTextSelectorInTheLegacyEngine(): void
+	public function testTextSelectorThroughRemove(): void
 	{
 		$q = html5qp(self::INPUT_HTML, 'div');
 

@@ -17,7 +17,6 @@ use DOMDocument;
 use DOMNode;
 use DOMXPath;
 use QueryPath\CSS\DOMTraverser;
-use QueryPath\CSS\QueryPathEventHandler;
 use Masterminds\HTML5;
 use QueryPath\Entities;
 use QueryPath\Exception;
@@ -134,11 +133,9 @@ class DOMQuery extends DOM
 	 * @throws CSS\ParseException
 	 * @see  is()
 	 * @todo If a find() returns zero matches, then a subsequent find() will
-	 *       also return zero matches, even if that find has a selector like :root.
-	 *       The reason for this is that the {@link QueryPathEventHandler} does
-	 *       not set the root of the document tree if it cannot find any elements
-	 *       from which to determine what the root is. The workaround is to use
-	 *       {@link top()} to select the root element again.
+	 *       also return zero matches, even if that find has a selector like :root,
+	 *       because there is no element left from which to find the root. The
+	 *       workaround is to use {@link top()} to select the root element again.
 	 * @see  filter()
 	 */
 	public function find($selector): Query
