@@ -754,6 +754,46 @@ class DOMQueryTest extends TestCase
 		$this->assertEquals(1, qp($file, 'root')->filter(':scope')->count());
 	}
 
+	public function selectorMethodProvider(): array
+	{
+		$methods = [
+			'is', 'filter', 'not', 'children', 'siblings', 'parent', 'parents', 'parentsUntil',
+			'closest', 'next', 'nextAll', 'nextUntil', 'prev', 'prevAll', 'prevUntil',
+		];
+
+		return array_combine($methods, array_map(function ($method) {
+			return [$method];
+		}, $methods));
+	}
+
+	/**
+	 * Every method that tests nodes against a selector reports a malformed one. <d> has a
+	 * parent, ancestors, siblings on both sides and a child, so each method has a candidate
+	 * to test it against.
+	 *
+	 * @dataProvider selectorMethodProvider
+	 */
+	public function testSelectorMethodsRejectAnInvalidSelector($method)
+	{
+		$qp = qp('<?xml version="1.0"?><root><b><c/><d><g/></d><e/></b></root>', 'd');
+
+		$this->expectException(\QueryPath\CSS\ParseException::class);
+		$qp->$method('[foo');
+	}
+
+	/**
+	 * filter(), is() and not() have no "no selector" form, so an empty selector is malformed.
+	 *
+	 * @testWith ["filter"]
+	 *           ["is"]
+	 *           ["not"]
+	 */
+	public function testFilterIsAndNotRejectAnEmptySelector($method)
+	{
+		$this->expectException(\QueryPath\CSS\ParseException::class);
+		qp(DATA_FILE, 'li')->$method('');
+	}
+
 	public function testFilterPreg()
 	{
 		$xml = '<?xml version="1.0"?><root><div id="one">Foo</div><div>Moo</div></root>';
