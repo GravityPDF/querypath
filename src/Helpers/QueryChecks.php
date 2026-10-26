@@ -2,6 +2,7 @@
 
 namespace QueryPath\Helpers;
 
+use DOMElement;
 use DOMNode;
 use QueryPath\CSS\ParseException;
 use QueryPath\DOMQuery;
@@ -30,6 +31,10 @@ trait QueryChecks
 	 * matches a selector.
 	 *
 	 * Unlike jQuery's version, this supports full selectors (not just simple ones).
+	 *
+	 * As in jQuery, a positional selector (`:first`, `:eq()`, ...) counts across the whole
+	 * document, not within the match set: `is(':first')` is TRUE only if the set holds the
+	 * document's first element. filter() counts within the set.
 	 *
 	 * Non-element nodes in the match set can never match a CSS selector, and are skipped.
 	 *
@@ -73,7 +78,14 @@ trait QueryChecks
 			throw new Exception('Cannot compare an object to a DOMQuery.');
 		}
 
-		return (new NodeMatcher($selector))->matchesAny($this->matches);
+		$matcher = new NodeMatcher($selector);
+		foreach ($this->matches as $m) {
+			if ($m instanceof DOMElement && $matcher->matchesInDocument($m)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
