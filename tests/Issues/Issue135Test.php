@@ -4,7 +4,7 @@
  *
  * Regression tests for https://github.com/GravityPDF/querypath/issues/135
  *
- * replaceAll() copied each replacement without its children.
+ * replaceAll() inserts each replacement with its children.
  */
 
 namespace QueryPathTests;
