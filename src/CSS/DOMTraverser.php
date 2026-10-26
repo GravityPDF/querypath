@@ -203,28 +203,7 @@ class DOMTraverser implements Traverser
 		$scopeNode = null,
 		?PseudoClass $psHandler = null
 	): SplObjectStorage {
-		if (count($nodes) === 0) {
-			return new SplObjectStorage();
-		}
-
-		$traverser = new self($nodes, true, $scopeNode, $psHandler);
-		$groups    = $traverser->psHandler->parse($selector);
-		$matched   = $traverser->findGroups($groups)->matches();
-
-		// A single group without a set filter is matched in the order given. Otherwise the result
-		// is in document order, or a union of groups, and has to be put back in input order.
-		if (count($matched) < 2 || (count($groups) === 1 && ! $traverser->groupIsSetFiltered($groups->toArray()[0]))) {
-			return $matched;
-		}
-
-		$found = new SplObjectStorage();
-		foreach ($nodes as $node) {
-			if ($matched->offsetExists($node)) {
-				$found->offsetSet($node);
-			}
-		}
-
-		return $found;
+		return self::filterInOrder($nodes, null, $selector, $scopeNode, $psHandler);
 	}
 
 	/**
@@ -253,16 +232,49 @@ class DOMTraverser implements Traverser
 			$unique->offsetSet($node);
 		}
 
-		if (count($unique) === 0) {
-			return $unique;
+		return self::filterInOrder($unique, array_values($nodes), $selector, $scopeNode, $psHandler);
+	}
+
+	/**
+	 * Match the given nodes themselves against a selector, returning them in the order given.
+	 *
+	 * @param SplObjectStorage $nodes
+	 * @param DOMNode[]|null   $list
+	 *   The order to count positional pseudo-classes in, or NULL for document order.
+	 * @param string           $selector
+	 * @param DOMNode|null     $scopeNode
+	 * @param PseudoClass|null $psHandler
+	 *
+	 * @return SplObjectStorage
+	 * @throws ParseException
+	 */
+	private static function filterInOrder(
+		SplObjectStorage $nodes,
+		?array $list,
+		$selector,
+		$scopeNode,
+		?PseudoClass $psHandler
+	): SplObjectStorage {
+		if (count($nodes) === 0) {
+			return new SplObjectStorage();
 		}
 
-		$traverser                = new self($unique, true, $scopeNode, $psHandler);
-		$traverser->candidateList = array_values($nodes);
-		$matched                  = $traverser->find($selector)->matches();
+		$traverser                = new self($nodes, true, $scopeNode, $psHandler);
+		$traverser->candidateList = $list;
+		$groups                   = $traverser->psHandler->parse($selector);
+		$matched                  = $traverser->findGroups($groups)->matches();
+
+		// A single group without a set filter is matched in the order given. Otherwise the result
+		// is in document order, or a union of groups, and has to be put back in input order.
+		$inOrder = $list === null
+			&& count($groups) === 1
+			&& ! $traverser->groupIsSetFiltered($groups->toArray()[0]);
+		if (count($matched) < 2 || $inOrder) {
+			return $matched;
+		}
 
 		$found = new SplObjectStorage();
-		foreach ($unique as $node) {
+		foreach ($nodes as $node) {
 			if ($matched->offsetExists($node)) {
 				$found->offsetSet($node);
 			}
