@@ -2057,6 +2057,55 @@ class DOMQueryTest extends TestCase
 		$this->assertEquals(5, $dest->find(':root li')->count());
 	}
 
+	public function testDetachWithSelector()
+	{
+		$xml = '<?xml version="1.0"?><root><p><i>a</i><b>x</b></p><p><i>b</i></p><i>c</i></root>';
+		$qp  = qp($xml, 'p');
+
+		$detached = $qp->detach('i');
+
+		$this->assertSame(2, $detached->count());
+		$this->assertSame('i', $detached->tag());
+		$this->assertSame('ab', $detached->text());
+		$this->assertNull($detached->get(0)->parentNode);
+
+		$this->assertSame(2, $qp->count());
+		$this->assertSame('p', $qp->tag());
+		$this->assertSame(2, $qp->top('p')->count());
+		$this->assertSame(1, $qp->top('b')->count());
+		$this->assertSame('c', $qp->top('i')->text());
+
+		$this->assertSame(2, $detached->end()->count());
+		$this->assertSame('p', $detached->tag());
+	}
+
+	public function testDetachWithSelectorAgreesWithRemove()
+	{
+		$xml = '<?xml version="1.0"?><root><p><i>a</i><b>x</b></p><p><i>b</i></p><i>c</i></root>';
+
+		foreach (['i', 'p > i', 'p', '*', 'noSuchElement'] as $selector) {
+			$removeQp = qp($xml, 'p');
+			$removed  = $removeQp->remove($selector);
+			$detachQp = qp($xml, 'p');
+			$detached = $detachQp->detach($selector);
+
+			$this->assertSame($removed->count(), $detached->count(), $selector);
+			$this->assertSame($removeQp->top()->xml(), $detachQp->top()->xml(), $selector);
+		}
+	}
+
+	public function testAttachAfterDetachWithSelector()
+	{
+		$qp = qp('<?xml version="1.0"?><root><p><i>a</i></p><p><i>b</i></p></root>', 'p');
+		$qp->detach('i');
+
+		$dest = qp('<?xml version="1.0"?><root><dest/></root>', 'dest');
+		$qp->attach($dest);
+
+		$this->assertSame(2, $dest->find('i')->count());
+		$this->assertSame(2, $qp->top('p')->count());
+	}
+
 	public function testEmptyElement()
 	{
 		$file = DATA_FILE;
