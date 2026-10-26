@@ -2,7 +2,6 @@
 
 namespace QueryPath\Helpers;
 
-use DOMElement;
 use DOMNode;
 use QueryPath\CSS\DOMTraverser;
 use QueryPath\CSS\DOMTraverser\PseudoClass;
@@ -125,7 +124,7 @@ final class NodeMatcher
 		}
 
 		foreach ($nodes as $node) {
-			if ($node instanceof DOMElement && $this->matchesInDocument($node)) {
+			if ($this->matchesInDocument($node)) {
 				return true;
 			}
 		}
