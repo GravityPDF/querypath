@@ -706,9 +706,92 @@ class DOMQueryTest extends TestCase
 	public function testFilter()
 	{
 		$file = DATA_FILE;
-		$this->assertEquals(1, qp($file)->filter('li')->count());
-		$this->assertEquals(2, qp($file, 'inner')->filter('li')->count());
-		$this->assertEquals('inner-two', qp($file, 'inner')->filter('li')->eq(1)->attr('id'));
+
+		// filter() narrows the current match set to the members that match the selector.
+		// It does not search their descendants: <root> and <inner> are not <li> elements,
+		// so an 'li' filter removes them both.
+		$this->assertEquals(0, qp($file)->filter('li')->count());
+		$this->assertEquals(0, qp($file, 'inner')->filter('li')->count());
+
+		$this->assertEquals(2, qp($file, 'inner')->filter('inner')->count());
+		$this->assertEquals(5, qp($file, 'li')->filter('li')->count());
+
+		$this->assertEquals(1, qp($file, 'inner')->filter('#inner-two')->count());
+		$this->assertEquals('inner-two', qp($file, 'inner')->filter('#inner-two')->attr('id'));
+
+		// The original set's ordering is preserved.
+		$this->assertEquals('inner-one', qp($file, 'inner')->filter('inner')->eq(0)->attr('id'));
+		$this->assertEquals('inner-two', qp($file, 'inner')->filter('inner')->eq(1)->attr('id'));
+	}
+
+	/**
+	 * filter() used to keep any element that *contained* a match, which is what has()
+	 * does. This pins the difference, and documents the migration path for anyone who
+	 * was relying on the old behaviour.
+	 */
+	public function testFilterMatchesTheSetRatherThanItsDescendants()
+	{
+		$file = DATA_FILE;
+
+		$this->assertEquals(2, qp($file, 'inner')->has('li')->count());
+		$this->assertEquals(1, qp($file)->has('li')->count());
+	}
+
+	/**
+	 * A selector that describes a position within the match set has to be evaluated
+	 * against the whole set, not against each member in turn.
+	 */
+	public function testFilterEvaluatesTheSelectorAgainstTheWholeSet()
+	{
+		$file = DATA_FILE;
+
+		$this->assertEquals('one', qp($file, 'li')->filter(':first')->attr('id'));
+		$this->assertEquals('two', qp($file, 'li')->filter(':eq(1)')->attr('id'));
+		$this->assertCount(2, qp($file, 'li')->filter(':odd'));
+
+		// :scope refers to the document element, exactly as it does in find().
+		$this->assertEquals(0, qp($file, 'inner')->filter(':scope')->count());
+		$this->assertEquals(1, qp($file, 'root')->filter(':scope')->count());
+	}
+
+	public function selectorMethodProvider(): array
+	{
+		$methods = [
+			'is', 'filter', 'not', 'children', 'siblings', 'parent', 'parents', 'parentsUntil',
+			'closest', 'next', 'nextAll', 'nextUntil', 'prev', 'prevAll', 'prevUntil',
+		];
+
+		return array_combine($methods, array_map(function ($method) {
+			return [$method];
+		}, $methods));
+	}
+
+	/**
+	 * Every method that tests nodes against a selector reports a malformed one. <d> has a
+	 * parent, ancestors, siblings on both sides and a child, so each method has a candidate
+	 * to test it against.
+	 *
+	 * @dataProvider selectorMethodProvider
+	 */
+	public function testSelectorMethodsRejectAnInvalidSelector($method)
+	{
+		$qp = qp('<?xml version="1.0"?><root><b><c/><d><g/></d><e/></b></root>', 'd');
+
+		$this->expectException(\QueryPath\CSS\ParseException::class);
+		$qp->$method('[foo');
+	}
+
+	/**
+	 * filter(), is() and not() have no "no selector" form, so an empty selector is malformed.
+	 *
+	 * @testWith ["filter"]
+	 *           ["is"]
+	 *           ["not"]
+	 */
+	public function testFilterIsAndNotRejectAnEmptySelector($method)
+	{
+		$this->expectException(\QueryPath\CSS\ParseException::class);
+		qp(DATA_FILE, 'li')->$method('');
 	}
 
 	public function testFilterPreg()
@@ -1944,6 +2027,21 @@ class DOMQueryTest extends TestCase
 		$file = DATA_FILE;
 		$this->assertEquals(3, qp($file, '#four')->prevAll()->count());
 		$this->assertEquals(2, qp($file, 'foot')->prevAll('inner')->count());
+	}
+
+	public function testNextAllAndPrevAllFromOverlappingStarts()
+	{
+		$xml   = '<?xml version="1.0"?><r><a/><b/>text<c/><d/><e/></r>';
+		$names = function ($query) {
+			return implode(',', array_map(function ($node) {
+				return $node->tagName;
+			}, $query->get()));
+		};
+
+		$this->assertSame('c,d,e', $names(qp($xml, 'b')->add('d')->nextAll()));
+		$this->assertSame('e,c,d', $names(qp($xml, 'd')->add('b')->nextAll()));
+		$this->assertSame('a,c,b', $names(qp($xml, 'b')->add('d')->prevAll()));
+		$this->assertSame('c,b,a', $names(qp($xml, 'd')->add('b')->prevAll()));
 	}
 
 	public function testParent()
