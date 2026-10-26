@@ -271,7 +271,8 @@ class DOMQuery extends DOM
 	 * in QueryPath, see {@link examples/techniques.php}.
 	 *
 	 * @param int|null $index
-	 *   If specified, then only this index value will be returned. If this
+	 *   If specified, then only this index value will be returned. A negative
+	 *   index counts back from the end, so -1 is the last match. If this
 	 *   index is out of bounds, a NULL will be returned.
 	 * @param boolean $asObject
 	 *   If this is TRUE, an SplObjectStorage object will be returned
@@ -286,7 +287,7 @@ class DOMQuery extends DOM
 	public function get($index = null, $asObject = false)
 	{
 		if ($index !== null) {
-			return ($this->count() > $index) ? $this->getNthMatch($index) : null;
+			return $this->getNthMatch($index);
 		}
 		// Retain support for legacy.
 		if (! $asObject) {

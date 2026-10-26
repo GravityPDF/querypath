@@ -262,33 +262,37 @@ trait QueryFilters
 	/**
 	 * Narrow the items in this object down to only a slice of the starting items.
 	 *
-	 * @param integer $start
-	 *  Where in the list of matches to begin the slice.
-	 * @param integer $length
-	 *  The number of items to include in the slice. If nothing is specified, the
-	 *  all remaining matches (from $start onward) will be included in the sliced
-	 *  list.
+	 * As in jQuery's .slice(), the slice runs from $start up to, but not
+	 * including, $end. Both are zero-based indexes, and a negative index counts
+	 * back from the end, so slice(1, -1) drops the first and last items.
+	 *
+	 * @param integer      $start
+	 *  The index of the first item to include.
+	 * @param integer|null $end
+	 *  The index to stop before. If omitted, the slice runs to the end of the
+	 *  matches. An $end at or before $start gives an empty set.
 	 *
 	 * @return DOMQuery
 	 * @throws ParseException
-	 * @see array_slice()
 	 */
-	public function slice($start, $length = 0): Query
+	public function slice($start, $end = null): Query
 	{
-		$end   = $length;
-		$found = new SplObjectStorage();
-		if ($start >= $this->count()) {
-			return $this->inst($found, null);
+		$count = $this->count();
+		$start = $start < 0 ? $start + $count : $start;
+		if ($end === null) {
+			$end = $count;
+		} elseif ($end < 0) {
+			$end += $count;
 		}
 
-		$i = $j = 0;
+		$found = new SplObjectStorage();
+		$i     = 0;
 		foreach ($this->matches as $m) {
+			if ($i >= $end) {
+				break;
+			}
 			if ($i >= $start) {
-				if ($end > 0 && $j >= $end) {
-					break;
-				}
 				$found->offsetSet($m);
-				++$j;
 			}
 			++$i;
 		}
@@ -373,82 +377,83 @@ trait QueryFilters
 	}
 
 	/**
-	 * Get the even elements, so counter-intuitively 1, 3, 5, etc.
+	 * Get the matches at even, zero-based positions: 0, 2, 4, etc.
+	 *
+	 * As in jQuery, and as filter(':even') does, so the first match is kept.
+	 * Every node counts and is kept, whatever its type; on a set from
+	 * contents(), use filter('*')->even() to count only the elements.
 	 *
 	 * @return DOMQuery
-	 *  A DOMQuery wrapping all of the children.
+	 *  A DOMQuery wrapping the matches at even positions.
 	 * @throws ParseException
-	 * @see    parent()
-	 * @see    parents()
-	 * @see    next()
-	 * @see    prev()
+	 * @see    odd()
 	 * @since  2.1
 	 * @author eabrand
-	 * @see    removeChildren()
 	 */
 	public function even(): Query
 	{
-		$found = new SplObjectStorage();
-		$even  = false;
-		foreach ($this->matches as $m) {
-			if ($even && $m->nodeType === XML_ELEMENT_NODE) {
-				$found->offsetSet($m);
-			}
-			$even = $even ? false : true;
-		}
-
-		return $this->inst($found, null);
+		return $this->everyOther(0);
 	}
 
 	/**
-	 * Get the odd elements, so counter-intuitively 0, 2, 4, etc.
+	 * Get the matches at odd, zero-based positions: 1, 3, 5, etc.
+	 *
+	 * As in jQuery, and as filter(':odd') does, so the first match is dropped.
+	 * Every node counts and is kept, whatever its type; on a set from
+	 * contents(), use filter('*')->odd() to count only the elements.
 	 *
 	 * @return DOMQuery
-	 *  A DOMQuery wrapping all of the children.
+	 *  A DOMQuery wrapping the matches at odd positions.
 	 * @throws ParseException
-	 * @see    parent()
-	 * @see    parents()
-	 * @see    next()
-	 * @see    prev()
+	 * @see    even()
 	 * @since  2.1
 	 * @author eabrand
-	 * @see    removeChildren()
 	 */
 	public function odd(): Query
 	{
+		return $this->everyOther(1);
+	}
+
+	/**
+	 * Keep every second match, starting at the given zero-based position.
+	 *
+	 * @param int $offset
+	 *  0 for the even positions, 1 for the odd.
+	 *
+	 * @return DOMQuery
+	 * @throws ParseException
+	 */
+	private function everyOther(int $offset): Query
+	{
 		$found = new SplObjectStorage();
-		$odd   = true;
+		$i     = 0;
 		foreach ($this->matches as $m) {
-			if ($odd && $m->nodeType === XML_ELEMENT_NODE) {
+			if ($i++ % 2 === $offset) {
 				$found->offsetSet($m);
 			}
-			$odd = $odd ? false : true;
 		}
 
 		return $this->inst($found, null);
 	}
 
 	/**
-	 * Get the first matching element.
+	 * Get the first match.
 	 *
+	 * As in jQuery, this is the same as eq(0): the first node of any type, so
+	 * after contents() it may be a text node. Use children()->first() or
+	 * filter('*')->first() for the first element.
 	 *
 	 * @return DOMQuery
-	 *  A DOMQuery wrapping all of the children.
+	 *  A DOMQuery wrapping the first match, or an empty one.
 	 * @throws ParseException
-	 * @see    prev()
+	 * @see    last()
+	 * @see    eq()
 	 * @since  2.1
 	 * @author eabrand
-	 * @see    next()
 	 */
 	public function first(): Query
 	{
-		$found = new SplObjectStorage();
-		foreach ($this->elements() as $m) {
-			$found->offsetSet($m);
-			break;
-		}
-
-		return $this->inst($found, null);
+		return $this->eq(0);
 	}
 
 	/**
@@ -479,29 +484,23 @@ trait QueryFilters
 	}
 
 	/**
-	 * Get the last matching element.
+	 * Get the last match.
 	 *
+	 * As in jQuery, this is the same as eq(-1): the last node of any type, so
+	 * after contents() it may be a text node. Use children()->last() or
+	 * filter('*')->last() for the last element.
 	 *
 	 * @return DOMQuery
-	 *  A DOMQuery wrapping all of the children.
+	 *  A DOMQuery wrapping the last match, or an empty one.
 	 * @throws ParseException
-	 * @see    prev()
+	 * @see    first()
+	 * @see    eq()
 	 * @since  2.1
 	 * @author eabrand
-	 * @see    next()
 	 */
 	public function last(): Query
 	{
-		$found = new SplObjectStorage();
-		$item  = null;
-		foreach ($this->elements() as $m) {
-			$item = $m;
-		}
-		if ($item) {
-			$found->offsetSet($item);
-		}
-
-		return $this->inst($found, null);
+		return $this->eq(-1);
 	}
 
 	/**
@@ -620,8 +619,9 @@ trait QueryFilters
 	 * with {@link end()}.
 	 *
 	 * @param $index
-	 *  The index of the element to keep. The rest will be
-	 *  discarded.
+	 *  The zero-based index of the item to keep. The rest will be
+	 *  discarded. A negative index counts back from the end, so -1 keeps
+	 *  the last item. An index out of range gives an empty set.
 	 *
 	 * @return DOMQuery
 	 * @throws ParseException
@@ -940,8 +940,10 @@ trait QueryFilters
 	{
 		$found = new SplObjectStorage();
 		foreach ($this->matches as $m) {
-			$parent = $m->parentNode;
-			foreach ($parent->childNodes as $n) {
+			if ($m->parentNode === null) {
+				continue;
+			}
+			foreach ($m->parentNode->childNodes as $n) {
 				if ($n->nodeType === XML_ELEMENT_NODE && $n !== $m) {
 					$found->offsetSet($n);
 				}

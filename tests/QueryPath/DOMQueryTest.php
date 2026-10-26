@@ -756,8 +756,10 @@ class DOMQueryTest extends TestCase
 	{
 		[$qp, $a] = $this->contentsWithElement($xml);
 
-		$this->assertSame([$a], $qp->first()->get());
-		$this->assertSame([$a], $qp->last()->get());
+		$this->assertSame([$qp->get(0)], $qp->first()->get());
+		$this->assertSame([$qp->get(-1)], $qp->last()->get());
+		$this->assertSame([$a], $qp->filter('*')->first()->get());
+		$this->assertSame([$a], $qp->filter('*')->last()->get());
 	}
 
 	public function testEq()
@@ -1011,7 +1013,7 @@ class DOMQueryTest extends TestCase
 		$this->assertEquals(0, qp($file, 'li')->slice(9)->count());
 
 		// The first item should be #two, the last #three
-		$qp = qp($file, 'li')->slice(1, 2);
+		$qp = qp($file, 'li')->slice(1, 3);
 		$this->assertEquals(2, $qp->count());
 		$this->assertEquals('two', $qp->attr('id'));
 		$this->assertEquals('three', $qp->eq(1)->attr('id'));
@@ -2460,14 +2462,14 @@ class DOMQueryTest extends TestCase
 	{
 		$file = DATA_FILE;
 		$this->assertEquals(1, qp($file, 'inner')->even()->count());
-		$this->assertEquals(2, qp($file, 'li')->even()->count());
+		$this->assertEquals(3, qp($file, 'li')->even()->count());
 	}
 
 	public function testOdd()
 	{
 		$file = DATA_FILE;
 		$this->assertEquals(1, qp($file, 'inner')->odd()->count());
-		$this->assertEquals(3, qp($file, 'li')->odd()->count());
+		$this->assertEquals(2, qp($file, 'li')->odd()->count());
 	}
 
 	public function testFirst()
