@@ -279,11 +279,13 @@ final class Scanner
 					// Turn off escaping
 					$buf    .= $this->value;
 					$escape = false;
-				} // Allow nested pseudoclasses.
-				elseif ($this->token === Token::LPAREN) {
-					$buf .= '(';
-					$buf .= $this->getPseudoClassString();
-					$buf .= ')';
+				} elseif ($end === Token::RPAREN && ($this->token === Token::LPAREN || $this->token === Token::QUOTE || $this->token === Token::SQUOTE)) {
+					// Read nested parens and quoted strings whole, so a paren
+					// inside them can't end this value. The recursive call
+					// has already consumed the closing char.
+					$close = $this->token === Token::LPAREN ? ')' : $this->value;
+					$buf   .= $this->value . $this->getPseudoClassString() . $close;
+					continue;
 				} elseif ($this->token === $end) {
 					// At end of string; skip token and break.
 					$this->nextToken();
