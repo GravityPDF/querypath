@@ -137,7 +137,7 @@ trait QueryChecks
 	 */
 	public function hasClass($class): bool
 	{
-		foreach ($this->matches as $m) {
+		foreach ($this->elements() as $m) {
 			if ($m->hasAttribute('class')) {
 				$vals = explode(' ', $m->getAttribute('class'));
 				if (in_array($class, $vals)) {
@@ -152,8 +152,9 @@ trait QueryChecks
 	/**
 	 * Check to see if the given attribute is present.
 	 *
-	 * This returns TRUE if <em>all</em> selected items have the attribute, or
-	 * FALSE if at least one item does not have the attribute.
+	 * This returns TRUE if <em>all</em> selected elements have the attribute, or
+	 * FALSE if at least one element does not have the attribute. Matches that are
+	 * not elements are ignored.
 	 *
 	 * @param string $attrName
 	 *  The attribute name.
@@ -166,7 +167,7 @@ trait QueryChecks
 	 */
 	public function hasAttr($attrName): bool
 	{
-		foreach ($this->matches as $match) {
+		foreach ($this->elements() as $match) {
 			if (! $match->hasAttribute($attrName)) {
 				return false;
 			}
@@ -192,7 +193,7 @@ trait QueryChecks
 	 */
 	public function removeAttr($name): Query
 	{
-		foreach ($this->matches as $m) {
+		foreach ($this->elements() as $m) {
 			$m->removeAttribute($name);
 		}
 
