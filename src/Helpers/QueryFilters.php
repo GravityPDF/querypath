@@ -557,21 +557,7 @@ trait QueryFilters
 	 */
 	public function nextUntil($selector = null): Query
 	{
-		$found   = new SplObjectStorage();
-		$matcher = new NodeMatcher($selector);
-		foreach ($this->matches as $m) {
-			while (isset($m->nextSibling)) {
-				$m = $m->nextSibling;
-				if ($m->nodeType === XML_ELEMENT_NODE) {
-					if (null !== $selector && $matcher->matches($m)) {
-						break;
-					}
-					$found->offsetSet($m);
-				}
-			}
-		}
-
-		return $this->inst($found, null);
+		return $this->inst($this->walk('nextSibling', $selector, 'until'), null);
 	}
 
 	/**
@@ -597,22 +583,7 @@ trait QueryFilters
 	 */
 	public function prevUntil($selector = null): Query
 	{
-		$found   = new SplObjectStorage();
-		$matcher = new NodeMatcher($selector);
-		foreach ($this->matches as $m) {
-			while (isset($m->previousSibling)) {
-				$m = $m->previousSibling;
-				if ($m->nodeType === XML_ELEMENT_NODE) {
-					if (null !== $selector && $matcher->matches($m)) {
-						break;
-					}
-
-					$found->offsetSet($m);
-				}
-			}
-		}
-
-		return $this->inst($found, null);
+		return $this->inst($this->walk('previousSibling', $selector, 'until'), null);
 	}
 
 	/**
@@ -634,21 +605,7 @@ trait QueryFilters
 	 */
 	public function parentsUntil($selector = null): Query
 	{
-		$found   = new SplObjectStorage();
-		$matcher = new NodeMatcher($selector);
-		foreach ($this->matches as $m) {
-			while ($m->parentNode->nodeType !== XML_DOCUMENT_NODE) {
-				$m = $m->parentNode;
-				if ($m->nodeType === XML_ELEMENT_NODE) {
-					if (! empty($selector) && $matcher->matches($m)) {
-						break;
-					}
-					$found->offsetSet($m);
-				}
-			}
-		}
-
-		return $this->inst($this->sortReverseDocumentOrder($found), null);
+		return $this->inst($this->walk('parentNode', $selector, 'until'), null);
 	}
 
 	/**
@@ -732,19 +689,12 @@ trait QueryFilters
 	 */
 	public function closest($selector): Query
 	{
-		$found   = new SplObjectStorage();
-		$matcher = new NodeMatcher($selector);
-		foreach ($this->matches as $m) {
-			for (; $m !== null && $m->nodeType !== XML_DOCUMENT_NODE; $m = $m->parentNode) {
-				if ($matcher->matches($m)) {
-					$found->offsetSet($m);
-					break;
-				}
-			}
+		// As in jQuery, nothing is closest to an empty selector.
+		if (empty($selector)) {
+			return $this->inst(new SplObjectStorage(), null);
 		}
 
-		// XXX: Should this be an in-place modification?
-		return $this->inst($found, null);
+		return $this->inst($this->walk('parentNode', $selector, 'first', true), null);
 	}
 
 	/**
@@ -765,7 +715,7 @@ trait QueryFilters
 	 */
 	public function parent($selector = null): Query
 	{
-		return $this->getParentElements($selector, true);
+		return $this->inst($this->walk('parentNode', $selector, 'first'), null);
 	}
 
 	/**
@@ -786,53 +736,7 @@ trait QueryFilters
 	 */
 	public function parents($selector = null): Query
 	{
-		return $this->getParentElements($selector, false);
-	}
-
-	/**
-	 * Get ancestor(s) of each element in the DOMQuery.
-	 *
-	 * If a selector is present, only matching ancestors will be retrieved.
-	 *
-	 * @param string|null $selector
-	 *  A valid CSS 3 Selector.
-	 * @param bool $immediate
-	 *  If function should return only the immediate parent
-	 *
-	 * @return DOMQuery
-	 *  A DOMNode object containing the matching ancestors.
-	 * @throws ParseException
-	 * @throws Exception
-	 */
-	private function getParentElements(?string $selector, bool $immediate): Query
-	{
-		$found   = new SplObjectStorage();
-		$matcher = new NodeMatcher($selector);
-		foreach ($this->matches as $m) {
-			while ($m->parentNode && $m->parentNode->nodeType !== XML_DOCUMENT_NODE) {
-				$m = $m->parentNode;
-				if ($m->nodeType !== XML_ELEMENT_NODE) {
-					continue;
-				}
-				// parent() stops at the nearest matching ancestor of each element, so it tests
-				// the walk as it goes; parents() collects every ancestor and filters below.
-				if (! $immediate) {
-					$found->offsetSet($m);
-				} elseif (empty($selector) || $matcher->matches($m)) {
-					$found->offsetSet($m);
-					break;
-				}
-			}
-		}
-
-		if ($immediate) {
-			return $this->inst($found, null);
-		}
-
-		// jQuery returns the ancestors of a multi-element set in reverse document order, with
-		// duplicates removed. The selector is applied after that ordering, so a positional
-		// selector counts from the closest ancestor.
-		return $this->inst($this->filterCandidates($this->sortReverseDocumentOrder($found), $selector), null);
+		return $this->inst($this->walk('parentNode', $selector, 'all'), null);
 	}
 
 	/**
@@ -856,19 +760,7 @@ trait QueryFilters
 	 */
 	public function next($selector = null): Query
 	{
-		$found   = new SplObjectStorage();
-		$matcher = new NodeMatcher($selector);
-		foreach ($this->matches as $m) {
-			while (isset($m->nextSibling)) {
-				$m = $m->nextSibling;
-				if ($m->nodeType === XML_ELEMENT_NODE && (empty($selector) || $matcher->matches($m))) {
-					$found->offsetSet($m);
-					break;
-				}
-			}
-		}
-
-		return $this->inst($found, null);
+		return $this->inst($this->walk('nextSibling', $selector, 'first'), null);
 	}
 
 	/**
@@ -892,21 +784,7 @@ trait QueryFilters
 	 */
 	public function nextAll($selector = null): Query
 	{
-		$found = new SplObjectStorage();
-		foreach ($this->matches as $m) {
-			while (isset($m->nextSibling)) {
-				$m = $m->nextSibling;
-				// Every sibling beyond one already collected was collected with it.
-				if ($found->offsetExists($m)) {
-					break;
-				}
-				if ($m->nodeType === XML_ELEMENT_NODE) {
-					$found->offsetSet($m);
-				}
-			}
-		}
-
-		return $this->inst($this->filterCandidates($found, $selector), null);
+		return $this->inst($this->walk('nextSibling', $selector, 'all'), null);
 	}
 
 	/**
@@ -931,19 +809,7 @@ trait QueryFilters
 	 */
 	public function prev($selector = null): Query
 	{
-		$found   = new SplObjectStorage();
-		$matcher = new NodeMatcher($selector);
-		foreach ($this->matches as $m) {
-			while (isset($m->previousSibling)) {
-				$m = $m->previousSibling;
-				if ($m->nodeType === XML_ELEMENT_NODE && (empty($selector) || $matcher->matches($m))) {
-					$found->offsetSet($m);
-					break;
-				}
-			}
-		}
-
-		return $this->inst($found, null);
+		return $this->inst($this->walk('previousSibling', $selector, 'first'), null);
 	}
 
 	/**
@@ -967,21 +833,7 @@ trait QueryFilters
 	 */
 	public function prevAll($selector = null): Query
 	{
-		$found = new SplObjectStorage();
-		foreach ($this->matches as $m) {
-			while (isset($m->previousSibling)) {
-				$m = $m->previousSibling;
-				// Every sibling beyond one already collected was collected with it.
-				if ($found->offsetExists($m)) {
-					break;
-				}
-				if ($m->nodeType === XML_ELEMENT_NODE) {
-					$found->offsetSet($m);
-				}
-			}
-		}
-
-		return $this->inst($this->filterCandidates($found, $selector), null);
+		return $this->inst($this->walk('previousSibling', $selector, 'all'), null);
 	}
 
 	/**
@@ -1088,6 +940,61 @@ trait QueryFilters
 		}
 
 		return $this->inst($this->filterCandidates($found, $selector), null);
+	}
+
+	/**
+	 * Walk from each matched element along a DOM axis, collecting the elements passed.
+	 *
+	 * @param string      $axis
+	 *  The property to follow: 'nextSibling', 'previousSibling' or 'parentNode'.
+	 * @param string|null $selector
+	 *  An optional CSS selector.
+	 * @param string      $mode
+	 *  'all' collects every element on the axis, then keeps those matching the selector.
+	 *  'first' collects the first element that matches the selector (any element, if there is none).
+	 *  'until' collects every element before the first one that matches the selector.
+	 * @param bool        $inclusive
+	 *  Start the walk at the matched element itself rather than at its neighbour.
+	 *
+	 * @return SplObjectStorage
+	 * @throws ParseException
+	 */
+	private function walk(string $axis, $selector, string $mode, bool $inclusive = false): SplObjectStorage
+	{
+		$found   = new SplObjectStorage();
+		$matcher = empty($selector) ? null : new NodeMatcher($selector);
+		foreach ($this->matches as $m) {
+			$n = $inclusive ? $m : $m->{$axis};
+			for (; $n !== null && $n->nodeType !== XML_DOCUMENT_NODE; $n = $n->{$axis}) {
+				if ($n->nodeType !== XML_ELEMENT_NODE) {
+					continue;
+				}
+
+				if ($mode === 'all') {
+					// Every element beyond one already collected was collected with it.
+					if ($found->offsetExists($n)) {
+						break;
+					}
+					$found->offsetSet($n);
+				} elseif ($mode === 'first') {
+					if ($matcher === null || $matcher->matches($n)) {
+						$found->offsetSet($n);
+						break;
+					}
+				} elseif ($matcher !== null && $matcher->matches($n)) {
+					break;
+				} else {
+					$found->offsetSet($n);
+				}
+			}
+		}
+
+		if ($mode === 'all' && $matcher !== null) {
+			$found = $matcher->filter($found);
+		}
+
+		// jQuery returns the ancestors of a multi-element set in reverse document order.
+		return $axis === 'parentNode' && $mode !== 'first' ? $this->sortReverseDocumentOrder($found) : $found;
 	}
 
 	/**

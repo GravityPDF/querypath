@@ -2516,6 +2516,29 @@ class DOMQueryTest extends TestCase
 		$this->assertEquals(2, qp($file, 'li')->parentsUntil('root')->count());
 	}
 
+	public function testParentsUntilOutsideTheDocument()
+	{
+		$doc    = qp('<?xml version="1.0"?><root/>')->get(0)->ownerDocument;
+		$parent = $doc->createElement('parent');
+		$child  = $parent->appendChild($doc->createElement('child'));
+
+		$this->assertSame('parent', qp($child)->parentsUntil('root')->tag());
+		$this->assertSame('parent', qp($child)->parentsUntil()->tag());
+	}
+
+	public function testTraversalTreatsAnEmptySelectorAsNone()
+	{
+		$xml = '<?xml version="1.0"?><r><a/><b/><c/></r>';
+
+		$this->assertSame('c', qp($xml, 'b')->nextUntil('')->tag());
+		$this->assertSame('a', qp($xml, 'b')->prevUntil('')->tag());
+		$this->assertSame('r', qp($xml, 'b')->parentsUntil('')->tag());
+		$this->assertSame('c', qp($xml, 'b')->next('')->tag());
+		$this->assertSame('a', qp($xml, 'b')->prev('')->tag());
+		$this->assertSame('r', qp($xml, 'b')->parent('')->tag());
+		$this->assertCount(0, qp($xml, 'b')->closest(''));
+	}
+
 	public function testSort()
 	{
 		$xml = '<?xml version="1.0"?><r><s/><i>1</i><i>5</i><i>2</i><i>1</i><e/></r>';
