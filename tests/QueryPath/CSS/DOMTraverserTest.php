@@ -37,10 +37,14 @@ class DOMTraverserTest extends TestCase
 		$this->assertInstanceOf('\QueryPath\CSS\DOMTraverser', $traverser);
 	}
 
-	protected function traverser()
+	protected function traverser($xml = null)
 	{
 		$dom = new DOMDocument('1.0');
-		$dom->load($this->xml_file);
+		if ($xml === null) {
+			$dom->load($this->xml_file);
+		} else {
+			$dom->loadXML($xml);
+		}
 
 		$splos = new SPLObjectStorage();
 		$splos->offsetSet($dom->documentElement);
@@ -367,5 +371,108 @@ class DOMTraverserTest extends TestCase
 		// fprintf(STDOUT, "=========TEST=========\n\n");
 		$matches = $this->find('one, two');
 		$this->assertEquals(2, count($matches));
+	}
+
+	/**
+	 * The <ul> children are, by position: l1 p1 l2 l3 p2 l4 l5 p3.
+	 */
+	protected $nthXml = '<?xml version="1.0"?><root><ul id="ul">'
+		. 'text<!-- comment --><li id="l1"/><p id="p1"/><li id="l2"/><!-- comment --><li id="l3"/>'
+		. 'text<p id="p2"/><li id="l4"/><li id="l5"/><p id="p3"/>text'
+		. '</ul><ol id="ol"><li id="o1"/><li id="o2"/></ol></root>';
+
+	protected function ids($nodes): array
+	{
+		$ids = [];
+		foreach ($nodes as $node) {
+			$ids[] = $node->getAttribute('id');
+		}
+
+		return $ids;
+	}
+
+	public function nthPseudoClassProvider(): array
+	{
+		return [
+			// :nth-child()
+			['ul > :nth-child(odd)', ['l1', 'l2', 'p2', 'l5']],
+			['ul > :nth-child(even)', ['p1', 'l3', 'l4', 'p3']],
+			['ul > :nth-child(n)', ['l1', 'p1', 'l2', 'l3', 'p2', 'l4', 'l5', 'p3']],
+			['ul > :nth-child(3)', ['l2']],
+			['ul > :nth-child(-n+3)', ['l1', 'p1', 'l2']],
+			['ul > :nth-child(3n-5)', ['l1', 'l3', 'l5']],
+			['ul > :nth-child(0n+0)', []],
+			['ul > :nth-child(-2n-1)', []],
+			['ul > :nth-child(9)', []],
+			['li:nth-child(2n+1)', ['l1', 'l2', 'l5', 'o1']],
+
+			// :nth-last-child()
+			['ul > :nth-last-child(1)', ['p3']],
+			['ul > :nth-last-child(odd)', ['p1', 'l3', 'l4', 'p3']],
+			['ul > :nth-last-child(-n+2)', ['l5', 'p3']],
+			['ul > :nth-last-child(8)', ['l1']],
+			['li:nth-last-child(2)', ['l5', 'o1']],
+
+			// :nth-of-type(). The <li> are l1-l5 and the <p> p1-p3.
+			['li:nth-of-type(odd)', ['l1', 'l3', 'l5', 'o1']],
+			['p:nth-of-type(2)', ['p2']],
+			['ul > :nth-of-type(2)', ['l2', 'p2']],
+			['ul > :nth-of-type(-n+1)', ['l1', 'p1']],
+			['ul > :nth-of-type(4)', ['l4']],
+
+			// :nth-last-of-type()
+			['li:nth-last-of-type(1)', ['l5', 'o2']],
+			['ul > :nth-last-of-type(2)', ['p2', 'l4']],
+			['p:nth-last-of-type(n+2)', ['p1', 'p2']],
+			['ul > :nth-last-of-type(3n)', ['p1', 'l3']],
+
+			// Several :nth-* in one query share the same sibling index.
+			['li:nth-child(odd):nth-of-type(odd)', ['l1', 'l5', 'o1']],
+			['ul > :nth-child(even):nth-last-of-type(1)', ['p3']],
+			['ul > :nth-child(1), ul > :nth-last-child(1)', ['l1', 'p3']],
+
+			// Nested queries.
+			['ul > :not(:nth-child(odd))', ['p1', 'l3', 'l4', 'p3']],
+			['ul > :not(:nth-last-of-type(-n+2))', ['l1', 'p1', 'l2', 'l3']],
+		];
+	}
+
+	/**
+	 * @dataProvider nthPseudoClassProvider
+	 */
+	public function testNthPseudoClasses($selector, array $expected)
+	{
+		$this->assertSame($expected, $this->ids($this->traverser($this->nthXml)->find($selector)->matches()));
+	}
+
+	public function testNthPseudoClassesInFilterAndChildren()
+	{
+		$this->assertSame(['l1', 'l2', 'p2', 'l5'], $this->ids(qp($this->nthXml, 'ul > *')->filter(':nth-child(odd)')->get()));
+		$this->assertSame(['l5', 'p3'], $this->ids(qp($this->nthXml, 'ul')->children(':nth-last-of-type(1)')->get()));
+		$this->assertSame(['l2', 'o2'], $this->ids(qp($this->nthXml, 'ul, ol')->children('li:nth-of-type(2)')->get()));
+	}
+
+	/**
+	 * Sibling positions are indexed per query, so querying again after the DOM
+	 * changes must see the new positions.
+	 */
+	public function testNthPseudoClassesAfterMutation()
+	{
+		$qp = qp('<?xml version="1.0"?><root><li id="a"/><li id="b"/><li id="c"/></root>');
+
+		$this->assertSame(['b'], $this->ids($qp->find('li:nth-child(2)')->get()));
+		$this->assertSame(['b'], $this->ids($qp->find('li:nth-last-of-type(2)')->get()));
+
+		$qp->find('root')->prepend('<li id="new"/>')->append('<p/>');
+
+		$this->assertSame(['a'], $this->ids($qp->find('li:nth-child(2)')->get()));
+		$this->assertSame(['c'], $this->ids($qp->find('li:nth-last-child(2)')->get()));
+		$this->assertSame(['a'], $this->ids($qp->find('li:nth-of-type(2)')->get()));
+		$this->assertSame(['b'], $this->ids($qp->find('li:nth-last-of-type(2)')->get()));
+
+		$qp->find('#b')->remove();
+
+		$this->assertSame(['c'], $this->ids($qp->find('li:nth-child(3)')->get()));
+		$this->assertSame(['new', 'c'], $this->ids($qp->find('li:nth-child(odd)')->get()));
 	}
 }

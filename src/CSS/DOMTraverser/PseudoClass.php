@@ -17,6 +17,7 @@ use QueryPath\CSS\DOMTraverser;
 use QueryPath\CSS\NotImplementedException;
 use QueryPath\CSS\EventHandler;
 use QueryPath\CSS\ParseException;
+use DOMNode;
 use SPLObjectStorage;
 
 /**
@@ -25,6 +26,49 @@ use SPLObjectStorage;
  */
 class PseudoClass
 {
+
+	/**
+	 * Element positions within their sibling lists, keyed by element.
+	 *
+	 * Each entry is [[fromStart, fromEnd], [ofTypeFromStart, ofTypeFromEnd]].
+	 * Positions are only kept while a query is running: the DOM may be mutated
+	 * between queries, so they must not outlive the query that indexed them.
+	 *
+	 * @var SplObjectStorage|null
+	 */
+	protected $positions;
+
+	/**
+	 * How many queries (including nested :not() and :has() queries) are running.
+	 *
+	 * @var int
+	 */
+	protected $queryDepth = 0;
+
+	/**
+	 * Parsed an+b rules, keyed by the rule string.
+	 *
+	 * @var array
+	 */
+	protected $anbRules = [];
+
+	/**
+	 * Start remembering sibling positions, so the :nth-* pseudo-classes index
+	 * each sibling list once rather than walking it for every element.
+	 *
+	 * Calls nest; positions are forgotten when the outermost query ends.
+	 */
+	public function beginQuery(): void
+	{
+		++$this->queryDepth;
+	}
+
+	public function endQuery(): void
+	{
+		if (--$this->queryDepth === 0) {
+			$this->positions = null;
+		}
+	}
 
 	/**
 	 * Tests whether the given element matches the given pseudoclass.
@@ -352,7 +396,7 @@ class PseudoClass
 	{
 		$splos = new SPLObjectStorage();
 		$splos->offsetSet($node);
-		$traverser = new DOMTraverser($splos, true);
+		$traverser = new DOMTraverser($splos, true, null, $this);
 		$results   = $traverser->find($selector)->matches();
 
 		return count($results) > 0;
@@ -408,6 +452,30 @@ class PseudoClass
 	}
 
 	/**
+	 * Record the position of every element child of $parent.
+	 */
+	protected function indexSiblings(DOMNode $parent): void
+	{
+		$elements   = [];
+		$typeCounts = [];
+		foreach ($parent->childNodes as $child) {
+			if ($child->nodeType === XML_ELEMENT_NODE) {
+				$tag              = $child->tagName;
+				$typeCounts[$tag] = ($typeCounts[$tag] ?? 0) + 1;
+				$elements[]       = [$child, $typeCounts[$tag]];
+			}
+		}
+
+		$count = count($elements);
+		foreach ($elements as $i => [$child, $typePos]) {
+			$this->positions[$child] = [
+				[$i + 1, $count - $i],
+				[$typePos, $typeCounts[$child->tagName] - $typePos + 1],
+			];
+		}
+	}
+
+	/**
 	 * Provides functionality for all "An+B" rules.
 	 * Provides nth-child and also the functionality required for:
 	 *
@@ -433,7 +501,10 @@ class PseudoClass
 	 */
 	protected function isNthChild($node, $value, $reverse = false, $byType = false): bool
 	{
-		[$groupSize, $elementInGroup] = Util::parseAnB($value);
+		if (! isset($this->anbRules[$value])) {
+			$this->anbRules[$value] = Util::parseAnB($value);
+		}
+		[$groupSize, $elementInGroup] = $this->anbRules[$value];
 		$parent = $node->parentNode;
 		if (empty($parent)
 			|| ($groupSize === 0 && $elementInGroup === 0)
@@ -442,7 +513,15 @@ class PseudoClass
 		}
 
 		// First we need to find the position of $node in other elements.
-		if ($reverse) {
+		if ($this->queryDepth > 0) {
+			if ($this->positions === null) {
+				$this->positions = new SplObjectStorage();
+			}
+			if (! $this->positions->offsetExists($node)) {
+				$this->indexSiblings($parent);
+			}
+			$pos = $this->positions[$node][$byType ? 1 : 0][$reverse ? 1 : 0];
+		} elseif ($reverse) {
 			$pos = $this->nodePositionFromEnd($node, $byType);
 		} else {
 			$pos = $this->nodePositionFromStart($node, $byType);
