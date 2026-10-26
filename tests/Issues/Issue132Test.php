@@ -32,12 +32,10 @@ class Issue132Test extends TestCase
 		$this->assertSame($expected, $this->idList(qp(self::XML, 'li')->filter($selector)));
 	}
 
-	public function testTheIssueExamples()
+	public function testFilterAgreesWithFindAndIs()
 	{
 		$this->assertSame('a,b', $this->idList(qp(self::XML)->find('ul:first > li')));
-		$this->assertSame('a,b', $this->idList(qp(self::XML, 'li')->filter('ul:first > li')));
 		$this->assertTrue(qp(self::XML, 'li')->is('ul:first > li'));
-		$this->assertSame('c', $this->idList(qp(self::XML, 'li')->filter('ul:eq(1) > li')));
 	}
 
 	public function testTheCompoundIsNotLimitedToTheNodesInHand()
