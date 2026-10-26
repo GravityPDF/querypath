@@ -11,10 +11,7 @@ use SplObjectStorage;
 /**
  * Test nodes that are already in hand against a CSS selector.
  *
- * Unlike find(), which searches the <em>descendants</em> of the nodes it is given, the
- * supplied nodes are themselves the only candidates: for `<a><b/></a>`, `b` matches the
- * `b` element and not `a`. Combinators are still resolved against the real document, so
- * full selectors (e.g. `div > p`) keep working.
+ * The supplied nodes are themselves the only candidates, as in DOMTraverser::filterNodes().
  *
  * Prefer the set methods wherever there is a set. A per-node pass cannot answer a selector
  * that describes a position within the set (:first, :eq(n), :odd, ...), because each node
@@ -22,8 +19,9 @@ use SplObjectStorage;
  *
  * matches() remembers each per-node answer, because the walk-and-stop traversals
  * (closest(), nextUntil(), ...) revisit the same nodes from every starting element, and
- * every query shares one sibling index for the :nth-* pseudo-classes. An instance must not
- * outlive the call that made it, or a later DOM change could leave it holding stale answers.
+ * every query shares one parse of the selector and one sibling index for the :nth-*
+ * pseudo-classes. An instance must not outlive the call that made it, or a later DOM change
+ * could leave it holding stale answers.
  */
 final class NodeMatcher
 {
@@ -90,21 +88,7 @@ final class NodeMatcher
 	 */
 	public function filter(SplObjectStorage $nodes): SplObjectStorage
 	{
-		if (count($nodes) === 0) {
-			return new SplObjectStorage();
-		}
-
-		$matched = $this->matching($nodes);
-
-		// The traverser returns document order; callers such as parents() need their own.
-		$found = new SplObjectStorage();
-		foreach ($nodes as $node) {
-			if ($matched->offsetExists($node)) {
-				$found->offsetSet($node);
-			}
-		}
-
-		return $found;
+		return $this->matching($nodes);
 	}
 
 	/**
@@ -117,11 +101,11 @@ final class NodeMatcher
 	 */
 	public function matchesAny(SplObjectStorage $nodes): bool
 	{
-		return count($nodes) > 0 && count($this->matching($nodes)) > 0;
+		return count($this->matching($nodes)) > 0;
 	}
 
 	/**
-	 * Find the nodes that match the selector, in document order.
+	 * Find the nodes that match the selector, in the order they were given.
 	 *
 	 * @param SplObjectStorage $nodes
 	 *
@@ -130,12 +114,6 @@ final class NodeMatcher
 	 */
 	public function matching(SplObjectStorage $nodes): SplObjectStorage
 	{
-		// "Initialized" mode makes the traverser take the supplied set as its candidates rather
-		// than seeding them with a descendant search. The scope node is left at its default (the
-		// document element) so that `:scope` means the same here as in find(); scoping to a
-		// candidate would make every candidate match `:scope`.
-		$traverser = new DOMTraverser($nodes, true, null, $this->psHandler);
-
-		return $traverser->find($this->selector)->matches();
+		return DOMTraverser::filterNodes($nodes, $this->selector, null, $this->psHandler);
 	}
 }

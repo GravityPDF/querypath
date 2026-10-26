@@ -7,6 +7,7 @@ namespace QueryPath\CSS;
 
 use DOMDocument;
 use DOMElement;
+use DOMNode;
 use DOMNodeList;
 use DOMXPath;
 use QueryPath\CSS\DOMTraverser\Util;
@@ -164,19 +165,57 @@ class DOMTraverser implements Traverser
 	 */
 	public function find($selector): DOMTraverser
 	{
-		// Setup
-		$handler = new Selector();
-		$parser  = new Parser($selector, $handler);
-		$parser->parse();
+		return $this->findGroups($this->psHandler->parse($selector));
+	}
 
-		return $this->findGroups($handler);
+	/**
+	 * Reduce a set of nodes to those that, taken as candidates themselves, match a selector.
+	 *
+	 * Unlike find(), which searches the descendants of the nodes it starts from, only the given
+	 * nodes can match: for `<a><b/></a>`, `b` matches the `b` element and not `a`. Combinators are
+	 * still resolved against the document, so `div > p` works, and positional pseudo-classes
+	 * (`:first`, `:eq(n)`, ...) count within the given set. Nodes that are not elements never match.
+	 *
+	 * @param SplObjectStorage $nodes
+	 *   The candidates, all from one document.
+	 * @param string           $selector
+	 *   A CSS selector.
+	 * @param DOMNode|null     $scopeNode
+	 *   The element `:scope` matches. Defaults to the document element, as in find().
+	 * @param PseudoClass|null $psHandler
+	 *   Share a handler across calls, so they reuse its parsed selectors and, while it has a query
+	 *   open (see PseudoClass::beginQuery()), its sibling index.
+	 *
+	 * @return SplObjectStorage
+	 *   The matching nodes, in the order they were given.
+	 * @throws ParseException
+	 */
+	public static function filterNodes(
+		SplObjectStorage $nodes,
+		$selector,
+		$scopeNode = null,
+		?PseudoClass $psHandler = null
+	): SplObjectStorage {
+		$found = new SplObjectStorage();
+		if (count($nodes) === 0) {
+			return $found;
+		}
+
+		$traverser = new self($nodes, true, $scopeNode, $psHandler);
+		$matched   = $traverser->find($selector)->matches();
+
+		// The traverser returns document order.
+		foreach ($nodes as $node) {
+			if ($matched->offsetExists($node)) {
+				$found->offsetSet($node);
+			}
+		}
+
+		return $found;
 	}
 
 	/**
 	 * Find the matches of an already-parsed selector.
-	 *
-	 * The traverser modifies the SimpleSelector objects it is given, so they must
-	 * not be reused.
 	 *
 	 * @param iterable $handler
 	 *   The SimpleSelector[] groups, as a Selector yields them.
@@ -289,7 +328,10 @@ class DOMTraverser implements Traverser
 				return $node instanceof DOMElement;
 			});
 		} else {
-			$candidates = $this->initialMatch($selectorGroup[$index], $this->matches);
+			// initialMatch() consumes the parts of the simple selector it matched on. Give it a copy,
+			// so the caller's parsed selector can be reused.
+			$selectorGroup[$index] = clone $selectorGroup[$index];
+			$candidates            = $this->initialMatch($selectorGroup[$index], $this->matches);
 		}
 
 		$setFilters           = $selectorGroup[$index]->setFilterPseudoClasses();
@@ -354,8 +396,7 @@ class DOMTraverser implements Traverser
 			return [];
 		}
 
-		$traverser = new self($this->toMatches($nodes), true, $this->scopeNode, $this->psHandler);
-		$inner     = $traverser->find($value)->matches();
+		$inner = self::filterNodes($this->toMatches($nodes), $value, $this->scopeNode, $this->psHandler);
 
 		$filtered = [];
 		foreach ($nodes as $node) {

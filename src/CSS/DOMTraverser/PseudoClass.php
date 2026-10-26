@@ -63,6 +63,13 @@ class PseudoClass
 	protected $relativeSelectors = [];
 
 	/**
+	 * Parsed selectors, keyed by the selector string. See parse().
+	 *
+	 * @var Selector[]
+	 */
+	protected $selectors = [];
+
+	/**
 	 * Start remembering sibling positions, so the :nth-* pseudo-classes index
 	 * each sibling list once rather than walking it for every element.
 	 *
@@ -80,6 +87,30 @@ class PseudoClass
 		if (--$this->queryDepth === 0) {
 			$this->positions = null;
 		}
+	}
+
+	/**
+	 * Parse a selector, reusing an earlier parse of the same string.
+	 *
+	 * DOMTraverser does not modify a parsed selector, so every query that shares this handler can
+	 * share the parse.
+	 *
+	 * @param string $selector
+	 *
+	 * @return Selector
+	 * @throws ParseException
+	 */
+	public function parse($selector): Selector
+	{
+		if (! isset($this->selectors[$selector])) {
+			$handler = new Selector();
+			$parser  = new Parser($selector, $handler);
+			$parser->parse();
+
+			$this->selectors[$selector] = $handler;
+		}
+
+		return $this->selectors[$selector];
 	}
 
 	/**
@@ -502,15 +533,9 @@ class PseudoClass
 	{
 		$splos = new SPLObjectStorage();
 		$splos->offsetSet($root);
-
-		// The traverser consumes the element and ID selectors as it matches them, so give it a copy.
-		$copy = [];
-		foreach ($group as $simpleSelector) {
-			$copy[] = clone $simpleSelector;
-		}
 		$traverser = new DOMTraverser($splos, $self, $scope, $this);
 
-		return count($traverser->findGroups([$copy])->matches()) > 0;
+		return count($traverser->findGroups([$group])->matches()) > 0;
 	}
 
 	/**
@@ -522,10 +547,8 @@ class PseudoClass
 	{
 		$splos = new SPLObjectStorage();
 		$splos->offsetSet($node);
-		$traverser = new DOMTraverser($splos, true, null, $this);
-		$results   = $traverser->find($selector)->matches();
 
-		return count($results) > 0;
+		return count(DOMTraverser::filterNodes($splos, $selector, null, $this)) > 0;
 	}
 
 	/**
