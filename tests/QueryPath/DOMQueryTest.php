@@ -2460,14 +2460,14 @@ class DOMQueryTest extends TestCase
 	{
 		$file = DATA_FILE;
 		$this->assertEquals(1, qp($file, 'inner')->even()->count());
-		$this->assertEquals(2, qp($file, 'li')->even()->count());
+		$this->assertEquals(3, qp($file, 'li')->even()->count());
 	}
 
 	public function testOdd()
 	{
 		$file = DATA_FILE;
 		$this->assertEquals(1, qp($file, 'inner')->odd()->count());
-		$this->assertEquals(3, qp($file, 'li')->odd()->count());
+		$this->assertEquals(2, qp($file, 'li')->odd()->count());
 	}
 
 	public function testFirst()
