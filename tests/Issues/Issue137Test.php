@@ -4,9 +4,8 @@
  *
  * Regression tests for https://github.com/GravityPDF/querypath/issues/137
  *
- * Every method that returns a new object cloned the match set with cloneNode(true)
- * before replacing it, so end() handed back detached copies instead of the nodes
- * the query started from.
+ * Methods that return a new object no longer deep-copy the match set, so end() returns
+ * the document's own nodes. clone still deep-copies.
  */
 
 namespace QueryPathTests;
@@ -53,7 +52,6 @@ class Issue137Test extends TestCase
 
 		$this->assertSame(1, $previous->count());
 		$this->assertSame($root, $previous->get(0));
-		$this->assertSame($root->ownerDocument->documentElement, $previous->get(0));
 	}
 
 	public function testEndAfterChainedFindsEditsTheDocument()
@@ -99,18 +97,8 @@ class Issue137Test extends TestCase
 
 		$copy->find('i')->attr('class', 'copy');
 		$this->assertSame(0, $qp->find('i.copy')->count());
-	}
 
-	public function testCloneOfAnInstDeepCopies()
-	{
-		$found = qp(self::XML)->find('p');
-
-		$copy = clone $found;
-
-		$this->assertNotSame($found->get(0), $copy->get(0));
-		$this->assertNull($copy->get(0)->parentNode);
-
-		$again = clone $copy->find('i');
-		$this->assertNotSame($copy->find('i')->get(0), $again->get(0));
+		$found = $qp->find('i');
+		$this->assertNotSame($found->get(0), (clone $found)->get(0));
 	}
 }

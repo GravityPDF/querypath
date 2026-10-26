@@ -1537,11 +1537,8 @@ class DOMQuery extends DOM
 	protected function inst($matches, $selector): Query
 	{
 		$this->shallowClone = true;
-		try {
-			$dolly = clone $this;
-		} finally {
-			$this->shallowClone = false;
-		}
+		$dolly              = clone $this;
+		$this->shallowClone = false;
 		$dolly->setMatches($matches);
 
 		if (isset($selector)) {
