@@ -420,12 +420,11 @@ class DOMTraverser implements Traverser
 
 		$this->resolvingIndex = $previous;
 
-		$inListOrder = $index === 0 && $this->candidateList !== null;
-		if (! $inListOrder) {
+		if ($index !== 0 || $this->candidateList === null) {
 			$matched = Util::sortDocumentOrder($matched);
 		}
 		foreach ($setFilters as $pseudoClass) {
-			$matched = $this->applySetFilter($matched, $pseudoClass, $inListOrder);
+			$matched = $this->applySetFilter($matched, $pseudoClass);
 		}
 
 		return $this->toMatches($matched);
@@ -436,13 +435,11 @@ class DOMTraverser implements Traverser
 	 *
 	 * @param array $nodes
 	 * @param array $pseudoClass
-	 * @param bool  $inListOrder
-	 *   Count a positional argument of :not() or :matches() in the order of $nodes.
 	 *
 	 * @return array
 	 * @throws ParseException
 	 */
-	protected function applySetFilter(array $nodes, array $pseudoClass, bool $inListOrder = false): array
+	protected function applySetFilter(array $nodes, array $pseudoClass): array
 	{
 		$name  = strtolower($pseudoClass['name']);
 		$value = isset($pseudoClass['value']) ? $pseudoClass['value'] : null;
@@ -454,9 +451,7 @@ class DOMTraverser implements Traverser
 		// :not() and :matches() whose argument uses a positional filter.
 		// The argument has to see the whole result set, exactly as jQuery's
 		// :not(:first) does, so run it over this set and keep or drop the result.
-		$inner = $inListOrder
-			? self::filterList($nodes, $value, $this->scopeNode, $this->psHandler)
-			: self::filterNodes($this->toMatches($nodes), $value, $this->scopeNode, $this->psHandler);
+		$inner = self::filterList($nodes, $value, $this->scopeNode, $this->psHandler);
 		if ($name !== 'not') {
 			return iterator_to_array($inner, false);
 		}

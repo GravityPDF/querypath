@@ -1007,9 +1007,9 @@ trait QueryFilters
 	 * Walk from each matched element to the end of a DOM axis, keeping the elements that match
 	 * an optional selector.
 	 *
-	 * As in jQuery, a positional selector counts along the walks joined in walk order, an element
-	 * reached from two starting elements counted twice, so prevAll(':first') is the nearest
-	 * previous sibling.
+	 * As in jQuery, a positional selector counts along the walks joined in walk order, so
+	 * prevAll(':first') is the nearest previous sibling. An element reached from more than one
+	 * starting element is counted once per walk.
 	 *
 	 * @param string      $axis
 	 * @param string|null $selector
