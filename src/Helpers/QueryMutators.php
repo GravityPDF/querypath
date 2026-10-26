@@ -795,7 +795,6 @@ trait QueryMutators
 	 */
 	public function remove($selector = null): Query
 	{
-		// Not find(), which deep-clones the match set via inst().
 		$matches = empty($selector) ? $this->matches : (new DOMTraverser($this->matches))->find($selector)->matches();
 
 		$found = new SplObjectStorage();
