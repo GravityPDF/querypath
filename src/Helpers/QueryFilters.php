@@ -474,8 +474,8 @@ trait QueryFilters
 	/**
 	 * Get the last match.
 	 *
-	 * As in jQuery, this is the same as eq(-1): the last node of any type, so
-	 * after contents() it may be a text node. Use children()->last() or
+	 * As in jQuery, this is the last node of any type, so after contents() it
+	 * may be a text node. Use children()->last() or
 	 * filter('*')->last() for the last element.
 	 *
 	 * @return DOMQuery
@@ -488,7 +488,7 @@ trait QueryFilters
 	 */
 	public function last(): Query
 	{
-		return $this->eq(-1);
+		return $this->eq($this->count() - 1);
 	}
 
 	/**

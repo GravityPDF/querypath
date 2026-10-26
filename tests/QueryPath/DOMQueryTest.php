@@ -757,7 +757,7 @@ class DOMQueryTest extends TestCase
 		[$qp, $a] = $this->contentsWithElement($xml);
 
 		$this->assertSame([$qp->get(0)], $qp->first()->get());
-		$this->assertSame([$qp->get(-1)], $qp->last()->get());
+		$this->assertSame([$qp->get($qp->count() - 1)], $qp->last()->get());
 		$this->assertSame([$a], $qp->filter('*')->first()->get());
 		$this->assertSame([$a], $qp->filter('*')->last()->get());
 	}

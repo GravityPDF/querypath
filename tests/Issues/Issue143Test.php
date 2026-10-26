@@ -39,7 +39,7 @@ class Issue143Test extends TestCase
 		$c = $this->contents();
 
 		$this->assertSame(['z'], $this->describe($c->last()));
-		$this->assertSame($c->eq(-1)->get(), $c->last()->get());
+		$this->assertSame($c->eq($c->count() - 1)->get(), $c->last()->get());
 	}
 
 	public function testOnlyElementsAfterFilteringOrChildren()
