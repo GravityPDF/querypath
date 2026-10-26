@@ -508,7 +508,7 @@ class PseudoClass
 		foreach ($group as $simpleSelector) {
 			$copy[] = clone $simpleSelector;
 		}
-		$traverser = new DOMTraverser($splos, $self, $scope);
+		$traverser = new DOMTraverser($splos, $self, $scope, $this);
 
 		return count($traverser->findGroups([$copy])->matches()) > 0;
 	}

@@ -721,6 +721,28 @@ class PseudoClassTest extends TestCase
 		$this->assertSame(1, $ps->indexed);
 	}
 
+	/**
+	 * :has() runs a query per element, and per later sibling, which must all reuse one index.
+	 *
+	 * @testWith ["a:has(+ b:nth-child(even))", 50]
+	 *           ["a:has(~ b:nth-last-child(1))", 50]
+	 *           ["root:has(> b:nth-of-type(50))", 1]
+	 */
+	public function testHasQueriesShareTheSiblingIndex($selector, $count)
+	{
+		$xml = '<?xml version="1.0"?><root>' . str_repeat('<a/><b/>', 50) . '</root>';
+		[$ele, $root] = $this->doc($xml, 'root');
+
+		$splos = new SplObjectStorage();
+		$splos->offsetSet($root);
+
+		$ps        = $this->countingPseudoClass();
+		$traverser = new DOMTraverser($splos, false, null, $ps);
+
+		$this->assertCount($count, $traverser->find($selector)->matches());
+		$this->assertSame(1, $ps->indexed);
+	}
+
 	public function testNthChildDoesNotReusePositionsFromAnEarlierQuery()
 	{
 		$xml = '<?xml version="1.0"?><root><a/><b/><c/></root>';
