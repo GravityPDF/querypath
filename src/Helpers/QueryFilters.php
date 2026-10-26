@@ -278,23 +278,14 @@ trait QueryFilters
 	public function slice($start, $end = null): Query
 	{
 		$count = $this->count();
-		$start = $start < 0 ? $start + $count : $start;
-		if ($end === null) {
-			$end = $count;
-		} elseif ($end < 0) {
-			$end += $count;
-		}
+		$start = max(0, Util::normalizePositionalIndex($start, $count));
+		$end   = $end === null ? $count : Util::normalizePositionalIndex($end, $count);
 
 		$found = new SplObjectStorage();
-		$i     = 0;
-		foreach ($this->matches as $m) {
-			if ($i >= $end) {
-				break;
-			}
-			if ($i >= $start) {
+		if ($start < $end) {
+			foreach (array_slice(iterator_to_array($this->matches, false), $start, $end - $start) as $m) {
 				$found->offsetSet($m);
 			}
-			++$i;
 		}
 
 		return $this->inst($found, null);

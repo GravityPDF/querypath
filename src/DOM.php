@@ -10,6 +10,7 @@ use DOMXPath;
 use IteratorAggregate;
 use Masterminds\HTML5;
 use QueryPath\CSS\DOMTraverser;
+use QueryPath\CSS\DOMTraverser\Util;
 use QueryPath\Entities;
 use SimpleXMLElement;
 use SplObjectStorage;
@@ -630,9 +631,7 @@ abstract class DOM implements Query, IteratorAggregate, Countable
 	protected function getNthMatch(int $index)
 	{
 		$count = $this->matches->count();
-		if ($index < 0) {
-			$index += $count;
-		}
+		$index = Util::normalizePositionalIndex($index, $count);
 		if ($index < 0 || $index >= $count) {
 			return null;
 		}
