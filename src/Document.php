@@ -25,6 +25,7 @@ use DOMDocument;
  * QueryPath serializes it exactly as it was handed over.
  *
  * @see DOM::normalizeProcessingInstructions()
+ * @see QueryPath::withHTML5(), which retypes the document Masterminds builds
  * @see DOMQuery::saveDocumentHTML()
  *
  * @ingroup querypath_core

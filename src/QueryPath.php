@@ -87,6 +87,7 @@
 
 namespace QueryPath;
 
+use DOMDocument;
 use Masterminds\HTML5;
 use QueryPath\ExtensionRegistry;
 
@@ -273,6 +274,14 @@ class QueryPath
 			} else {
 				$source = $html5->load($source);
 			}
+
+			// Masterminds already satisfies the invariant Document records, but builds a plain
+			// DOMDocument. registerNodeClass() cannot retype a live wrapper, so release it and
+			// let PHP rebuild it as a Document when it is next reached through a node.
+			$source->registerNodeClass(DOMDocument::class, Document::class);
+			$doctype = $source->doctype;
+			$source  = null;
+			$source  = $doctype->ownerDocument;
 		}
 
 		return new $qpClass($source, $selector, $options);
