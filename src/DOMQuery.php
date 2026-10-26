@@ -57,6 +57,11 @@ class DOMQuery extends DOM
 	private $ext = []; // Extensions array.
 
 	/**
+	 * Set while inst() clones this object, so __clone() skips copying the matches it is about to replace.
+	 */
+	private $shallowClone = false;
+
+	/**
 	 * The number of current matches.
 	 *
 	 * @var int
@@ -1531,7 +1536,9 @@ class DOMQuery extends DOM
 	 */
 	protected function inst($matches, $selector): Query
 	{
-		$dolly = clone $this;
+		$this->shallowClone = true;
+		$dolly              = clone $this;
+		$this->shallowClone = false;
 		$dolly->setMatches($matches);
 
 		if (isset($selector)) {
@@ -1579,6 +1586,12 @@ class DOMQuery extends DOM
 	 */
 	public function __clone()
 	{
+		if ($this->shallowClone) {
+			$this->shallowClone = false;
+
+			return;
+		}
+
 		//XXX: Should we clone the document?
 
 		// Make sure we clone the kids.
