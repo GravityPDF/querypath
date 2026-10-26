@@ -26,6 +26,8 @@ use SPLObjectStorage;
 /**
  *  The PseudoClass handler.
  *
+ * It also holds what queries can share: parsed selectors and, while a query is open, sibling
+ * positions. Nested and per-node queries are passed their caller's handler for that reason.
  */
 class PseudoClass
 {

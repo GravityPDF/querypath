@@ -76,12 +76,9 @@ final class NodeMatcher
 	}
 
 	/**
-	 * Reduce a set of nodes to those that match the selector, preserving their order.
-	 *
-	 * Nodes that are not elements can never match a CSS selector, and are skipped.
+	 * Alias of matching().
 	 *
 	 * @param SplObjectStorage $nodes
-	 *   The candidate nodes.
 	 *
 	 * @return SplObjectStorage
 	 * @throws ParseException
@@ -105,7 +102,9 @@ final class NodeMatcher
 	}
 
 	/**
-	 * Find the nodes that match the selector, in the order they were given.
+	 * Reduce a set of nodes to those that match the selector, in the order they were given.
+	 *
+	 * Nodes that are not elements can never match a CSS selector, and are skipped.
 	 *
 	 * @param SplObjectStorage $nodes
 	 *

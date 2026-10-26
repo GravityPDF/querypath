@@ -477,6 +477,7 @@ class DOMTraverserTest extends TestCase
 		$this->assertSame(['c'], $this->ids($qp->find('li:nth-child(3)')->get()));
 		$this->assertSame(['new', 'c'], $this->ids($qp->find('li:nth-child(odd)')->get()));
 	}
+
 	/**
 	 * Load $nthXml and collect the nodes with the given IDs, in the given order.
 	 */
@@ -569,7 +570,7 @@ class DOMTraverserTest extends TestCase
 		$splos->offsetSet($dom->documentElement);
 
 		$ps = new PseudoClass();
-		foreach ([1, 2] as $run) {
+		for ($i = 0; $i < 2; $i++) {
 			$this->assertSame($expected, $this->ids((new DOMTraverser($splos, false, null, $ps))->find($selector)->matches()));
 		}
 	}

@@ -196,15 +196,18 @@ class DOMTraverser implements Traverser
 		$scopeNode = null,
 		?PseudoClass $psHandler = null
 	): SplObjectStorage {
-		$found = new SplObjectStorage();
 		if (count($nodes) === 0) {
-			return $found;
+			return new SplObjectStorage();
 		}
 
 		$traverser = new self($nodes, true, $scopeNode, $psHandler);
 		$matched   = $traverser->find($selector)->matches();
+		if (count($matched) < 2) {
+			return $matched;
+		}
 
 		// The traverser returns document order.
+		$found = new SplObjectStorage();
 		foreach ($nodes as $node) {
 			if ($matched->offsetExists($node)) {
 				$found->offsetSet($node);
@@ -392,10 +395,6 @@ class DOMTraverser implements Traverser
 		// :not() and :matches() whose argument uses a positional filter.
 		// The argument has to see the whole result set, exactly as jQuery's
 		// :not(:first) does, so run it over this set and keep or drop the result.
-		if (empty($nodes)) {
-			return [];
-		}
-
 		$inner = self::filterNodes($this->toMatches($nodes), $value, $this->scopeNode, $this->psHandler);
 
 		$filtered = [];
