@@ -263,7 +263,8 @@ trait QueryFilters
 	 * Narrow the items in this object down to only a slice of the starting items.
 	 *
 	 * @param integer $start
-	 *  Where in the list of matches to begin the slice.
+	 *  Where in the list of matches to begin the slice. A negative index counts
+	 *  back from the end.
 	 * @param integer $length
 	 *  The number of items to include in the slice. If nothing is specified, the
 	 *  all remaining matches (from $start onward) will be included in the sliced
@@ -279,6 +280,9 @@ trait QueryFilters
 		$found = new SplObjectStorage();
 		if ($start >= $this->count()) {
 			return $this->inst($found, null);
+		}
+		if ($start < 0) {
+			$start += $this->count();
 		}
 
 		$i = $j = 0;
@@ -620,8 +624,9 @@ trait QueryFilters
 	 * with {@link end()}.
 	 *
 	 * @param $index
-	 *  The index of the element to keep. The rest will be
-	 *  discarded.
+	 *  The zero-based index of the item to keep. The rest will be
+	 *  discarded. A negative index counts back from the end, so -1 keeps
+	 *  the last item. An index out of range gives an empty set.
 	 *
 	 * @return DOMQuery
 	 * @throws ParseException
