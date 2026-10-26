@@ -1011,7 +1011,7 @@ class DOMQueryTest extends TestCase
 		$this->assertEquals(0, qp($file, 'li')->slice(9)->count());
 
 		// The first item should be #two, the last #three
-		$qp = qp($file, 'li')->slice(1, 2);
+		$qp = qp($file, 'li')->slice(1, 3);
 		$this->assertEquals(2, $qp->count());
 		$this->assertEquals('two', $qp->attr('id'));
 		$this->assertEquals('three', $qp->eq(1)->attr('id'));
