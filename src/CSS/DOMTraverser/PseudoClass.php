@@ -409,9 +409,9 @@ class PseudoClass
 	 */
 	protected function has($node, $selector): bool
 	{
-		foreach ($this->relativeSelector($selector) as [$group, $combinator, $nextOnly]) {
+		foreach ($this->relativeSelector($selector) as [$group, $combinator, $nextOnly, $descends]) {
 			if (! ($combinator & (SimpleSelector::ADJACENT | SimpleSelector::SIBLING))) {
-				if ($this->findsAny($node, $node, $group)) {
+				if ($this->findsAny($node, $node, $group, false)) {
 					return true;
 				}
 				continue;
@@ -423,7 +423,10 @@ class PseudoClass
 					continue;
 				}
 
-				if ($this->findsAny($next, $node, $group)) {
+				// The sibling can match itself, and its descendants when the group goes on to them (`+ ul li`).
+				if ($this->findsAny($next, $node, $group, true)
+					|| ($descends && $this->findsAny($next, $node, $group, false))
+				) {
 					return true;
 				}
 
@@ -443,7 +446,8 @@ class PseudoClass
 	 * which becomes :scope. Any other group (`li`) is a descendant of :scope.
 	 *
 	 * @return array
-	 *   One [group, anchor combinator, whether only the next sibling can match] per group.
+	 *   One [group, anchor combinator, whether only the next sibling can match, whether the group
+	 *   reaches below the sibling it starts from] per group.
 	 * @throws ParseException
 	 */
 	protected function relativeSelector($selector): array
@@ -470,28 +474,32 @@ class PseudoClass
 
 			// `+ li` can only be the next sibling, unless the group goes on to another one (`+ li ~ li`).
 			$nextOnly = $anchor->combinator === SimpleSelector::ADJACENT;
+			$descends = false;
 			foreach (array_slice($group, 0, -1) as $simpleSelector) {
 				if ($simpleSelector->combinator & $sibling) {
 					$nextOnly = false;
+				} elseif ($simpleSelector->combinator) {
+					$descends = true;
 				}
 			}
 
-			$groups[] = [$group, $anchor->combinator, $nextOnly];
+			$groups[] = [$group, $anchor->combinator, $nextOnly, $descends];
 		}
 
 		return $this->relativeSelectors[$selector] = $groups;
 	}
 
 	/**
-	 * Whether $group matches $root or any of its descendants.
+	 * Whether $group matches $root itself or, when $self is FALSE, any of its descendants.
 	 *
 	 * @param DOMElement       $root
 	 * @param DOMElement       $scope
 	 * @param SimpleSelector[] $group
+	 * @param bool             $self
 	 *
 	 * @throws ParseException
 	 */
-	protected function findsAny(DOMElement $root, DOMElement $scope, array $group): bool
+	protected function findsAny(DOMElement $root, DOMElement $scope, array $group, bool $self): bool
 	{
 		$splos = new SPLObjectStorage();
 		$splos->offsetSet($root);
@@ -501,7 +509,7 @@ class PseudoClass
 		foreach ($group as $simpleSelector) {
 			$copy[] = clone $simpleSelector;
 		}
-		$traverser = new DOMTraverser($splos, false, $scope);
+		$traverser = new DOMTraverser($splos, $self, $scope);
 
 		return count($traverser->findGroups([$copy])->matches()) > 0;
 	}
