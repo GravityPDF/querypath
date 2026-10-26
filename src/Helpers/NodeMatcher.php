@@ -115,13 +115,9 @@ final class NodeMatcher
 	 */
 	private function documentMatches($document): SplObjectStorage
 	{
-		// As in qp($document), the document element stands in for the document, so it can match.
-		$scope = new SplObjectStorage();
-		if ($document->documentElement) {
-			$scope->offsetSet($document->documentElement);
-		}
-
-		return (new DOMTraverser($scope, false, null, $this->psHandler))->find($this->selector)->matches();
+		return (new DOMTraverser(DOMTraverser::documentScope($document), false, null, $this->psHandler))
+			->find($this->selector)
+			->matches();
 	}
 
 	/**
