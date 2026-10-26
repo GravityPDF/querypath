@@ -16,7 +16,6 @@ namespace QueryPath;
 use DOMDocument;
 use DOMNode;
 use DOMXPath;
-use QueryPath\CSS\DOMTraverser;
 use Masterminds\HTML5;
 use QueryPath\Entities;
 use QueryPath\Exception;
@@ -145,10 +144,7 @@ class DOMQuery extends DOM
 	 */
 	public function find($selector): Query
 	{
-		$query = new DOMTraverser($this->matches);
-		$query->find($selector);
-
-		return $this->inst($query->matches(), null);
+		return $this->inst($this->findMatches($selector), null);
 	}
 
 	/**
@@ -159,9 +155,7 @@ class DOMQuery extends DOM
 	 */
 	public function findInPlace($selector)
 	{
-		$query = new DOMTraverser($this->matches);
-		$query->find($selector);
-		$this->setMatches($query->matches());
+		$this->setMatches($this->findMatches($selector));
 
 		return $this;
 	}

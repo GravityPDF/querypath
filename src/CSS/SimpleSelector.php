@@ -196,17 +196,17 @@ class SimpleSelector
 	}
 
 	/**
+	 * Whether this restricts the elements it matches. The inverse of isBlank().
+	 *
+	 * As with isBlank(), the combinator is not counted: it relates this simple selector to the next,
+	 * and does not narrow what this one matches.
+	 *
 	 * @return bool
+	 * @deprecated Use ! isBlank(). This will be removed in 5.0.
 	 */
 	public function notEmpty(): bool
 	{
-		return ! empty($this->element)
-			   && ! empty($this->id)
-			   && ! empty($this->classes)
-			   && ! empty($this->combinator)
-			   && ! empty($this->attributes)
-			   && ! empty($this->pseudoClasses)
-			   && ! empty($this->pseudoElements);
+		return ! $this->isBlank();
 	}
 
 	public function __toString()

@@ -851,7 +851,7 @@ class DOMQueryTest extends TestCase
 		$this->assertEquals('two', qp($file, 'li')->filter(':eq(1)')->attr('id'));
 		$this->assertCount(2, qp($file, 'li')->filter(':odd'));
 
-		// :scope refers to the document element, exactly as it does in find().
+		// :scope refers to the document element, exactly as it does in is().
 		$this->assertEquals(0, qp($file, 'inner')->filter(':scope')->count());
 		$this->assertEquals(1, qp($file, 'root')->filter(':scope')->count());
 	}

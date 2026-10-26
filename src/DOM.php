@@ -10,6 +10,8 @@ use DOMXPath;
 use IteratorAggregate;
 use Masterminds\HTML5;
 use QueryPath\CSS\DOMTraverser;
+use QueryPath\CSS\DOMTraverser\PseudoClass;
+use QueryPath\CSS\DOMTraverser\Util;
 use QueryPath\Entities;
 use SimpleXMLElement;
 use SplObjectStorage;
@@ -168,9 +170,7 @@ abstract class DOM implements Query, IteratorAggregate, Countable
 			// We don't issue a find because that creates a new DOMQuery.
 			//$this->find($string);
 
-			$query = new DOMTraverser($this->matches);
-			$query->find($selector);
-			$this->setMatches($query->matches());
+			$this->setMatches($this->findMatches($selector));
 		}
 	}
 
@@ -369,6 +369,49 @@ abstract class DOM implements Query, IteratorAggregate, Countable
 
 		// EXPERIMENTAL: Support for qp()->length.
 		$this->length = $this->matches->count();
+	}
+
+	/**
+	 * Search the descendants of the matched nodes for a selector.
+	 *
+	 * `:scope` is the node the search starts from. When there is more than one and the selector uses
+	 * `:scope`, it is run from each node in turn, as jQuery's find() is, and the results are merged in
+	 * document order.
+	 *
+	 * @param string $selector
+	 *
+	 * @return SplObjectStorage
+	 * @throws CSS\ParseException
+	 */
+	protected function findMatches($selector): SplObjectStorage
+	{
+		$nodes = iterator_to_array($this->matches, false);
+
+		if (count($nodes) === 1) {
+			$scope = $nodes[0] instanceof DOMElement ? $nodes[0] : null;
+
+			return (new DOMTraverser($this->matches, false, $scope))->find($selector)->matches();
+		}
+
+		if (! Util::selectorUsesScope($selector)) {
+			return (new DOMTraverser($this->matches))->find($selector)->matches();
+		}
+
+		$psHandler = new PseudoClass();
+		$found     = new SplObjectStorage();
+		foreach ($nodes as $node) {
+			$start = new SplObjectStorage();
+			$start->offsetSet($node);
+			$scope = $node instanceof DOMElement ? $node : null;
+			$found->addAll((new DOMTraverser($start, false, $scope, $psHandler))->find($selector)->matches());
+		}
+
+		$sorted = new SplObjectStorage();
+		foreach (Util::sortDocumentOrder(iterator_to_array($found, false)) as $node) {
+			$sorted->offsetSet($node);
+		}
+
+		return $sorted;
 	}
 
 	/**

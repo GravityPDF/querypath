@@ -131,4 +131,35 @@ class SelectorTest extends TestCase
 		$iterator = $selector->getIterator();
 		$this->assertInstanceOf('\Iterator', $iterator);
 	}
+
+	/**
+	 * @dataProvider notEmptySelectors
+	 */
+	public function testNotEmptyIsTheInverseOfIsBlank($selector, $index, $expected)
+	{
+		$simpleSelector = $this->parse($selector)->toArray()[0][$index];
+
+		$this->assertSame($expected, $simpleSelector->notEmpty());
+		$this->assertSame(! $expected, $simpleSelector->isBlank());
+	}
+
+	public function notEmptySelectors(): array
+	{
+		return [
+			'element'                   => ['li', 0, true],
+			'ID'                        => ['#a', 0, true],
+			'class'                     => ['.a', 0, true],
+			'attribute'                 => ['[a]', 0, true],
+			'pseudo-class'              => [':first-child', 0, true],
+			'pseudo-element'            => ['::before', 0, true],
+			'every part'                => ['ns|li#a.b[c]:first-child::before', 0, true],
+			'element with a combinator' => ['ul > li', 1, true],
+			'blank with a combinator'   => ['> li', 1, false],
+		];
+	}
+
+	public function testNotEmptyOnANewSelector()
+	{
+		$this->assertFalse((new SimpleSelector())->notEmpty());
+	}
 }
