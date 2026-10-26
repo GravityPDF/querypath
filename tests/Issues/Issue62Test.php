@@ -18,6 +18,16 @@ class Issue62Test extends TestCase
 	public const AMPLIFY_FILE = 'tests/amplify.xml';
 
 	/**
+	 * The single <Name> element nested in Demographics > Age.
+	 *
+	 * @return \QueryPath\Query
+	 */
+	private function name()
+	{
+		return qp(self::AMPLIFY_FILE, 'Demographics > Age > Name');
+	}
+
+	/**
 	 * Collect the tag names of every element in a result set.
 	 *
 	 * @param \QueryPath\Query $query
@@ -39,7 +49,7 @@ class Issue62Test extends TestCase
 	 */
 	public function testParentsFiltersAncestorsBySelector()
 	{
-		$qp = qp(self::AMPLIFY_FILE, 'Demographics > Age > Name');
+		$qp = $this->name();
 
 		$this->assertEquals(1, $qp->count());
 		$this->assertEquals(['Demographics'], $this->tags($qp->parents('Demographics')));
@@ -53,7 +63,7 @@ class Issue62Test extends TestCase
 	 */
 	public function testParentsDoesNotMatchAncestorsThatMerelyContainTheSelector()
 	{
-		$qp = qp(self::AMPLIFY_FILE, 'Demographics > Age > Name');
+		$qp = $this->name();
 
 		$this->assertEquals(['Age'], $this->tags($qp->parents('Age')));
 		$this->assertEquals(['AmplifyReturn'], $this->tags($qp->parents('AmplifyReturn')));
@@ -66,7 +76,7 @@ class Issue62Test extends TestCase
 	 */
 	public function testParentsWithoutSelectorReturnsEveryAncestor()
 	{
-		$qp = qp(self::AMPLIFY_FILE, 'Demographics > Age > Name');
+		$qp = $this->name();
 
 		$this->assertEquals(
 			['Age', 'Demographics', 'AmplifyReturn', 'ns1:AmplifyResponse'],
@@ -79,7 +89,7 @@ class Issue62Test extends TestCase
 	 */
 	public function testParentsMatchesNamespacedAncestors()
 	{
-		$qp = qp(self::AMPLIFY_FILE, 'Demographics > Age > Name');
+		$qp = $this->name();
 
 		$this->assertEquals(['ns1:AmplifyResponse'], $this->tags($qp->parents('ns1|AmplifyResponse')));
 		$this->assertEquals(['ns1:AmplifyResponse'], $this->tags($qp->parents('*|AmplifyResponse')));
@@ -93,7 +103,7 @@ class Issue62Test extends TestCase
 	 */
 	public function testParentsAcceptsFullSelectorsWithCombinators()
 	{
-		$qp = qp(self::AMPLIFY_FILE, 'Demographics > Age > Name');
+		$qp = $this->name();
 
 		$this->assertEquals(['Demographics'], $this->tags($qp->parents('AmplifyReturn > Demographics')));
 		$this->assertEquals(0, $qp->parents('Styles > Demographics')->count());
@@ -133,7 +143,7 @@ class Issue62Test extends TestCase
 	 */
 	public function testParentsUntilStopsAtTheMatchingAncestor()
 	{
-		$qp = qp(self::AMPLIFY_FILE, 'Demographics > Age > Name');
+		$qp = $this->name();
 
 		$this->assertEquals(['Age'], $this->tags($qp->parentsUntil('Demographics')));
 
@@ -151,7 +161,7 @@ class Issue62Test extends TestCase
 	 */
 	public function testClosestMatchesTheAncestorItself()
 	{
-		$qp = qp(self::AMPLIFY_FILE, 'Demographics > Age > Name');
+		$qp = $this->name();
 
 		$this->assertEquals(['Age'], $this->tags($qp->closest('Age')));
 		$this->assertEquals(['Demographics'], $this->tags($qp->closest('Demographics')));
@@ -167,7 +177,7 @@ class Issue62Test extends TestCase
 	 */
 	public function testParentMatchesTheAncestorItself()
 	{
-		$qp = qp(self::AMPLIFY_FILE, 'Demographics > Age > Name');
+		$qp = $this->name();
 
 		$this->assertEquals(['Age'], $this->tags($qp->parent('Age')));
 		$this->assertEquals(['AmplifyReturn'], $this->tags($qp->parent('AmplifyReturn')));
@@ -179,7 +189,7 @@ class Issue62Test extends TestCase
 	 */
 	public function testSiblingTraversalMatchesTheSiblingItself()
 	{
-		$qp = qp(self::AMPLIFY_FILE, 'Demographics > Age > Name');
+		$qp = $this->name();
 
 		$this->assertEquals(['Value'], $this->tags($qp->siblings('Value')));
 		$this->assertEquals(['Value'], $this->tags($qp->nextAll('Value')));

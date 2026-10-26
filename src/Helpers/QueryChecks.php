@@ -31,14 +31,11 @@ trait QueryChecks
 	 *
 	 * Unlike jQuery's version, this supports full selectors (not just simple ones).
 	 *
-	 * Non-element nodes in the match set (text nodes, comments, processing instructions, and
-	 * so on) can never match a CSS selector, and are simply skipped.
+	 * Non-element nodes in the match set can never match a CSS selector, and are skipped.
 	 *
-	 * @param string|DOMNode|Traversable $selector
-	 *   The selector to test the current match set against. As of QueryPath 2.1.1, this also
-	 *   supports passing a DOMNode object, in which case the current match set must consist of
-	 *   exactly that one node, or a Traversable (e.g. another DOMQuery's match set), in which
-	 *   case the two sets must contain exactly the same nodes.
+	 * @param string|DOMNode $selector
+	 *   The selector to search for. As of QueryPath 2.1.1, this also supports passing a
+	 *   DOMNode object.
 	 *
 	 * @return boolean
 	 *   TRUE if one or more elements match. FALSE if no match is found.
@@ -76,9 +73,7 @@ trait QueryChecks
 			throw new Exception('Cannot compare an object to a DOMQuery.');
 		}
 
-		// Only the elements in the match set are candidates: a descendant that matches
-		// the selector must not make is() true. See NodeMatcher for the details.
-		return count(NodeMatcher::filter($this->matches, $selector)) > 0;
+		return NodeMatcher::matchesAny($this->matches, $selector);
 	}
 
 	/**

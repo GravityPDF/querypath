@@ -254,7 +254,8 @@ class DOMTraverser implements Traverser
 	 */
 	protected function resolveSubject(array $selectorGroup, int $index): SplObjectStorage
 	{
-		// Initialize matches if necessary.
+		// Initialize matches if necessary. A caller-supplied set may hold non-element nodes,
+		// which can never match a selector and are skipped below.
 		if ($index === 0 && $this->initialized) {
 			$candidates = $this->matches;
 		} else {
@@ -270,9 +271,8 @@ class DOMTraverser implements Traverser
 		// array that then has to be copied into one.
 		if (empty($setFilters)) {
 			$found = $this->newMatches();
-			/** @var DOMElement $candidate */
 			foreach ($candidates as $candidate) {
-				if ($this->matchesSimpleSelector($candidate, $selectorGroup, $index)) {
+				if ($candidate instanceof DOMElement && $this->matchesSimpleSelector($candidate, $selectorGroup, $index)) {
 					$found->offsetSet($candidate);
 				}
 			}
@@ -283,9 +283,8 @@ class DOMTraverser implements Traverser
 		}
 
 		$matched = [];
-		/** @var DOMElement $candidate */
 		foreach ($candidates as $candidate) {
-			if ($this->matchesSimpleSelector($candidate, $selectorGroup, $index)) {
+			if ($candidate instanceof DOMElement && $this->matchesSimpleSelector($candidate, $selectorGroup, $index)) {
 				$matched[] = $candidate;
 			}
 		}

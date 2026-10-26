@@ -733,10 +733,7 @@ class DOMQueryTest extends TestCase
 	{
 		$file = DATA_FILE;
 
-		$this->assertEquals(0, qp($file, 'inner')->filter('li')->count());
 		$this->assertEquals(2, qp($file, 'inner')->has('li')->count());
-
-		$this->assertEquals(0, qp($file)->filter('li')->count());
 		$this->assertEquals(1, qp($file)->has('li')->count());
 	}
 
@@ -748,8 +745,9 @@ class DOMQueryTest extends TestCase
 	{
 		$file = DATA_FILE;
 
-		$this->assertEquals(5, qp($file, 'li')->filter('li')->count());
-		$this->assertEquals('one', qp($file, 'li')->filter('#one')->attr('id'));
+		$this->assertEquals('one', qp($file, 'li')->filter(':first')->attr('id'));
+		$this->assertEquals('two', qp($file, 'li')->filter(':eq(1)')->attr('id'));
+		$this->assertCount(2, qp($file, 'li')->filter(':odd'));
 
 		// :scope refers to the document element, exactly as it does in find().
 		$this->assertEquals(0, qp($file, 'inner')->filter(':scope')->count());

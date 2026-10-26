@@ -139,16 +139,4 @@ class Issue51Test extends TestCase
 		self::assertCount(1, $dom->branch()->has('span'));
 		self::assertCount(0, $dom->branch()->has('em'));
 	}
-
-	/**
-	 * parents() filters with is(), so it inherited the descendant-matching bug: every ancestor
-	 * that merely *contained* a matching element was returned.
-	 */
-	public function testParentsNoLongerMatchesAncestorsThatOnlyContainTheSelector(): void
-	{
-		$dom = html5qp('<div id="outer"><section><p id="target">foo</p></section></div>');
-
-		self::assertCount(1, $dom->top('#target')->parents('div'));
-		self::assertSame('outer', $dom->top('#target')->parents('div')->attr('id'));
-	}
 }

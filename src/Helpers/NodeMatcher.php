@@ -2,7 +2,6 @@
 
 namespace QueryPath\Helpers;
 
-use DOMElement;
 use QueryPath\CSS\DOMTraverser;
 use QueryPath\CSS\ParseException;
 use SplObjectStorage;
@@ -20,18 +19,67 @@ use SplObjectStorage;
  * search. Combinators are still resolved against the real document by walking up
  * from each candidate, so full selectors (e.g. `div > p`) keep working.
  *
+ * Sets are evaluated in one pass wherever the caller has a set. A per-node pass cannot
+ * answer a selector that describes a position within the set (:first, :eq(n), :odd, ...),
+ * because each node would be the only member of its own one-element set.
+ *
  * The scope node is deliberately left at its default (the document element) so that
  * `:scope` means the same thing here as it does in find(). Passing a candidate as the
  * scope node would make every candidate match `:scope`.
+ *
+ * An instance answers the per-node question for one selector, and remembers each answer.
+ * The walk-and-stop traversals (closest(), nextUntil(), ...) revisit the same nodes from
+ * every starting element, so without the memo they would re-parse the selector for each
+ * visit. An instance must not outlive the call that made it, or a later DOM change could
+ * leave it holding stale answers.
  */
 final class NodeMatcher
 {
 
 	/**
-	 * Reduce a set of nodes to those that match a selector.
+	 * @var string
+	 */
+	private $selector;
+
+	/**
+	 * @var SplObjectStorage
+	 */
+	private $results;
+
+	/**
+	 * @param string $selector
+	 *   A valid CSS selector.
+	 */
+	public function __construct($selector)
+	{
+		$this->selector = $selector;
+		$this->results  = new SplObjectStorage();
+	}
+
+	/**
+	 * Test whether a single node, taken as an element, matches the selector.
 	 *
-	 * Nodes that are not elements can never match a CSS selector, and are skipped
-	 * rather than raising an error.
+	 * @param mixed $node
+	 *   The node to test. Anything that is not an element returns FALSE.
+	 *
+	 * @return bool
+	 * @throws ParseException
+	 */
+	public function matches($node): bool
+	{
+		if (! $this->results->offsetExists($node)) {
+			$single = new SplObjectStorage();
+			$single->offsetSet($node);
+			$this->results[$node] = self::matchesAny($single, $this->selector);
+		}
+
+		return $this->results[$node];
+	}
+
+	/**
+	 * Reduce a set of nodes to those that match a selector, preserving their order.
+	 *
+	 * Nodes that are not elements can never match a CSS selector, and are skipped.
 	 *
 	 * @param SplObjectStorage $nodes
 	 *   The candidate nodes.
@@ -39,28 +87,17 @@ final class NodeMatcher
 	 *   A valid CSS selector.
 	 *
 	 * @return SplObjectStorage
-	 *   The subset of $nodes that match the selector.
 	 * @throws ParseException
 	 */
 	public static function filter(SplObjectStorage $nodes, $selector): SplObjectStorage
 	{
-		$candidates = new SplObjectStorage();
-		foreach ($nodes as $node) {
-			if ($node instanceof DOMElement) {
-				$candidates->offsetSet($node);
-			}
+		if (count($nodes) === 0) {
+			return new SplObjectStorage();
 		}
 
-		if (count($candidates) === 0) {
-			return $candidates;
-		}
+		$matched = self::traverse($nodes, $selector);
 
-		$traverser = new DOMTraverser($candidates, true);
-		$traverser->find($selector);
-		$matched = $traverser->matches();
-
-		// Returned in the caller's order rather than the traverser's, so callers do not each
-		// have to re-walk their own input to restore it.
+		// The traverser returns document order; callers such as parents() need their own.
 		$found = new SplObjectStorage();
 		foreach ($nodes as $node) {
 			if ($matched->offsetExists($node)) {
@@ -80,25 +117,22 @@ final class NodeMatcher
 	 * @return bool
 	 * @throws ParseException
 	 */
+	public static function matchesAny(SplObjectStorage $nodes, $selector): bool
+	{
+		return count($nodes) > 0 && count(self::traverse($nodes, $selector)) > 0;
+	}
+
 	/**
-	 * Test whether a single node, taken as an element, matches a selector.
+	 * @param SplObjectStorage $nodes
+	 * @param string           $selector
 	 *
-	 * @param mixed  $node
-	 *   The node to test. Anything that is not an element returns FALSE.
-	 * @param string $selector
-	 *
-	 * @return bool
+	 * @return SplObjectStorage
 	 * @throws ParseException
 	 */
-	public static function matchesNode($node, $selector): bool
+	private static function traverse(SplObjectStorage $nodes, $selector): SplObjectStorage
 	{
-		if (! $node instanceof DOMElement) {
-			return false;
-		}
+		$traverser = new DOMTraverser($nodes, true);
 
-		$nodes = new SplObjectStorage();
-		$nodes->offsetSet($node);
-
-		return count(self::filter($nodes, $selector)) > 0;
+		return $traverser->find($selector)->matches();
 	}
 }
