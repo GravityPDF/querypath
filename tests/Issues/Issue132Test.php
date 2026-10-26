@@ -32,7 +32,7 @@ class Issue132Test extends TestCase
 		$this->assertSame($expected, $this->idList(qp(self::XML, 'li')->filter($selector)));
 	}
 
-	public function testFilterAgreesWithFindAndIs()
+	public function testIsMatchesWhatFindSelects()
 	{
 		$this->assertSame('a,b', $this->idList(qp(self::XML)->find('ul:first > li')));
 		$this->assertTrue(qp(self::XML, 'li')->is('ul:first > li'));
