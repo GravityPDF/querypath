@@ -38,6 +38,11 @@ QueryPath Changelog
 - Fix `writeHTML()` throwing `QueryPath\ParseException` instead of `QueryPath\IOException` when the file cannot be written, as `writeXML()` and `writeHTML5()` do (issue #92). `IOException` extends `ParseException`, so existing `catch (ParseException $e)` blocks still catch it
 - Fix `css()` merging the inline styles of every matched element and writing the combined result back to all of them. The new declarations are now merged into each element's own `style` attribute (issue #77)
 - Fix `not()` keeping only the given nodes, instead of removing them, when passed an `SplObjectStorage` such as `get(null, true)` returns (issue #75)
+- Fix `QueryPath::VERSION` and `QueryPath::VERSION_MAJOR` still reporting `3.2.2` and `3`. They now report `4.2.0` and `4`, and both are deprecated in favour of `\Composer\InstalledVersions::getPrettyVersion('gravitypdf/querypath')`, which cannot drift from the installed version (issue #83)
+
+# 4.2.0
+
+- Add PHP 8.5 support
 
 # 4.1.0
 
