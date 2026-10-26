@@ -196,10 +196,7 @@ class SimpleSelector
 	}
 
 	/**
-	 * Whether this restricts the elements it matches. The inverse of isBlank().
-	 *
-	 * As with isBlank(), the combinator is not counted: it relates this simple selector to the next,
-	 * and does not narrow what this one matches.
+	 * The inverse of isBlank().
 	 *
 	 * @return bool
 	 * @deprecated Use ! isBlank(). This will be removed in 5.0.
