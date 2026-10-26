@@ -517,6 +517,24 @@ class DOMQueryTest extends TestCase
 		$this->assertEquals('a: c;b: b;', $qp->css());
 	}
 
+	public function testCssMergesIntoEachElementsOwnStyle()
+	{
+		$html = '<div><p style="color: red"></p><p style="font-size: 2px; margin: 5px"></p><p></p></div>';
+
+		$qp = html5qp($html, 'p')->css('margin', '0');
+		$this->assertSame('color: red;margin: 0;', $qp->get(0)->getAttribute('style'));
+		$this->assertSame('font-size: 2px;margin: 0;', $qp->get(1)->getAttribute('style'));
+		$this->assertSame('margin: 0;', $qp->get(2)->getAttribute('style'));
+
+		$qp = html5qp($html, 'p')->css(['margin' => '0', 'color' => 'blue']);
+		$this->assertSame('color: blue;margin: 0;', $qp->get(0)->getAttribute('style'));
+		$this->assertSame('font-size: 2px;margin: 0;color: blue;', $qp->get(1)->getAttribute('style'));
+		$this->assertSame('margin: 0;color: blue;', $qp->get(2)->getAttribute('style'));
+
+		// The getter still returns the first element's style, unparsed.
+		$this->assertSame('color: red', html5qp($html, 'p')->css());
+	}
+
 	public function testRemoveAttr()
 	{
 		$file = DATA_FILE;
