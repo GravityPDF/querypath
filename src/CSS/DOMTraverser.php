@@ -105,10 +105,16 @@ class DOMTraverser implements Traverser
 	 * @param SplObjectStorage $splos
 	 * @param bool             $initialized
 	 * @param null             $scopeNode
+	 * @param PseudoClass|null $psHandler
+	 *   Share an outer query's handler, so a nested query reuses its sibling index.
 	 */
-	public function __construct(SplObjectStorage $splos, bool $initialized = false, $scopeNode = null)
-	{
-		$this->psHandler   = new PseudoClass();
+	public function __construct(
+		SplObjectStorage $splos,
+		bool $initialized = false,
+		$scopeNode = null,
+		?PseudoClass $psHandler = null
+	) {
+		$this->psHandler   = $psHandler ?? new PseudoClass();
 		$this->initialized = $initialized;
 
 		// Re-use the initial splos
@@ -167,15 +173,19 @@ class DOMTraverser implements Traverser
 		//$selector = $handler->toArray();
 		$found      = $this->newMatches();
 		$isFiltered = false;
-		foreach ($handler as $selectorGroup) {
-			if ($this->groupIsSetFiltered($selectorGroup)) {
-				$isFiltered = true;
-			}
+		$this->psHandler->beginQuery();
+		try {
+			foreach ($handler as $selectorGroup) {
+				if ($this->groupIsSetFiltered($selectorGroup)) {
+					$isFiltered = true;
+				}
 
-			foreach ($this->resolveGroup($selectorGroup) as $candidate) {
-				// $this->debug('Attaching ' . $candidate->nodeName);
-				$found->offsetSet($candidate);
+				foreach ($this->resolveGroup($selectorGroup) as $candidate) {
+					$found->offsetSet($candidate);
+				}
 			}
+		} finally {
+			$this->psHandler->endQuery();
 		}
 
 		// Comma-separated groups are filtered independently (as in jQuery), so the
@@ -326,7 +336,7 @@ class DOMTraverser implements Traverser
 			return [];
 		}
 
-		$traverser = new self($this->toMatches($nodes), true, $this->scopeNode);
+		$traverser = new self($this->toMatches($nodes), true, $this->scopeNode, $this->psHandler);
 		$inner     = $traverser->find($value)->matches();
 
 		$filtered = [];

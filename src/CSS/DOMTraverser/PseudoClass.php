@@ -17,6 +17,7 @@ use QueryPath\CSS\DOMTraverser;
 use QueryPath\CSS\NotImplementedException;
 use QueryPath\CSS\EventHandler;
 use QueryPath\CSS\ParseException;
+use DOMNode;
 use SPLObjectStorage;
 
 /**
@@ -25,6 +26,51 @@ use SPLObjectStorage;
  */
 class PseudoClass
 {
+
+	/**
+	 * Element positions within their sibling lists, keyed by element.
+	 *
+	 * Each entry is [fromStart, fromEnd, ofTypeFromStart, ofTypeFromEnd].
+	 * Positions are only kept while a query is running: the DOM may be mutated
+	 * between queries, so they must not outlive the query that indexed them.
+	 *
+	 * @var SplObjectStorage|null
+	 */
+	protected $positions;
+
+	/**
+	 * How many queries (including nested :not() and :has() queries) are running.
+	 *
+	 * @var int
+	 */
+	protected $queryDepth = 0;
+
+	/**
+	 * Parsed an+b rules, keyed by the rule string.
+	 *
+	 * @var array
+	 */
+	protected $anbRules = [];
+
+	/**
+	 * Start remembering sibling positions, so the :nth-* pseudo-classes index
+	 * each sibling list once rather than walking it for every element.
+	 *
+	 * Calls nest; positions are forgotten when the outermost query ends.
+	 */
+	public function beginQuery(): void
+	{
+		if ($this->queryDepth++ === 0) {
+			$this->positions = new SplObjectStorage();
+		}
+	}
+
+	public function endQuery(): void
+	{
+		if (--$this->queryDepth === 0) {
+			$this->positions = null;
+		}
+	}
 
 	/**
 	 * Tests whether the given element matches the given pseudoclass.
@@ -352,7 +398,7 @@ class PseudoClass
 	{
 		$splos = new SPLObjectStorage();
 		$splos->offsetSet($node);
-		$traverser = new DOMTraverser($splos, true);
+		$traverser = new DOMTraverser($splos, true, null, $this);
 		$results   = $traverser->find($selector)->matches();
 
 		return count($results) > 0;
@@ -369,42 +415,24 @@ class PseudoClass
 	}
 
 	/**
-	 * Get the relative position of a node in its sibling set.
+	 * Record the position of every element child of $parent.
 	 */
-	protected function nodePositionFromStart($node, $byType = false): int
+	protected function indexSiblings(DOMNode $parent, SplObjectStorage $positions): void
 	{
-		$i   = 1;
-		$tag = $node->tagName;
-		while (isset($node->previousSibling)) {
-			$node = $node->previousSibling;
-			if ($node->nodeType === XML_ELEMENT_NODE && ( ! $byType || $node->tagName === $tag)) {
-				++$i;
+		$elements   = [];
+		$typeCounts = [];
+		foreach ($parent->childNodes as $child) {
+			if ($child->nodeType === XML_ELEMENT_NODE) {
+				$tag              = $child->tagName;
+				$typeCounts[$tag] = ($typeCounts[$tag] ?? 0) + 1;
+				$elements[]       = [$child, $typeCounts[$tag]];
 			}
 		}
 
-		return $i;
-	}
-
-	/**
-	 * Get the relative position of a node in its sibling set.
-	 *
-	 * @param      $node
-	 * @param bool $byType
-	 *
-	 * @return int
-	 */
-	protected function nodePositionFromEnd($node, $byType = false): int
-	{
-		$i   = 1;
-		$tag = $node->tagName;
-		while (isset($node->nextSibling)) {
-			$node = $node->nextSibling;
-			if ($node->nodeType === XML_ELEMENT_NODE && ( ! $byType || $node->tagName === $tag)) {
-				++$i;
-			}
+		$count = count($elements);
+		foreach ($elements as $i => [$child, $typePos]) {
+			$positions[$child] = [$i + 1, $count - $i, $typePos, $typeCounts[$child->tagName] - $typePos + 1];
 		}
-
-		return $i;
 	}
 
 	/**
@@ -433,7 +461,10 @@ class PseudoClass
 	 */
 	protected function isNthChild($node, $value, $reverse = false, $byType = false): bool
 	{
-		[$groupSize, $elementInGroup] = Util::parseAnB($value);
+		if (! isset($this->anbRules[$value])) {
+			$this->anbRules[$value] = Util::parseAnB($value);
+		}
+		[$groupSize, $elementInGroup] = $this->anbRules[$value];
 		$parent = $node->parentNode;
 		if (empty($parent)
 			|| ($groupSize === 0 && $elementInGroup === 0)
@@ -442,11 +473,12 @@ class PseudoClass
 		}
 
 		// First we need to find the position of $node in other elements.
-		if ($reverse) {
-			$pos = $this->nodePositionFromEnd($node, $byType);
-		} else {
-			$pos = $this->nodePositionFromStart($node, $byType);
+		// Outside a query nothing is remembered, so index into a throwaway store.
+		$positions = $this->positions ?? new SplObjectStorage();
+		if (! $positions->offsetExists($node)) {
+			$this->indexSiblings($parent, $positions);
 		}
+		$pos = $positions[$node][($byType ? 2 : 0) + ($reverse ? 1 : 0)];
 
 		// If group size is 0, we just check to see if this
 		// is the nth element:

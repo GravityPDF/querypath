@@ -3,10 +3,13 @@
 namespace QueryPathTests\CSS;
 
 use DOMDocument;
+use DOMNode;
+use QueryPath\CSS\DOMTraverser;
 use QueryPath\CSS\DOMTraverser\PseudoClass;
 use QueryPath\CSS\NotImplementedException;
 use QueryPath\CSS\ParseException;
 use QueryPathTests\TestCase;
+use SplObjectStorage;
 
 /**
  * @ingroup querypath_tests
@@ -645,5 +648,92 @@ class PseudoClassTest extends TestCase
 		$node = $ele->childNodes->item(0);
 		$ret  = $ps->elementMatches('scope', $node, $ele);
 		$this->assertFalse($ret);
+	}
+
+	/**
+	 * A PseudoClass that counts how many sibling lists it indexes.
+	 */
+	protected function countingPseudoClass(): PseudoClass
+	{
+		return new class extends PseudoClass {
+			public $indexed = 0;
+
+			protected function indexSiblings(DOMNode $parent, SplObjectStorage $positions): void
+			{
+				++$this->indexed;
+				parent::indexSiblings($parent, $positions);
+			}
+		};
+	}
+
+	public function testNthChildIndexesEachSiblingListOncePerQuery()
+	{
+		$xml = '<?xml version="1.0"?><root>' . str_repeat('<a/><b/>', 50) . '</root>';
+		[$ele, $root] = $this->doc($xml, 'root');
+
+		$ps = $this->countingPseudoClass();
+		$ps->beginQuery();
+		$matches = 0;
+		foreach (['nth-child', 'nth-last-child', 'nth-of-type', 'nth-last-of-type'] as $name) {
+			foreach ($root->childNodes as $n) {
+				$matches += (int) $ps->elementMatches($name, $n, $root, 'odd');
+			}
+		}
+		$ps->endQuery();
+
+		$this->assertSame(1, $ps->indexed);
+		$this->assertSame(200, $matches);
+	}
+
+	public function testNestedQueriesShareTheSiblingIndex()
+	{
+		$xml = '<?xml version="1.0"?><root>' . str_repeat('<a/><b/>', 50) . '</root>';
+		[$ele, $root] = $this->doc($xml, 'root');
+
+		$splos = new SplObjectStorage();
+		$splos->offsetSet($root);
+
+		$ps        = $this->countingPseudoClass();
+		$traverser = new DOMTraverser($splos, false, null, $ps);
+
+		$this->assertCount(50, $traverser->find('b:not(:nth-child(odd))')->matches());
+		$this->assertSame(1, $ps->indexed);
+	}
+
+	public function testNthChildDoesNotReusePositionsFromAnEarlierQuery()
+	{
+		$xml = '<?xml version="1.0"?><root><a/><b/><c/></root>';
+		[$a, $root] = $this->doc($xml, 'a');
+		$b = $a->nextSibling;
+
+		$ps = new PseudoClass();
+		$ps->beginQuery();
+		$this->assertTrue($ps->elementMatches('nth-child', $b, $root, '2'));
+		$this->assertTrue($ps->elementMatches('nth-last-child', $b, $root, '2'));
+		$ps->endQuery();
+
+		$root->removeChild($a);
+
+		$ps->beginQuery();
+		$this->assertTrue($ps->elementMatches('nth-child', $b, $root, '1'));
+		$this->assertFalse($ps->elementMatches('nth-child', $b, $root, '2'));
+
+		// Ending a nested query keeps the outer query's positions...
+		$ps->beginQuery();
+		$ps->endQuery();
+		$root->insertBefore($root->ownerDocument->createElement('y'), $b);
+		$this->assertTrue($ps->elementMatches('nth-child', $b, $root, '1'));
+
+		// ...and ending the outermost one forgets them.
+		$ps->endQuery();
+		$ps->beginQuery();
+		$this->assertTrue($ps->elementMatches('nth-child', $b, $root, '2'));
+		$ps->endQuery();
+		$root->removeChild($b->previousSibling);
+
+		// And without a query in progress, positions are not remembered at all.
+		$root->insertBefore($root->ownerDocument->createElement('z'), $b);
+		$this->assertTrue($ps->elementMatches('nth-child', $b, $root, '2'));
+		$this->assertTrue($ps->elementMatches('nth-last-child', $b, $root, '2'));
 	}
 }
