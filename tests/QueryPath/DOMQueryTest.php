@@ -1132,9 +1132,7 @@ class DOMQueryTest extends TestCase
 	public function testBefore()
 	{
 		$file = DATA_FILE;
-		// find() searches descendants, so the search starts from the top of the document —
-		// the same shape as the top() calls below.
-		$this->assertEquals(1, qp($file, 'unary')->before('<test/>')->top()->find(':root > test ~ unary')->count());
+		$this->assertEquals(1, qp($file, 'unary')->before('<test/>')->top(':root > test ~ unary')->count());
 		$this->assertEquals(1, qp($file, 'unary')->before('<test/>')->top('head ~ test')->count());
 		$this->assertEquals(
 			'unary',

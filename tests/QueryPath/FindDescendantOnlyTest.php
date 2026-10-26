@@ -62,8 +62,8 @@ class FindDescendantOnlyTest extends TestCase
 	}
 
 	/**
-	 * The element, ID and class initial matchers each have their own self-test, so all three
-	 * have to agree — otherwise find('#a1') would match a node that find('a') does not.
+	 * The ID and class selectors take a different path from the element selector, and must
+	 * agree with it: find('#a1') may not match a node that find('a') does not.
 	 */
 	public function testIdAndClassSelectorsAreDescendantOnlyToo(): void
 	{

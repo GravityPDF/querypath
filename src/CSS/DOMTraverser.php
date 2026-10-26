@@ -697,10 +697,6 @@ class DOMTraverser implements Traverser
 				continue;
 			}
 
-			if ($this->isDocumentElement($node) && $node->getAttribute('id') === $id) {
-				$found->offsetSet($node);
-			}
-
 			$nl = $this->initialXpathQuery($xpath, $node, $baseQuery);
 			if (! empty($nl) && $nl instanceof DOMNodeList) {
 				$this->attachNodeList($nl, $found);
@@ -744,14 +740,6 @@ class DOMTraverser implements Traverser
 				continue;
 			}
 
-			// Refactor me!
-			if ($this->isDocumentElement($node) && $node->hasAttribute('class')) {
-				$intersect = array_intersect($selector->classes, explode(' ', $node->getAttribute('class')));
-				if (count($intersect) === count($selector->classes)) {
-					$found->offsetSet($node);
-				}
-			}
-
 			$nl = $this->initialXpathQuery($xpath, $node, $baseQuery);
 			/** @var DOMElement $subNode */
 			foreach ($nl as $subNode) {
@@ -785,33 +773,13 @@ class DOMTraverser implements Traverser
 	 */
 	private function initialXpathQuery(DOMXPath $xpath, DOMElement $node, string $query): DOMNodeList
 	{
-		// This works around a bug in which the document element
-		// does not correctly search with the $baseQuery.
+		// From the document element, search the whole document, so that the element itself can
+		// match: it stands in for the document (see initialMatchOnElement()).
 		if ($node->isSameNode($this->dom->documentElement)) {
 			$query = mb_substr($query, 1);
 		}
 
 		return $xpath->query($query, $node);
-	}
-
-	/**
-	 * Is this node the element the match set was seeded with?
-	 *
-	 * jQuery's find() searches descendants only, so a node already in the match set is not
-	 * a candidate for its own selector. The document element is the one exception: QueryPath
-	 * seeds the match set with it rather than with the document, so it stands in for the
-	 * document and qp($xml)->find('root') has to keep matching.
-	 *
-	 * All three initial matchers ask this, and they have to agree — otherwise find('#a1')
-	 * would match a node that find('a') does not.
-	 *
-	 * @param DOMNode $node
-	 *
-	 * @return bool
-	 */
-	private function isDocumentElement($node): bool
-	{
-		return $node->parentNode instanceof DOMDocument;
 	}
 
 	/**
@@ -834,7 +802,11 @@ class DOMTraverser implements Traverser
 				continue;
 			}
 
-			if ($this->isDocumentElement($node)
+			// jQuery's find() searches descendants only, so a node in the match set is not a
+			// candidate for its own selector. The document element is the exception: qp() seeds
+			// the match set with it rather than with the document, so it stands in for the
+			// document. The ID and class matchers get the same exception from initialXpathQuery().
+			if ($node->isSameNode($this->dom->documentElement)
 				&& ($element === '*' || $node->tagName === $element)) {
 				$found->offsetSet($node);
 			}
