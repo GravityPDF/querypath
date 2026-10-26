@@ -261,6 +261,8 @@ class PseudoClass
 			case 'has':
 				return $this->has($node, $value);
 			case 'matches':
+			case 'is':
+			case 'where':
 				return $this->is($node, $value);
 			case 'not':
 				if (empty($value)) {
@@ -541,7 +543,7 @@ class PseudoClass
 	}
 
 	/**
-	 * Provides :matches pseudoclass, which tests the node itself.
+	 * Provides :matches pseudoclass (and its :is and :where aliases), which tests the node itself.
 	 *
 	 * @throws ParseException
 	 */

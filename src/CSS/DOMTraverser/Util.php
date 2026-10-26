@@ -56,6 +56,8 @@ class Util
 	private const SELECTOR_ARGUMENT_PSEUDO_CLASSES = [
 		'not',
 		'matches',
+		'is',
+		'where',
 	];
 
 	/**
@@ -86,7 +88,7 @@ class Util
 	 * Check whether a pseudo-class has to be applied to the whole result set.
 	 *
 	 * That is true of the positional pseudo-classes themselves, and of
-	 * :not()/:matches() when their argument contains one.
+	 * :not()/:matches()/:is()/:where() when their argument contains one.
 	 *
 	 * @param string $name
 	 * @param mixed  $value
