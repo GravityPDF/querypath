@@ -475,8 +475,8 @@ trait QueryFilters
 	 * Get the last match.
 	 *
 	 * As in jQuery, this is the last node of any type, so after contents() it
-	 * may be a text node. Use children()->last() or
-	 * filter('*')->last() for the last element.
+	 * may be a text node. Use children()->last() or filter('*')->last() for
+	 * the last element.
 	 *
 	 * @return DOMQuery
 	 *  A DOMQuery wrapping the last match, or an empty one.
