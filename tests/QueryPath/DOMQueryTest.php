@@ -2526,6 +2526,25 @@ class DOMQueryTest extends TestCase
 		$this->assertSame('parent', qp($child)->parentsUntil()->tag());
 	}
 
+	public function testUntilWalksFromElementsOnEachOthersPath()
+	{
+		$xml = '<?xml version="1.0"?><r><x><y><z/></y></x><a/><b/><c/><stop/><e/><f/></r>';
+
+		$tagsOf = function ($qp) {
+			$tags = [];
+			foreach ($qp->get() as $node) {
+				$tags[] = $node->tagName;
+			}
+			sort($tags);
+
+			return $tags;
+		};
+
+		$this->assertSame(['b', 'c', 'f'], $tagsOf(qp($xml, 'a, b, e')->nextUntil('stop')));
+		$this->assertSame(['a', 'b', 'e'], $tagsOf(qp($xml, 'c, f')->prevUntil('stop, x')));
+		$this->assertSame(['x', 'y'], $tagsOf(qp($xml, 'z, y')->parentsUntil('r')));
+	}
+
 	public function testTraversalTreatsAnEmptySelectorAsNone()
 	{
 		$xml = '<?xml version="1.0"?><r><a/><b/><c/></r>';

@@ -557,7 +557,7 @@ trait QueryFilters
 	 */
 	public function nextUntil($selector = null): Query
 	{
-		return $this->inst($this->walk('nextSibling', $selector, 'until'), null);
+		return $this->inst($this->walk('nextSibling', $selector, false), null);
 	}
 
 	/**
@@ -583,7 +583,7 @@ trait QueryFilters
 	 */
 	public function prevUntil($selector = null): Query
 	{
-		return $this->inst($this->walk('previousSibling', $selector, 'until'), null);
+		return $this->inst($this->walk('previousSibling', $selector, false), null);
 	}
 
 	/**
@@ -605,7 +605,7 @@ trait QueryFilters
 	 */
 	public function parentsUntil($selector = null): Query
 	{
-		return $this->inst($this->walk('parentNode', $selector, 'until'), null);
+		return $this->inst($this->sortReverseDocumentOrder($this->walk('parentNode', $selector, false)), null);
 	}
 
 	/**
@@ -694,7 +694,7 @@ trait QueryFilters
 			return $this->inst(new SplObjectStorage(), null);
 		}
 
-		return $this->inst($this->walk('parentNode', $selector, 'first', true), null);
+		return $this->inst($this->walk('parentNode', $selector, true, true), null);
 	}
 
 	/**
@@ -715,7 +715,7 @@ trait QueryFilters
 	 */
 	public function parent($selector = null): Query
 	{
-		return $this->inst($this->walk('parentNode', $selector, 'first'), null);
+		return $this->inst($this->walk('parentNode', $selector, true), null);
 	}
 
 	/**
@@ -736,7 +736,11 @@ trait QueryFilters
 	 */
 	public function parents($selector = null): Query
 	{
-		return $this->inst($this->walk('parentNode', $selector, 'all'), null);
+		// jQuery returns the ancestors of a multi-element set in reverse document order, with
+		// duplicates removed. The selector is applied after that ordering.
+		$ancestors = $this->sortReverseDocumentOrder($this->walk('parentNode', null, false));
+
+		return $this->inst($this->filterCandidates($ancestors, $selector), null);
 	}
 
 	/**
@@ -760,7 +764,7 @@ trait QueryFilters
 	 */
 	public function next($selector = null): Query
 	{
-		return $this->inst($this->walk('nextSibling', $selector, 'first'), null);
+		return $this->inst($this->walk('nextSibling', $selector, true), null);
 	}
 
 	/**
@@ -784,7 +788,7 @@ trait QueryFilters
 	 */
 	public function nextAll($selector = null): Query
 	{
-		return $this->inst($this->walk('nextSibling', $selector, 'all'), null);
+		return $this->inst($this->filterCandidates($this->walk('nextSibling', null, false), $selector), null);
 	}
 
 	/**
@@ -809,7 +813,7 @@ trait QueryFilters
 	 */
 	public function prev($selector = null): Query
 	{
-		return $this->inst($this->walk('previousSibling', $selector, 'first'), null);
+		return $this->inst($this->walk('previousSibling', $selector, true), null);
 	}
 
 	/**
@@ -833,7 +837,7 @@ trait QueryFilters
 	 */
 	public function prevAll($selector = null): Query
 	{
-		return $this->inst($this->walk('previousSibling', $selector, 'all'), null);
+		return $this->inst($this->filterCandidates($this->walk('previousSibling', null, false), $selector), null);
 	}
 
 	/**
@@ -948,18 +952,18 @@ trait QueryFilters
 	 * @param string      $axis
 	 *  The property to follow: 'nextSibling', 'previousSibling' or 'parentNode'.
 	 * @param string|null $selector
-	 *  An optional CSS selector.
-	 * @param string      $mode
-	 *  'all' collects every element on the axis, then keeps those matching the selector.
-	 *  'first' collects the first element that matches the selector (any element, if there is none).
-	 *  'until' collects every element before the first one that matches the selector.
+	 *  An optional CSS selector. With $first, the element to collect; otherwise, the element
+	 *  to stop before.
+	 * @param bool        $first
+	 *  Collect only the first element matching the selector (the first element, if there is
+	 *  none), rather than every element up to the first match.
 	 * @param bool        $inclusive
 	 *  Start the walk at the matched element itself rather than at its neighbour.
 	 *
 	 * @return SplObjectStorage
 	 * @throws ParseException
 	 */
-	private function walk(string $axis, $selector, string $mode, bool $inclusive = false): SplObjectStorage
+	private function walk(string $axis, $selector, bool $first, bool $inclusive = false): SplObjectStorage
 	{
 		$found   = new SplObjectStorage();
 		$matcher = empty($selector) ? null : new NodeMatcher($selector);
@@ -970,31 +974,23 @@ trait QueryFilters
 					continue;
 				}
 
-				if ($mode === 'all') {
-					// Every element beyond one already collected was collected with it.
-					if ($found->offsetExists($n)) {
-						break;
-					}
-					$found->offsetSet($n);
-				} elseif ($mode === 'first') {
+				if ($first) {
 					if ($matcher === null || $matcher->matches($n)) {
 						$found->offsetSet($n);
 						break;
 					}
-				} elseif ($matcher !== null && $matcher->matches($n)) {
-					break;
-				} else {
-					$found->offsetSet($n);
+					continue;
 				}
+
+				// Every element beyond one already collected was collected with it, up to the same stop.
+				if ($found->offsetExists($n) || ($matcher !== null && $matcher->matches($n))) {
+					break;
+				}
+				$found->offsetSet($n);
 			}
 		}
 
-		if ($mode === 'all' && $matcher !== null) {
-			$found = $matcher->filter($found);
-		}
-
-		// jQuery returns the ancestors of a multi-element set in reverse document order.
-		return $axis === 'parentNode' && $mode !== 'first' ? $this->sortReverseDocumentOrder($found) : $found;
+		return $found;
 	}
 
 	/**
