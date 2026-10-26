@@ -847,8 +847,7 @@ trait QueryMutators
 		}
 
 		foreach ((new DOMTraverser($scope))->find($selector)->matches() as $item) {
-			$node = $replacement->cloneNode();
-			$node = $document->importNode($node);
+			$node = $document->importNode($replacement, true);
 			$item->parentNode->replaceChild($node, $item);
 		}
 
