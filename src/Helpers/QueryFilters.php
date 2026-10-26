@@ -377,56 +377,56 @@ trait QueryFilters
 	}
 
 	/**
-	 * Get the even elements, so counter-intuitively 1, 3, 5, etc.
+	 * Get the matches at even, zero-based positions: 0, 2, 4, etc.
+	 *
+	 * As in jQuery, and as filter(':even') does, so the first match is kept.
 	 *
 	 * @return DOMQuery
-	 *  A DOMQuery wrapping all of the children.
+	 *  A DOMQuery wrapping the matches at even positions.
 	 * @throws ParseException
-	 * @see    parent()
-	 * @see    parents()
-	 * @see    next()
-	 * @see    prev()
+	 * @see    odd()
 	 * @since  2.1
 	 * @author eabrand
-	 * @see    removeChildren()
 	 */
 	public function even(): Query
 	{
-		$found = new SplObjectStorage();
-		$even  = false;
-		foreach ($this->matches as $m) {
-			if ($even && $m->nodeType === XML_ELEMENT_NODE) {
-				$found->offsetSet($m);
-			}
-			$even = $even ? false : true;
-		}
-
-		return $this->inst($found, null);
+		return $this->everyOther(0);
 	}
 
 	/**
-	 * Get the odd elements, so counter-intuitively 0, 2, 4, etc.
+	 * Get the matches at odd, zero-based positions: 1, 3, 5, etc.
+	 *
+	 * As in jQuery, and as filter(':odd') does, so the first match is dropped.
 	 *
 	 * @return DOMQuery
-	 *  A DOMQuery wrapping all of the children.
+	 *  A DOMQuery wrapping the matches at odd positions.
 	 * @throws ParseException
-	 * @see    parent()
-	 * @see    parents()
-	 * @see    next()
-	 * @see    prev()
+	 * @see    even()
 	 * @since  2.1
 	 * @author eabrand
-	 * @see    removeChildren()
 	 */
 	public function odd(): Query
 	{
+		return $this->everyOther(1);
+	}
+
+	/**
+	 * Keep every second match, starting at the given zero-based position.
+	 *
+	 * @param int $offset
+	 *  0 for the even positions, 1 for the odd.
+	 *
+	 * @return DOMQuery
+	 * @throws ParseException
+	 */
+	private function everyOther(int $offset): Query
+	{
 		$found = new SplObjectStorage();
-		$odd   = true;
+		$i     = 0;
 		foreach ($this->matches as $m) {
-			if ($odd && $m->nodeType === XML_ELEMENT_NODE) {
+			if ($i++ % 2 === $offset && $m->nodeType === XML_ELEMENT_NODE) {
 				$found->offsetSet($m);
 			}
-			$odd = $odd ? false : true;
 		}
 
 		return $this->inst($found, null);
