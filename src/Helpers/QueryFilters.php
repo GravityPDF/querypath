@@ -457,11 +457,11 @@ trait QueryFilters
 	}
 
 	/**
-	 * Get the first child of the matching element.
+	 * Get the first child element of each matching element.
 	 *
 	 *
 	 * @return DOMQuery
-	 *  A DOMQuery wrapping all of the children.
+	 *  A DOMQuery wrapping the first child element of each match.
 	 * @throws ParseException
 	 * @see    prev()
 	 * @since  2.1
@@ -470,19 +470,13 @@ trait QueryFilters
 	 */
 	public function firstChild(): Query
 	{
-		// Could possibly use $m->firstChild http://theserverpages.com/php/manual/en/ref.dom.php
 		$found = new SplObjectStorage();
-		$flag  = false;
 		foreach ($this->matches as $m) {
 			foreach ($m->childNodes as $c) {
 				if ($c->nodeType === XML_ELEMENT_NODE) {
 					$found->offsetSet($c);
-					$flag = true;
 					break;
 				}
-			}
-			if ($flag) {
-				break;
 			}
 		}
 
@@ -516,11 +510,11 @@ trait QueryFilters
 	}
 
 	/**
-	 * Get the last child of the matching element.
+	 * Get the last child element of each matching element.
 	 *
 	 *
 	 * @return DOMQuery
-	 *  A DOMQuery wrapping all of the children.
+	 *  A DOMQuery wrapping the last child element of each match.
 	 * @throws ParseException
 	 * @see    prev()
 	 * @since  2.1

@@ -2228,6 +2228,13 @@ class DOMQueryTest extends TestCase
 		$this->assertEquals("Hello", qp($file, '#inner-one')->firstChild()->text());
 	}
 
+	public function testFirstChildReturnsOneChildPerMatch()
+	{
+		$xml = '<?xml version="1.0"?><root><p/><p>text only</p><p>text <i>a</i><i>b</i></p><p><!-- c --><i>c</i></p></root>';
+
+		$this->assertSame('a,c', qp($xml, 'p')->firstChild()->textImplode(','));
+	}
+
 	public function testLast()
 	{
 		$file = DATA_FILE;
