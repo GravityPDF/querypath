@@ -710,7 +710,7 @@ trait QueryFilters
 			}
 		} elseif ($selector instanceof SplObjectStorage) {
 			foreach ($this->matches as $m) {
-				if ($selector->offsetExists($m)) {
+				if (! $selector->offsetExists($m)) {
 					$found->offsetSet($m);
 				}
 			}
