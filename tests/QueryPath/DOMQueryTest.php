@@ -1264,6 +1264,63 @@ class DOMQueryTest extends TestCase
 		$this->assertEquals(0, count($rem));
 	}
 
+	const NESTED_PSEUDO_CLASS_XML = '<?xml version="1.0"?><root><ul><li>1</li><li>2</li><li>3</li></ul><ul><li>4</li></ul><p>a(b)</p><p>a)b</p></root>';
+
+	public function findNestedPseudoClassProvider(): array
+	{
+		return [
+			['li:not(:not(:nth-child(1)))', ['1', '4']],
+			['li:not(:not(:eq(0)))', ['1']],
+			['li:not(:matches(:nth-child(1)))', ['2', '3']],
+			['li:not(:not(:first-child))', ['1', '4']],
+			['ul:not(:nth-child(1))', ['4']],
+			['li:not(:not(:not(:nth-child(1))))', ['2', '3']],
+			['ul:not(:nth-child(2)) li', ['1', '2', '3']],
+			['p:contains("a(b)")', ['a(b)']],
+			["p:contains('a)b')", ['a)b']],
+		];
+	}
+
+	/**
+	 * @dataProvider findNestedPseudoClassProvider
+	 */
+	public function testFindWithNestedPseudoClass($selector, $expected)
+	{
+		$found = qp(self::NESTED_PSEUDO_CLASS_XML)->find($selector);
+
+		$this->assertSame($expected, array_map(function ($node) {
+			return $node->textContent;
+		}, $found->get()));
+	}
+
+	public function removeNestedPseudoClassProvider(): array
+	{
+		return [
+			['li:not(:not(:nth-child(1)))', ['1', '4']],
+			['ul:has(li:not(:nth-child(1)))', ['123']],
+			['ul:not(:has(li:nth-child(3)))', ['4']],
+			['li:not(:not(:first-child))', ['1', '4']],
+			['ul:not(:has(li))', []],
+			['ul:not(:nth-child(1))', ['4']],
+			['li:not(:not(:not(:nth-child(1))))', ['2', '3']],
+			['ul:not(:nth-child(2)) li', ['1', '2', '3']],
+			['p:contains("a(b)")', ['a(b)']],
+			["p:contains('a)b')", ['a)b']],
+		];
+	}
+
+	/**
+	 * @dataProvider removeNestedPseudoClassProvider
+	 */
+	public function testRemoveWithNestedPseudoClass($selector, $expected)
+	{
+		$removed = qp(self::NESTED_PSEUDO_CLASS_XML)->remove($selector);
+
+		$this->assertSame($expected, array_map(function ($node) {
+			return $node->textContent;
+		}, $removed->get()));
+	}
+
 	public function testHasClass()
 	{
 		$file = DATA_FILE;

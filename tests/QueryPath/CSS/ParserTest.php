@@ -144,6 +144,55 @@ class ParserTest extends TestCase
 		$parser->parse();
 	}
 
+	public function nestedPseudoClassValueProvider(): array
+	{
+		return [
+			['li:not(:not(:nth-child(1)))', 'not', ':not(:nth-child(1))'],
+			['li:not(:not(:eq(0)))', 'not', ':not(:eq(0))'],
+			['li:not(:matches(:nth-child(1)))', 'not', ':matches(:nth-child(1))'],
+			['ul:has(li:not(:nth-child(1)))', 'has', 'li:not(:nth-child(1))'],
+			['ul:not(:has(li:nth-child(3)))', 'not', ':has(li:nth-child(3))'],
+			['li:not(:not(:first-child))', 'not', ':not(:first-child)'],
+			['ul:not(:has(li))', 'not', ':has(li)'],
+			['ul:not(:nth-child(1))', 'not', ':nth-child(1)'],
+			['li:not(:not(:not(:nth-child(1))))', 'not', ':not(:not(:nth-child(1)))'],
+			['p:contains("a(b)")', 'contains', '"a(b)"'],
+			["p:contains('a)b')", 'contains', "'a)b'"],
+			['p:contains(a(b)c)', 'contains', 'a(b)c'],
+		];
+	}
+
+	/**
+	 * @dataProvider nestedPseudoClassValueProvider
+	 */
+	public function testNestedPseudoClassValue($selector, $name, $value)
+	{
+		$mock = $this->createMock(TestEventHandler::class);
+		$mock->expects($this->once())
+			 ->method('pseudoClass')
+			 ->with($this->equalTo($name), $this->equalTo($value));
+
+		$parser = new Parser($selector, $mock);
+		$parser->parse();
+	}
+
+	public function testSelectorContinuesAfterNestedPseudoClassValue()
+	{
+		$expect = [
+			new TestEvent(TestEvent::ELEMENT, 'li'),
+			new TestEvent(TestEvent::PSEUDO_CLASS, 'not', ':nth-child(1)'),
+			new TestEvent(TestEvent::ANY_DESCENDANT),
+			new TestEvent(TestEvent::ELEMENT, 'b'),
+		];
+
+		$handler = new TestEventHandler();
+		$handler->expectsSmth($expect);
+		$parser = new Parser('li:not(:nth-child(1)) b', $handler);
+		$parser->parse();
+
+		$this->assertTrue($handler->success());
+	}
+
 	public function testPseudoElement()
 	{
 		// Test pseudo-element
