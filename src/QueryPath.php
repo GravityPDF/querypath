@@ -99,29 +99,18 @@ class QueryPath
 	/**
 	 * The version string for this version of QueryPath.
 	 *
-	 * Standard releases will be of the following form: <MAJOR>.<MINOR>[.<PATCH>][-STABILITY].
-	 *
-	 * Examples:
-	 * - 2.0
-	 * - 2.1.1
-	 * - 2.0-alpha1
-	 *
-	 * Developer releases will always be of the form dev-<DATE>.
-	 *
 	 * @since 2.0
+	 * @deprecated Use \Composer\InstalledVersions::getPrettyVersion('gravitypdf/querypath') (Composer 2).
 	 */
-	public const VERSION = '3.2.2';
+	public const VERSION = '4.2.0';
 
 	/**
 	 * Major version number.
 	 *
-	 * Examples:
-	 * - 3
-	 * - 4
-	 *
 	 * @since 3.0.1
+	 * @deprecated Use \Composer\InstalledVersions::getPrettyVersion('gravitypdf/querypath') (Composer 2).
 	 */
-	public const VERSION_MAJOR = 3;
+	public const VERSION_MAJOR = 4;
 
 	/**
 	 * This is a stub HTML 4.01 document.
