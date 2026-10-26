@@ -71,6 +71,13 @@ class Util
 	private static $positionalSelectorCache = [];
 
 	/**
+	 * Memoized results for selectorUsesScope(), capped as the positional cache is.
+	 *
+	 * @var bool[]
+	 */
+	private static $scopeSelectorCache = [];
+
+	/**
 	 * Check whether the given pseudo-class name is a jQuery positional filter.
 	 *
 	 * @param string $name
@@ -149,6 +156,58 @@ class Util
 		}
 
 		self::$positionalSelectorCache[$key] = $found;
+
+		return $found;
+	}
+
+	/**
+	 * Check whether a selector refers to `:scope` (or its `:x-root`/`:x-reset` aliases).
+	 *
+	 * The arguments of :not() and :matches() are searched too. Those of :has() are not: in there,
+	 * `:scope` is the element :has() is tested on.
+	 *
+	 * @param string $selector
+	 *
+	 * @return bool
+	 */
+	public static function selectorUsesScope($selector): bool
+	{
+		$key = (string) $selector;
+		if (isset(self::$scopeSelectorCache[$key])) {
+			return self::$scopeSelectorCache[$key];
+		}
+
+		$found   = false;
+		$handler = new Selector();
+		try {
+			$parser = new Parser($key, $handler);
+			$parser->parse();
+
+			foreach ($handler as $selectorGroup) {
+				foreach ($selectorGroup as $simpleSelector) {
+					foreach ($simpleSelector->pseudoClasses as $pseudoClass) {
+						$name = strtolower($pseudoClass['name']);
+						if (in_array($name, ['scope', 'x-root', 'x-reset'], true)
+							|| (in_array($name, self::SELECTOR_ARGUMENT_PSEUDO_CLASSES, true)
+								&& ! empty($pseudoClass['value'])
+								&& self::selectorUsesScope($pseudoClass['value']))
+						) {
+							$found = true;
+							break 3;
+						}
+					}
+				}
+			}
+		} catch (ParseException $e) {
+			// Let the real traversal report the parse error.
+			$found = false;
+		}
+
+		if (count(self::$scopeSelectorCache) >= self::POSITIONAL_CACHE_LIMIT) {
+			self::$scopeSelectorCache = [];
+		}
+
+		self::$scopeSelectorCache[$key] = $found;
 
 		return $found;
 	}
