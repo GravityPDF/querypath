@@ -385,29 +385,29 @@ abstract class DOM implements Query, IteratorAggregate, Countable
 	 */
 	protected function findMatches($selector): SplObjectStorage
 	{
-		$nodes = iterator_to_array($this->matches, false);
-
-		if (count($nodes) === 1) {
-			$scope = $nodes[0] instanceof DOMElement ? $nodes[0] : null;
-
-			return (new DOMTraverser($this->matches, false, $scope))->find($selector)->matches();
-		}
-
-		if (! Util::selectorUsesScope($selector)) {
+		$count = $this->matches->count();
+		if ($count > 1 && ! Util::selectorUsesScope($selector)) {
 			return (new DOMTraverser($this->matches))->find($selector)->matches();
 		}
 
 		$psHandler = new PseudoClass();
-		$found     = new SplObjectStorage();
-		foreach ($nodes as $node) {
-			$start = new SplObjectStorage();
-			$start->offsetSet($node);
-			$scope = $node instanceof DOMElement ? $node : null;
-			$found->addAll((new DOMTraverser($start, false, $scope, $psHandler))->find($selector)->matches());
+		$psHandler->beginQuery();
+		try {
+			$found = [];
+			foreach ($this->matches as $node) {
+				$start = new SplObjectStorage();
+				$start->offsetSet($node);
+				$scope = $node instanceof DOMElement ? $node : null;
+				foreach ((new DOMTraverser($start, false, $scope, $psHandler))->find($selector)->matches() as $match) {
+					$found[] = $match;
+				}
+			}
+		} finally {
+			$psHandler->endQuery();
 		}
 
 		$sorted = new SplObjectStorage();
-		foreach (Util::sortDocumentOrder(iterator_to_array($found, false)) as $node) {
+		foreach ($count > 1 ? Util::sortDocumentOrder($found) : $found as $node) {
 			$sorted->offsetSet($node);
 		}
 
