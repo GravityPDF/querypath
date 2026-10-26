@@ -1989,6 +1989,21 @@ class DOMQueryTest extends TestCase
 		$this->assertEquals(2, qp($file, 'foot')->prevAll('inner')->count());
 	}
 
+	public function testNextAllAndPrevAllFromOverlappingStarts()
+	{
+		$xml   = '<?xml version="1.0"?><r><a/><b/>text<c/><d/><e/></r>';
+		$names = function ($query) {
+			return implode(',', array_map(function ($node) {
+				return $node->tagName;
+			}, $query->get()));
+		};
+
+		$this->assertSame('c,d,e', $names(qp($xml, 'b')->add('d')->nextAll()));
+		$this->assertSame('e,c,d', $names(qp($xml, 'd')->add('b')->nextAll()));
+		$this->assertSame('a,c,b', $names(qp($xml, 'b')->add('d')->prevAll()));
+		$this->assertSame('c,b,a', $names(qp($xml, 'd')->add('b')->prevAll()));
+	}
+
 	public function testParent()
 	{
 		$file = DATA_FILE;

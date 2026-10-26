@@ -2,6 +2,7 @@
 
 namespace QueryPath\Helpers;
 
+use DOMNode;
 use QueryPath\CSS\DOMTraverser;
 use QueryPath\CSS\ParseException;
 use SplObjectStorage;
@@ -49,8 +50,8 @@ final class NodeMatcher
 	/**
 	 * Test whether a single node, taken as an element, matches the selector.
 	 *
-	 * @param mixed $node
-	 *   The node to test. Anything that is not an element returns FALSE.
+	 * @param DOMNode $node
+	 *   The node to test. A node that is not an element returns FALSE.
 	 *
 	 * @return bool
 	 * @throws ParseException

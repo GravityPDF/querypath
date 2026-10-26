@@ -547,7 +547,7 @@ trait QueryFilters
 	 *
 	 * @return DOMQuery
 	 *  The DOMQuery object, now containing the matching siblings.
-	 * @throws Exception
+	 * @throws ParseException
 	 * @see    prevAll()
 	 * @see    children()
 	 * @see    siblings()
@@ -586,7 +586,7 @@ trait QueryFilters
 	 *
 	 * @return DOMQuery
 	 *  The DOMQuery object, now wrapping previous sibling elements.
-	 * @throws Exception
+	 * @throws ParseException
 	 * @see    prev()
 	 * @see    nextAll()
 	 * @see    siblings()
@@ -625,7 +625,7 @@ trait QueryFilters
 	 *
 	 * @return DOMQuery
 	 *  A DOMNode object containing the matching ancestors.
-	 * @throws Exception
+	 * @throws ParseException
 	 * @see    siblings()
 	 * @see    children()
 	 * @since  2.1
@@ -639,7 +639,6 @@ trait QueryFilters
 		foreach ($this->matches as $m) {
 			while ($m->parentNode->nodeType !== XML_DOCUMENT_NODE) {
 				$m = $m->parentNode;
-				// Is there any case where parent node is not an element?
 				if ($m->nodeType === XML_ELEMENT_NODE) {
 					if (! empty($selector) && $matcher->matches($m)) {
 						break;
@@ -728,7 +727,7 @@ trait QueryFilters
 	 *
 	 * @return DOMQuery
 	 *  The set of matches.
-	 * @throws Exception
+	 * @throws ParseException
 	 * @since 2.0
 	 */
 	public function closest($selector): Query
@@ -812,7 +811,6 @@ trait QueryFilters
 		foreach ($this->matches as $m) {
 			while ($m->parentNode && $m->parentNode->nodeType !== XML_DOCUMENT_NODE) {
 				$m = $m->parentNode;
-				// Is there any case where parent node is not an element?
 				if ($m->nodeType !== XML_ELEMENT_NODE) {
 					continue;
 				}
@@ -898,6 +896,10 @@ trait QueryFilters
 		foreach ($this->matches as $m) {
 			while (isset($m->nextSibling)) {
 				$m = $m->nextSibling;
+				// Every sibling beyond one already collected was collected with it.
+				if ($found->offsetExists($m)) {
+					break;
+				}
 				if ($m->nodeType === XML_ELEMENT_NODE) {
 					$found->offsetSet($m);
 				}
@@ -969,6 +971,10 @@ trait QueryFilters
 		foreach ($this->matches as $m) {
 			while (isset($m->previousSibling)) {
 				$m = $m->previousSibling;
+				// Every sibling beyond one already collected was collected with it.
+				if ($found->offsetExists($m)) {
+					break;
+				}
 				if ($m->nodeType === XML_ELEMENT_NODE) {
 					$found->offsetSet($m);
 				}
