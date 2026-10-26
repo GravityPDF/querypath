@@ -3,7 +3,6 @@
 namespace QueryPath\Helpers;
 
 use DOMElement;
-use DOMNode;
 use QueryPath\CSS\DOMTraverser\Util;
 use QueryPath\CSS\ParseException;
 use QueryPath\DOMQuery;
@@ -703,16 +702,10 @@ trait QueryFilters
 					$found->offsetSet($m);
 				}
 			}
-		} elseif ($selector instanceof SplObjectStorage) {
-			foreach ($this->matches as $m) {
-				if (! $selector->offsetExists($m)) {
-					$found->offsetSet($m);
-				}
-			}
 		} else {
-			$matched = NodeMatcher::filter($this->matches, $selector);
+			$exclude = $selector instanceof SplObjectStorage ? $selector : NodeMatcher::matching($this->matches, $selector);
 			foreach ($this->matches as $m) {
-				if (! $matched->offsetExists($m)) {
+				if (! $exclude->offsetExists($m)) {
 					$found->offsetSet($m);
 				}
 			}
@@ -1106,7 +1099,8 @@ trait QueryFilters
 	 */
 	private function sortReverseDocumentOrder(SplObjectStorage $nodes): SplObjectStorage
 	{
-		if (count($nodes) < 2) {
+		// A single starting element's walk up the tree already yields reverse document order.
+		if (count($nodes) < 2 || count($this->matches) < 2) {
 			return $nodes;
 		}
 

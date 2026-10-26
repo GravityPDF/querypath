@@ -9,29 +9,19 @@ use SplObjectStorage;
 /**
  * Test nodes that are already in hand against a CSS selector.
  *
- * This is deliberately different from running a find(): find() searches the
- * <em>descendants</em> of the nodes it is given, so for `<a><b/></a>` it would report
- * that the `a` element "matches" the selector `b`. Here the supplied nodes are
- * themselves the only candidates, so `b` matches the `b` element and nothing else.
+ * Unlike find(), which searches the <em>descendants</em> of the nodes it is given, the
+ * supplied nodes are themselves the only candidates: for `<a><b/></a>`, `b` matches the
+ * `b` element and not `a`. Combinators are still resolved against the real document, so
+ * full selectors (e.g. `div > p`) keep working.
  *
- * The DOMTraverser is built in "initialized" mode, which tells it to treat the
- * supplied set as the candidate set rather than seeding it with a descendant
- * search. Combinators are still resolved against the real document by walking up
- * from each candidate, so full selectors (e.g. `div > p`) keep working.
+ * Prefer the set methods wherever there is a set. A per-node pass cannot answer a selector
+ * that describes a position within the set (:first, :eq(n), :odd, ...), because each node
+ * would be the only member of its own one-element set.
  *
- * Sets are evaluated in one pass wherever the caller has a set. A per-node pass cannot
- * answer a selector that describes a position within the set (:first, :eq(n), :odd, ...),
- * because each node would be the only member of its own one-element set.
- *
- * The scope node is deliberately left at its default (the document element) so that
- * `:scope` means the same thing here as it does in find(). Passing a candidate as the
- * scope node would make every candidate match `:scope`.
- *
- * An instance answers the per-node question for one selector, and remembers each answer.
- * The walk-and-stop traversals (closest(), nextUntil(), ...) revisit the same nodes from
- * every starting element, so without the memo they would re-parse the selector for each
- * visit. An instance must not outlive the call that made it, or a later DOM change could
- * leave it holding stale answers.
+ * An instance remembers each per-node answer, because the walk-and-stop traversals
+ * (closest(), nextUntil(), ...) revisit the same nodes from every starting element. An
+ * instance must not outlive the call that made it, or a later DOM change could leave it
+ * holding stale answers.
  */
 final class NodeMatcher
 {
@@ -95,7 +85,7 @@ final class NodeMatcher
 			return new SplObjectStorage();
 		}
 
-		$matched = self::traverse($nodes, $selector);
+		$matched = self::matching($nodes, $selector);
 
 		// The traverser returns document order; callers such as parents() need their own.
 		$found = new SplObjectStorage();
@@ -119,18 +109,24 @@ final class NodeMatcher
 	 */
 	public static function matchesAny(SplObjectStorage $nodes, $selector): bool
 	{
-		return count($nodes) > 0 && count(self::traverse($nodes, $selector)) > 0;
+		return count($nodes) > 0 && count(self::matching($nodes, $selector)) > 0;
 	}
 
 	/**
+	 * Find the nodes that match a selector, in document order.
+	 *
 	 * @param SplObjectStorage $nodes
 	 * @param string           $selector
 	 *
 	 * @return SplObjectStorage
 	 * @throws ParseException
 	 */
-	private static function traverse(SplObjectStorage $nodes, $selector): SplObjectStorage
+	public static function matching(SplObjectStorage $nodes, $selector): SplObjectStorage
 	{
+		// "Initialized" mode makes the traverser take the supplied set as its candidates rather
+		// than seeding them with a descendant search. The scope node is left at its default (the
+		// document element) so that `:scope` means the same here as in find(); scoping to a
+		// candidate would make every candidate match `:scope`.
 		$traverser = new DOMTraverser($nodes, true);
 
 		return $traverser->find($selector)->matches();
