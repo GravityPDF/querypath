@@ -39,6 +39,7 @@ QueryPath Changelog
 - Fix `html()` and `writeHTML()` dropping the closing `?` of a processing instruction in an `html5qp()` document, so `<?php echo $title; ?>` came out as `<?php echo $title; >` (issue #86). `html5qp()` documents are now `QueryPath\Document` instances, like those from `qp()` and `htmlqp()`
 - Fix `css()` merging the inline styles of every matched element and writing the combined result back to all of them. The new declarations are now merged into each element's own `style` attribute (issue #77)
 - Fix `not()` keeping only the given nodes, instead of removing them, when passed an `SplObjectStorage` such as `get(null, true)` returns (issue #75)
+- Fix selectors with two or more levels of nested parentheses, such as `li:not(:not(:nth-child(1)))` or `ul:has(li:not(:nth-child(1)))`, throwing "Recursion error detected" (issue #120). The scanner skipped the character after every nested argument, so the outer argument never saw its closing paren. This also stops `li:not(:nth-child(1)) b` from folding ` b` into the `:not()` argument, and lets quoted arguments contain parentheses, as in `:contains("a)b")`
 - Fix `QueryPath::VERSION` and `QueryPath::VERSION_MAJOR` still reporting `3.2.2` and `3`. They now report `4.2.0` and `4`, and both are deprecated in favour of `\Composer\InstalledVersions::getPrettyVersion('gravitypdf/querypath')`, which cannot drift from the installed version (issue #83)
 
 # 4.2.0
