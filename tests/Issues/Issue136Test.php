@@ -5,7 +5,7 @@
  * Regression tests for https://github.com/GravityPDF/querypath/issues/136
  *
  * `:is()` and `:where()` are the CSS Selectors 4 names for `:matches()`. QueryPath does not use
- * specificity, so `:where()` matches exactly as `:is()` does.
+ * specificity, so `:where()` matches as `:is()` does.
  */
 
 namespace QueryPathTests;
