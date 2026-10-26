@@ -31,6 +31,10 @@ trait QueryChecks
 	 *
 	 * Unlike jQuery's version, this supports full selectors (not just simple ones).
 	 *
+	 * As in jQuery, a positional selector (`:first`, `:eq()`, ...) counts across the whole
+	 * document, not within the match set: `is(':first')` is TRUE only if the set holds the
+	 * document's first element. filter() counts within the set.
+	 *
 	 * Non-element nodes in the match set can never match a CSS selector, and are skipped.
 	 *
 	 * @param string|DOMNode $selector
@@ -73,7 +77,7 @@ trait QueryChecks
 			throw new Exception('Cannot compare an object to a DOMQuery.');
 		}
 
-		return (new NodeMatcher($selector))->matchesAny($this->matches);
+		return (new NodeMatcher($selector))->matchesAnyInDocument($this->matches);
 	}
 
 	/**

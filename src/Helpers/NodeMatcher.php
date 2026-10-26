@@ -108,6 +108,31 @@ final class NodeMatcher
 	}
 
 	/**
+	 * Test whether at least one of the given nodes matches as jQuery's .is() tests it.
+	 *
+	 * @see matchesInDocument()
+	 *
+	 * @param SplObjectStorage $nodes
+	 *
+	 * @return bool
+	 * @throws ParseException
+	 */
+	public function matchesAnyInDocument(SplObjectStorage $nodes): bool
+	{
+		if (! Util::selectorHasPositionalPseudoClass($this->selector)) {
+			return $this->matchesAny($nodes);
+		}
+
+		foreach ($nodes as $node) {
+			if ($this->matchesInDocument($node)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * @param \DOMDocument $document
 	 *
 	 * @return SplObjectStorage
