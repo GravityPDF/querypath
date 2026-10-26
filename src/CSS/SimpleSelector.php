@@ -116,7 +116,7 @@ class SimpleSelector
 	 * The jQuery positional pseudo-classes (:eq(), :first, :last, :lt(), :gt(),
 	 * :odd, :even) filter an ordered result set rather than testing an
 	 * individual node, so a traverser must apply these after it has collected
-	 * its matches. The same is true of :not(), :has() and :matches() when their
+	 * its matches. The same is true of :not() and :matches() when their
 	 * argument contains one.
 	 *
 	 * They are returned in the order they were written, which is the order they
@@ -179,6 +179,20 @@ class SimpleSelector
 	public function hasSetFilterPseudoClasses(): bool
 	{
 		return count($this->setFilterPseudoClasses()) > 0;
+	}
+
+	/**
+	 * Whether this matches any element: no element, namespace, ID, class, attribute or pseudo.
+	 */
+	public function isBlank(): bool
+	{
+		return $this->element === null
+			   && empty($this->ns)
+			   && empty($this->id)
+			   && empty($this->classes)
+			   && empty($this->attributes)
+			   && empty($this->pseudoClasses)
+			   && empty($this->pseudoElements);
 	}
 
 	/**

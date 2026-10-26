@@ -168,6 +168,24 @@ class DOMTraverser implements Traverser
 		$handler = new Selector();
 		$parser  = new Parser($selector, $handler);
 		$parser->parse();
+
+		return $this->findGroups($handler);
+	}
+
+	/**
+	 * Find the matches of an already-parsed selector.
+	 *
+	 * The traverser modifies the SimpleSelector objects it is given, so they must
+	 * not be reused.
+	 *
+	 * @param iterable $handler
+	 *   The SimpleSelector[] groups, as a Selector yields them.
+	 *
+	 * @return DOMTraverser
+	 * @throws ParseException
+	 */
+	public function findGroups($handler): DOMTraverser
+	{
 		$this->selector = $handler;
 
 		//$selector = $handler->toArray();
@@ -329,7 +347,7 @@ class DOMTraverser implements Traverser
 			return Util::applyPositionalPseudoClass($nodes, $name, $value);
 		}
 
-		// :not(), :has() and :matches() whose argument uses a positional filter.
+		// :not() and :matches() whose argument uses a positional filter.
 		// The argument has to see the whole result set, exactly as jQuery's
 		// :not(:first) does, so run it over this set and keep or drop the result.
 		if (empty($nodes)) {

@@ -206,6 +206,27 @@ class PseudoClassTest extends TestCase
 		$this->assertEquals(1, $i);
 	}
 
+	public function testHasMatchesRelatedElementsNotTheElementItself()
+	{
+		$xml = '<?xml version="1.0"?><root><ul><li><b/></li></ul><p/></root>';
+		[$ele, $root] = $this->doc($xml, 'ul');
+		$ps = new PseudoClass();
+
+		$this->assertTrue($ps->elementMatches('has', $ele, $root, 'li'));
+		$this->assertTrue($ps->elementMatches('has', $ele, $root, 'b'));
+		$this->assertTrue($ps->elementMatches('has', $ele, $root, '> li'));
+		$this->assertFalse($ps->elementMatches('has', $ele, $root, '> b'));
+		$this->assertTrue($ps->elementMatches('has', $ele, $root, '+ p'));
+		$this->assertTrue($ps->elementMatches('has', $ele, $root, '~ p'));
+		$this->assertFalse($ps->elementMatches('has', $ele, $root, 'ul'));
+		$this->assertFalse($ps->elementMatches('has', $ele, $root, 'p'));
+
+		$this->assertTrue($ps->elementMatches('matches', $ele, $root, 'ul'));
+		$this->assertFalse($ps->elementMatches('matches', $ele, $root, 'li'));
+		$this->assertFalse($ps->elementMatches('not', $ele, $root, 'ul'));
+		$this->assertTrue($ps->elementMatches('not', $ele, $root, 'li'));
+	}
+
 	public function testParent()
 	{
 		$ps = new PseudoClass();
@@ -697,6 +718,28 @@ class PseudoClassTest extends TestCase
 		$traverser = new DOMTraverser($splos, false, null, $ps);
 
 		$this->assertCount(50, $traverser->find('b:not(:nth-child(odd))')->matches());
+		$this->assertSame(1, $ps->indexed);
+	}
+
+	/**
+	 * :has() runs a query per element, and per later sibling, which must all reuse one index.
+	 *
+	 * @testWith ["a:has(+ b:nth-child(even))", 50]
+	 *           ["a:has(~ b:nth-last-child(1))", 50]
+	 *           ["root:has(> b:nth-of-type(50))", 1]
+	 */
+	public function testHasQueriesShareTheSiblingIndex($selector, $count)
+	{
+		$xml = '<?xml version="1.0"?><root>' . str_repeat('<a/><b/>', 50) . '</root>';
+		[$ele, $root] = $this->doc($xml, 'root');
+
+		$splos = new SplObjectStorage();
+		$splos->offsetSet($root);
+
+		$ps        = $this->countingPseudoClass();
+		$traverser = new DOMTraverser($splos, false, null, $ps);
+
+		$this->assertCount($count, $traverser->find($selector)->matches());
 		$this->assertSame(1, $ps->indexed);
 	}
 
