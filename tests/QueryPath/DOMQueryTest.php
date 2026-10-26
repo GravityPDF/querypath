@@ -2139,8 +2139,8 @@ class DOMQueryTest extends TestCase
 		};
 
 		$this->assertSame('c,d,e', $names(qp($xml, 'b')->add('d')->nextAll()));
-		$this->assertSame('e,c,d', $names(qp($xml, 'd')->add('b')->nextAll()));
-		$this->assertSame('a,c,b', $names(qp($xml, 'b')->add('d')->prevAll()));
+		$this->assertSame('c,d,e', $names(qp($xml, 'd')->add('b')->nextAll()));
+		$this->assertSame('c,b,a', $names(qp($xml, 'b')->add('d')->prevAll()));
 		$this->assertSame('c,b,a', $names(qp($xml, 'd')->add('b')->prevAll()));
 	}
 
