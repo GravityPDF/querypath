@@ -87,6 +87,7 @@
 
 namespace QueryPath;
 
+use DOMDocument;
 use Masterminds\HTML5;
 use QueryPath\ExtensionRegistry;
 
@@ -99,29 +100,18 @@ class QueryPath
 	/**
 	 * The version string for this version of QueryPath.
 	 *
-	 * Standard releases will be of the following form: <MAJOR>.<MINOR>[.<PATCH>][-STABILITY].
-	 *
-	 * Examples:
-	 * - 2.0
-	 * - 2.1.1
-	 * - 2.0-alpha1
-	 *
-	 * Developer releases will always be of the form dev-<DATE>.
-	 *
 	 * @since 2.0
+	 * @deprecated Use \Composer\InstalledVersions::getPrettyVersion('gravitypdf/querypath') (Composer 2).
 	 */
-	public const VERSION = '3.2.2';
+	public const VERSION = '4.2.0';
 
 	/**
 	 * Major version number.
 	 *
-	 * Examples:
-	 * - 3
-	 * - 4
-	 *
 	 * @since 3.0.1
+	 * @deprecated Use \Composer\InstalledVersions::getPrettyVersion('gravitypdf/querypath') (Composer 2).
 	 */
-	public const VERSION_MAJOR = 3;
+	public const VERSION_MAJOR = 4;
 
 	/**
 	 * This is a stub HTML 4.01 document.
@@ -284,6 +274,14 @@ class QueryPath
 			} else {
 				$source = $html5->load($source);
 			}
+
+			// Masterminds already satisfies the invariant Document records, but builds a plain
+			// DOMDocument. registerNodeClass() cannot retype a live wrapper, so release it and
+			// let PHP rebuild it as a Document when it is next reached through a node.
+			$source->registerNodeClass(DOMDocument::class, Document::class);
+			$doctype = $source->doctype;
+			$source  = null;
+			$source  = $doctype->ownerDocument;
 		}
 
 		return new $qpClass($source, $selector, $options);
