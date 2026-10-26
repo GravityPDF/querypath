@@ -173,8 +173,9 @@ class DOMTraverser implements Traverser
 	 *
 	 * Unlike find(), which searches the descendants of the nodes it starts from, only the given
 	 * nodes can match: for `<a><b/></a>`, `b` matches the `b` element and not `a`. Combinators are
-	 * still resolved against the document, so `div > p` works, and positional pseudo-classes
-	 * (`:first`, `:eq(n)`, ...) count within the given set. Nodes that are not elements never match.
+	 * still resolved against the document, so `div > p` works. Positional pseudo-classes (`:first`,
+	 * `:eq(n)`, ...) on the subject count within the given set, and on a compound left of a
+	 * combinator across the document, as in jQuery's .filter(). Nodes that are not elements never match.
 	 *
 	 * @param SplObjectStorage $nodes
 	 *   The candidates, all from one document.
@@ -336,8 +337,13 @@ class DOMTraverser implements Traverser
 		} else {
 			// initialMatch() consumes the parts of the simple selector it matched on. Give it a copy,
 			// so the caller's parsed selector can be reused.
+			// When the given nodes are tested as themselves, a positional compound left of a combinator
+			// counts across the document, as jQuery's .filter() does.
 			$selectorGroup[$index] = clone $selectorGroup[$index];
-			$candidates            = $this->initialMatch($selectorGroup[$index], $this->matches);
+			$candidates            = $this->initialMatch(
+				$selectorGroup[$index],
+				$this->initialized ? $this->documentScope() : $this->matches
+			);
 		}
 
 		$setFilters           = $selectorGroup[$index]->setFilterPseudoClasses();
@@ -375,6 +381,21 @@ class DOMTraverser implements Traverser
 		}
 
 		return $this->toMatches($matched);
+	}
+
+	/**
+	 * The document element, standing in for the document as it does in qp($document).
+	 *
+	 * @return SplObjectStorage
+	 */
+	protected function documentScope(): SplObjectStorage
+	{
+		$scope = $this->newMatches();
+		if ($this->dom instanceof DOMDocument && $this->dom->documentElement) {
+			$scope->offsetSet($this->dom->documentElement);
+		}
+
+		return $scope;
 	}
 
 	/**
