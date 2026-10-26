@@ -2,6 +2,7 @@
 
 namespace QueryPath\Helpers;
 
+use DOMElement;
 use DOMNode;
 use QueryPath\CSS\DOMTraverser;
 use QueryPath\CSS\DOMTraverser\PseudoClass;
@@ -108,6 +109,31 @@ final class NodeMatcher
 	}
 
 	/**
+	 * Test whether at least one of the given nodes matches as jQuery's .is() tests it.
+	 *
+	 * @see matchesInDocument()
+	 *
+	 * @param SplObjectStorage $nodes
+	 *
+	 * @return bool
+	 * @throws ParseException
+	 */
+	public function matchesAnyInDocument(SplObjectStorage $nodes): bool
+	{
+		if (! Util::selectorHasPositionalPseudoClass($this->selector)) {
+			return $this->matchesAny($nodes);
+		}
+
+		foreach ($nodes as $node) {
+			if ($node instanceof DOMElement && $this->matchesInDocument($node)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * @param \DOMDocument $document
 	 *
 	 * @return SplObjectStorage
@@ -115,13 +141,9 @@ final class NodeMatcher
 	 */
 	private function documentMatches($document): SplObjectStorage
 	{
-		// As in qp($document), the document element stands in for the document, so it can match.
-		$scope = new SplObjectStorage();
-		if ($document->documentElement) {
-			$scope->offsetSet($document->documentElement);
-		}
-
-		return (new DOMTraverser($scope, false, null, $this->psHandler))->find($this->selector)->matches();
+		return (new DOMTraverser(DOMTraverser::documentScope($document), false, null, $this->psHandler))
+			->find($this->selector)
+			->matches();
 	}
 
 	/**

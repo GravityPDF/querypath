@@ -61,19 +61,19 @@ class Util
 	];
 
 	/**
+	 * Cap on each selector cache, so a long-running process cannot grow it forever.
+	 */
+	const POSITIONAL_CACHE_LIMIT = 256;
+
+	/**
 	 * Memoized results for selectorHasPositionalPseudoClass().
 	 *
 	 * @var bool[]
 	 */
-	/**
-	 * Cap on the positional-selector cache, so a long-running process cannot grow it forever.
-	 */
-	const POSITIONAL_CACHE_LIMIT = 256;
-
 	private static $positionalSelectorCache = [];
 
 	/**
-	 * Memoized results for selectorUsesScope(), capped as the positional cache is.
+	 * Memoized results for selectorUsesScope().
 	 *
 	 * @var bool[]
 	 */
@@ -126,40 +126,9 @@ class Util
 	 */
 	public static function selectorHasPositionalPseudoClass($selector): bool
 	{
-		$key = (string) $selector;
-		if (isset(self::$positionalSelectorCache[$key])) {
-			return self::$positionalSelectorCache[$key];
-		}
-
-		$found   = false;
-		$handler = new Selector();
-		try {
-			$parser = new Parser($key, $handler);
-			$parser->parse();
-
-			foreach ($handler as $selectorGroup) {
-				foreach ($selectorGroup as $simpleSelector) {
-					if ($simpleSelector->hasSetFilterPseudoClasses()) {
-						$found = true;
-						break 2;
-					}
-				}
-			}
-		} catch (ParseException $e) {
-			// Let the real traversal report the parse error.
-			$found = false;
-		}
-
-		// The cache is keyed by selector string, which in a long-running process can be
-		// unbounded user input. Selectors repeat heavily within one query but rarely across
-		// unrelated ones, so the table is dropped wholesale rather than evicted entry by entry.
-		if (count(self::$positionalSelectorCache) >= self::POSITIONAL_CACHE_LIMIT) {
-			self::$positionalSelectorCache = [];
-		}
-
-		self::$positionalSelectorCache[$key] = $found;
-
-		return $found;
+		return self::anySimpleSelector(self::$positionalSelectorCache, $selector, function ($simpleSelector) {
+			return $simpleSelector->hasSetFilterPseudoClasses();
+		});
 	}
 
 	/**
@@ -174,42 +143,67 @@ class Util
 	 */
 	public static function selectorUsesScope($selector): bool
 	{
+		return self::anySimpleSelector(self::$scopeSelectorCache, $selector, function ($simpleSelector) {
+			foreach ($simpleSelector->pseudoClasses as $pseudoClass) {
+				$name = strtolower($pseudoClass['name']);
+				if (in_array($name, ['scope', 'x-root', 'x-reset'], true)) {
+					return true;
+				}
+				if (in_array($name, self::SELECTOR_ARGUMENT_PSEUDO_CLASSES, true)
+					&& ! empty($pseudoClass['value'])
+					&& self::selectorUsesScope($pseudoClass['value'])
+				) {
+					return true;
+				}
+			}
+
+			return false;
+		});
+	}
+
+	/**
+	 * Parse a selector and check whether any of its simple selectors passes a test, memoizing the answer.
+	 *
+	 * A selector that fails to parse answers FALSE; the real traversal reports the error.
+	 *
+	 * @param bool[]   $cache
+	 * @param string   $selector
+	 * @param callable $test
+	 *
+	 * @return bool
+	 */
+	private static function anySimpleSelector(array &$cache, $selector, callable $test): bool
+	{
 		$key = (string) $selector;
-		if (isset(self::$scopeSelectorCache[$key])) {
-			return self::$scopeSelectorCache[$key];
+		if (isset($cache[$key])) {
+			return $cache[$key];
 		}
 
 		$found   = false;
 		$handler = new Selector();
 		try {
-			$parser = new Parser($key, $handler);
-			$parser->parse();
+			(new Parser($key, $handler))->parse();
 
 			foreach ($handler as $selectorGroup) {
 				foreach ($selectorGroup as $simpleSelector) {
-					foreach ($simpleSelector->pseudoClasses as $pseudoClass) {
-						$name = strtolower($pseudoClass['name']);
-						if (in_array($name, ['scope', 'x-root', 'x-reset'], true)
-							|| (in_array($name, self::SELECTOR_ARGUMENT_PSEUDO_CLASSES, true)
-								&& ! empty($pseudoClass['value'])
-								&& self::selectorUsesScope($pseudoClass['value']))
-						) {
-							$found = true;
-							break 3;
-						}
+					if ($test($simpleSelector)) {
+						$found = true;
+						break 2;
 					}
 				}
 			}
 		} catch (ParseException $e) {
-			// Let the real traversal report the parse error.
 			$found = false;
 		}
 
-		if (count(self::$scopeSelectorCache) >= self::POSITIONAL_CACHE_LIMIT) {
-			self::$scopeSelectorCache = [];
+		// The cache is keyed by selector string, which in a long-running process can be
+		// unbounded user input. Selectors repeat heavily within one query but rarely across
+		// unrelated ones, so the table is dropped wholesale rather than evicted entry by entry.
+		if (count($cache) >= self::POSITIONAL_CACHE_LIMIT) {
+			$cache = [];
 		}
 
-		self::$scopeSelectorCache[$key] = $found;
+		$cache[$key] = $found;
 
 		return $found;
 	}
