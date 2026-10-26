@@ -26,6 +26,8 @@ use SPLObjectStorage;
 /**
  *  The PseudoClass handler.
  *
+ * It also holds what queries can share: parsed selectors and, while a query is open, sibling
+ * positions. Nested and per-node queries are passed their caller's handler for that reason.
  */
 class PseudoClass
 {
@@ -56,11 +58,18 @@ class PseudoClass
 	protected $anbRules = [];
 
 	/**
-	 * Parsed :has() arguments, keyed by the argument. See relativeSelector().
+	 * :has() arguments as relativeSelector() returns them, keyed by the argument.
 	 *
 	 * @var array
 	 */
 	protected $relativeSelectors = [];
+
+	/**
+	 * Parsed selectors, keyed by the selector string. See parse().
+	 *
+	 * @var Selector[]
+	 */
+	protected $selectors = [];
 
 	/**
 	 * Start remembering sibling positions, so the :nth-* pseudo-classes index
@@ -80,6 +89,30 @@ class PseudoClass
 		if (--$this->queryDepth === 0) {
 			$this->positions = null;
 		}
+	}
+
+	/**
+	 * Parse a selector, reusing an earlier parse of the same string.
+	 *
+	 * DOMTraverser does not modify a parsed selector, so every query that shares this handler can
+	 * share the parse.
+	 *
+	 * @param string $selector
+	 *
+	 * @return Selector
+	 * @throws ParseException
+	 */
+	public function parse($selector): Selector
+	{
+		if (! isset($this->selectors[$selector])) {
+			$handler = new Selector();
+			$parser  = new Parser($selector, $handler);
+			$parser->parse();
+
+			$this->selectors[$selector] = $handler;
+		}
+
+		return $this->selectors[$selector];
 	}
 
 	/**
@@ -455,19 +488,19 @@ class PseudoClass
 			return $this->relativeSelectors[$selector];
 		}
 
-		$handler = new Selector();
-		$parser  = new Parser($selector, $handler);
-		$parser->parse();
-
 		$sibling = SimpleSelector::ADJACENT | SimpleSelector::SIBLING;
 		$groups  = [];
-		foreach ($handler as $group) {
-			// Groups are stored right-to-left, so the last simple selector is the leftmost.
+		foreach ($this->parse($selector) as $group) {
+			// Groups are stored right-to-left, so the last simple selector is the leftmost. It is
+			// copied before :scope is added, as the parse is shared.
 			$anchor = end($group);
 			if (count($group) === 1 || ! $anchor->isBlank()) {
 				$anchor             = new SimpleSelector();
 				$anchor->combinator = SimpleSelector::ANY_DESCENDANT;
 				$group[]            = $anchor;
+			} else {
+				$anchor                   = clone $anchor;
+				$group[count($group) - 1] = $anchor;
 			}
 			$anchor->pseudoClasses[] = ['name' => 'scope', 'value' => null];
 
@@ -502,15 +535,9 @@ class PseudoClass
 	{
 		$splos = new SPLObjectStorage();
 		$splos->offsetSet($root);
-
-		// The traverser consumes the element and ID selectors as it matches them, so give it a copy.
-		$copy = [];
-		foreach ($group as $simpleSelector) {
-			$copy[] = clone $simpleSelector;
-		}
 		$traverser = new DOMTraverser($splos, $self, $scope, $this);
 
-		return count($traverser->findGroups([$copy])->matches()) > 0;
+		return count($traverser->findGroups([$group])->matches()) > 0;
 	}
 
 	/**
@@ -522,10 +549,8 @@ class PseudoClass
 	{
 		$splos = new SPLObjectStorage();
 		$splos->offsetSet($node);
-		$traverser = new DOMTraverser($splos, true, null, $this);
-		$results   = $traverser->find($selector)->matches();
 
-		return count($results) > 0;
+		return count(DOMTraverser::filterNodes($splos, $selector, null, $this)) > 0;
 	}
 
 	/**

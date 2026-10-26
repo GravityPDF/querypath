@@ -3,7 +3,9 @@
 namespace QueryPathTests\CSS;
 
 use DOMDocument;
+use DOMXPath;
 use QueryPath\CSS\DOMTraverser;
+use QueryPath\CSS\DOMTraverser\PseudoClass;
 use QueryPathTests\TestCase;
 use SPLObjectStorage;
 
@@ -37,7 +39,7 @@ class DOMTraverserTest extends TestCase
 		$this->assertInstanceOf('\QueryPath\CSS\DOMTraverser', $traverser);
 	}
 
-	protected function traverser($xml = null)
+	protected function traverser($xml = null, ?PseudoClass $ps = null)
 	{
 		$dom = new DOMDocument('1.0');
 		if ($xml === null) {
@@ -49,9 +51,7 @@ class DOMTraverserTest extends TestCase
 		$splos = new SPLObjectStorage();
 		$splos->offsetSet($dom->documentElement);
 
-		$traverser = new DOMTraverser($splos);
-
-		return $traverser;
+		return new DOMTraverser($splos, false, null, $ps);
 	}
 
 	protected function find($selector)
@@ -376,7 +376,7 @@ class DOMTraverserTest extends TestCase
 	/**
 	 * The <ul> children are, by position: l1 p1 l2 l3 p2 l4 l5 p3.
 	 */
-	protected $nthXml = '<?xml version="1.0"?><root><ul id="ul">'
+	protected $nthXml = '<?xml version="1.0"?><root id="root"><ul id="ul">'
 		. 'text<!-- comment --><li id="l1"/><p id="p1"/><li id="l2"/><!-- comment --><li id="l3"/>'
 		. 'text<p id="p2"/><li id="l4"/><li id="l5"/><p id="p3"/>text'
 		. '</ul><ol id="ol"><li id="o1"/><li id="o2"/></ol></root>';
@@ -474,5 +474,94 @@ class DOMTraverserTest extends TestCase
 
 		$this->assertSame(['c'], $this->ids($qp->find('li:nth-child(3)')->get()));
 		$this->assertSame(['new', 'c'], $this->ids($qp->find('li:nth-child(odd)')->get()));
+	}
+
+	/**
+	 * Load $nthXml and collect the nodes with the given IDs, in the given order.
+	 */
+	protected function nthNodes(string ...$ids): SplObjectStorage
+	{
+		$dom = new DOMDocument('1.0');
+		$dom->loadXML($this->nthXml);
+
+		$xpath = new DOMXPath($dom);
+		$nodes = new SplObjectStorage();
+		foreach ($ids as $id) {
+			$nodes->offsetSet($xpath->query("//*[@id='$id']")->item(0));
+		}
+
+		return $nodes;
+	}
+
+	public function filterNodesProvider(): array
+	{
+		return [
+			'keeps the given order'          => [['l4', 'p1', 'l2', 'l1'], 'li', ['l4', 'l2', 'l1']],
+			'tests the nodes, not below'     => [['ul', 'l1'], 'ul', ['ul']],
+			'resolves combinators'           => [['o1', 'l2', 'l1'], 'ul > li', ['l2', 'l1']],
+			'selector list'                  => [['p2', 'o2', 'l1'], 'p, ol > li', ['p2', 'o2']],
+			':first is first in the set'     => [['l4', 'l2', 'l3'], 'li:first', ['l2']],
+			':eq() counts within the set'    => [['l4', 'l2', 'l3'], ':eq(1)', ['l3']],
+			':odd counts within the set'     => [['l5', 'l4', 'l2', 'l1'], 'li:odd', ['l5', 'l2']],
+			':not() with a positional arg'   => [['l4', 'l2', 'l3'], 'li:not(:first)', ['l4', 'l3']],
+			':matches() with positional arg' => [['l4', 'l2', 'l3'], ':matches(:last)', ['l4']],
+			':nth-child counts siblings'     => [['l4', 'l2', 'l3'], ':nth-child(4)', ['l3']],
+			'document element'               => [['root', 'ul'], 'root', ['root']],
+			':root'                          => [['ul', 'root'], ':root', ['root']],
+			':scope is the document element' => [['ul', 'root'], ':scope', ['root']],
+			':scope is the scope node'       => [['ul', 'l1', 'l2', 'o1'], ':scope', ['ul'], 'ul'],
+			'combinator from the scope node' => [['ul', 'l1', 'l2', 'o1'], ':scope > li', ['l1', 'l2'], 'ul'],
+			'empty set'                      => [[], 'li', []],
+			'empty set, positional'          => [[], 'li:first', []],
+		];
+	}
+
+	/**
+	 * @dataProvider filterNodesProvider
+	 */
+	public function testFilterNodes(array $ids, $selector, array $expected, $scopeId = null)
+	{
+		$nodes = $this->nthNodes(...$ids);
+		$scope = null;
+		foreach ($nodes as $node) {
+			if ($node->getAttribute('id') === $scopeId) {
+				$scope = $node;
+			}
+		}
+
+		$this->assertSame($expected, $this->ids(DOMTraverser::filterNodes($nodes, $selector, $scope)));
+	}
+
+	public function testFilterNodesSkipsNodesThatAreNotElements()
+	{
+		$ul = $this->nthNodes('ul');
+		$ul->rewind();
+
+		// Every child of the <ul>, last first: text and comments interleave the elements.
+		$nodes = new SplObjectStorage();
+		for ($child = $ul->current()->lastChild; $child !== null; $child = $child->previousSibling) {
+			$nodes->offsetSet($child);
+		}
+
+		$this->assertSame(['p3', 'l5', 'l4', 'p2', 'l3', 'l2', 'p1', 'l1'], $this->ids(DOMTraverser::filterNodes($nodes, '*')));
+		$this->assertSame(['l5', 'l4', 'l3', 'l2', 'l1'], $this->ids(DOMTraverser::filterNodes($nodes, ':not(p)')));
+		$this->assertSame(['l1'], $this->ids(DOMTraverser::filterNodes($nodes, ':first')));
+	}
+
+	/**
+	 * A shared handler hands every query the same parsed selector, which the traverser must leave
+	 * as it found it.
+	 *
+	 * @testWith ["#ul li", ["l1", "l2", "l3", "l4", "l5"]]
+	 *           [".x", ["x"]]
+	 *           ["ul:first > li", ["l1", "l2", "l3", "l4", "l5"]]
+	 */
+	public function testQueriesSharingAHandlerReuseTheParsedSelector($selector, array $expected)
+	{
+		$ps  = new PseudoClass();
+		$xml = str_replace('<ol id="ol">', '<ol id="ol"><b id="x" class="x"/>', $this->nthXml);
+		for ($i = 0; $i < 2; $i++) {
+			$this->assertSame($expected, $this->ids($this->traverser($xml, $ps)->find($selector)->matches()));
+		}
 	}
 }
