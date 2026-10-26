@@ -701,17 +701,17 @@ trait QueryMutators
 	 */
 	public function detach($selector = null): Query
 	{
-		if (null !== $selector) {
-			$this->find($selector);
-		}
+		$matches = null === $selector ? $this->matches : $this->find($selector)->matches;
 
-		$found      = new SplObjectStorage();
-		$this->last = $this->matches;
-		foreach ($this->matches as $item) {
+		$found = new SplObjectStorage();
+		foreach ($matches as $item) {
 			// The item returned is (according to docs) different from
 			// the one passed in, so we have to re-store it.
 			$found->offsetSet($item->parentNode->removeChild($item));
 		}
+
+		// attach() re-attaches whatever the last detach() removed.
+		$this->last = $found;
 
 		return $this->inst($found, null);
 	}
