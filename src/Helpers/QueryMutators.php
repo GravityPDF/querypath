@@ -4,6 +4,7 @@ namespace QueryPath\Helpers;
 
 use DOMDocument;
 use DOMDocumentFragment;
+use QueryPath\CSS\DOMTraverser;
 use QueryPath\CSS\ParseException;
 use QueryPath\DOMQuery;
 use QueryPath\Exception;
@@ -794,7 +795,8 @@ trait QueryMutators
 	 */
 	public function remove($selector = null): Query
 	{
-		$matches = empty($selector) ? $this->matches : $this->find($selector)->matches;
+		// Not find(), which deep-clones the match set via inst().
+		$matches = empty($selector) ? $this->matches : (new DOMTraverser($this->matches))->find($selector)->matches();
 
 		$found = new SplObjectStorage();
 		foreach ($matches as $item) {
@@ -838,7 +840,13 @@ trait QueryMutators
 	{
 		$replacement = $this->matches->count() > 0 ? $this->getFirstMatch() : $this->document->createTextNode('');
 
-		foreach (QueryPath::with($document, $selector, $this->options)->get() as $item) {
+		// As in qp($document), the document element stands in for the document, so it can match.
+		$scope = new SplObjectStorage();
+		if ($document->documentElement) {
+			$scope->offsetSet($document->documentElement);
+		}
+
+		foreach ((new DOMTraverser($scope))->find($selector)->matches() as $item) {
 			$node = $replacement->cloneNode();
 			$node = $document->importNode($node);
 			$item->parentNode->replaceChild($node, $item);

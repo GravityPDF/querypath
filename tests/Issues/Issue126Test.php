@@ -28,33 +28,26 @@ class Issue126Test extends TestCase
 	private const NESTED_XML = '<?xml version="1.0"?><root><p><i>a</i><b>x</b></p><p><i>b</i></p><i>c</i></root>';
 
 	/**
-	 * The tables from #123 and #124, as find() answers them.
+	 * The tables from #123 and #124 against each factory's document: the selector, what
+	 * find() matches, and the list items left behind.
 	 *
 	 * @return array
 	 */
 	public function selectorProvider(): array
 	{
-		return [
-			'matches (#123)'   => ['li:matches(.x)', ['b']],
-			'not eq(0) (#124)' => ['li:not(:eq(0))', ['b', 'c']],
-			'not first (#124)' => ['li:not(:first)', ['b', 'c']],
-			'not last (#124)'  => ['li:not(:last)', ['a', 'b']],
-			'not odd (#124)'   => ['li:not(:odd)', ['a', 'c']],
-			'not class (#124)' => ['li:not(.x)', ['a', 'c']],
+		$selectors = [
+			'li:matches(.x)' => [['b'], ['a', 'c']],
+			'li:not(:eq(0))' => [['b', 'c'], ['a']],
+			'li:not(:first)' => [['b', 'c'], ['a']],
+			'li:not(:last)'  => [['a', 'b'], ['c']],
+			'li:not(:odd)'   => [['a', 'c'], ['b']],
+			'li:not(.x)'     => [['a', 'c'], ['b']],
 		];
-	}
 
-	/**
-	 * Each selector from selectorProvider() against each factory's document.
-	 *
-	 * @return array
-	 */
-	public function factorySelectorProvider(): array
-	{
 		$cases = [];
 		foreach (['qp' => self::LIST_XML, 'htmlqp' => self::LIST_HTML, 'html5qp' => self::LIST_HTML] as $factory => $markup) {
-			foreach ($this->selectorProvider() as $name => $case) {
-				$cases[$factory . ': ' . $name] = array_merge([$factory, $markup], $case);
+			foreach ($selectors as $selector => list($matched, $left)) {
+				$cases[$factory . ' ' . $selector] = [$factory, $markup, $selector, $matched, $left];
 			}
 		}
 
@@ -62,27 +55,27 @@ class Issue126Test extends TestCase
 	}
 
 	/**
-	 * @dataProvider factorySelectorProvider
+	 * @dataProvider selectorProvider
 	 */
-	public function testRemoveAgreesWithFind(string $factory, string $markup, string $selector, array $expected)
+	public function testRemoveAgreesWithFind(string $factory, string $markup, string $selector, array $matched, array $left)
 	{
-		$this->assertSame($expected, $this->ids($factory($markup)->find($selector)));
+		$this->assertSame($matched, $this->ids($factory($markup)->find($selector)));
 
 		$qp = $factory($markup);
-		$this->assertSame($expected, $this->ids($qp->remove($selector)));
-		$this->assertSame(array_values(array_diff(['a', 'b', 'c'], $expected)), $this->ids($qp->find('li')));
+		$this->assertSame($matched, $this->ids($qp->remove($selector)));
+		$this->assertSame($left, $this->ids($qp->find('li')));
 	}
 
 	/**
-	 * @dataProvider factorySelectorProvider
+	 * @dataProvider selectorProvider
 	 */
-	public function testReplaceAllAgreesWithFind(string $factory, string $markup, string $selector, array $expected)
+	public function testReplaceAllAgreesWithFind(string $factory, string $markup, string $selector, array $matched, array $left)
 	{
 		$document = $factory($markup)->get(0)->ownerDocument;
 		qp('<?xml version="1.0"?><root><z/></root>', 'z')->replaceAll($selector, $document);
 
-		$this->assertSame(array_values(array_diff(['a', 'b', 'c'], $expected)), $this->ids(qp($document)->find('li')));
-		$this->assertCount(count($expected), qp($document)->find('z'));
+		$this->assertSame($left, $this->ids(qp($document)->find('li')));
+		$this->assertCount(count($matched), qp($document)->find('z'));
 	}
 
 	public function testRemoveSearchesDescendantsOnly()
@@ -119,42 +112,24 @@ class Issue126Test extends TestCase
 		$this->assertSame(['z', 'z', 'i'], $this->tags(qp($document)->children()));
 	}
 
-	/**
-	 * @return string[]
-	 */
 	private function ids(DOMQuery $qp): array
 	{
-		$ids = [];
-		foreach ($qp->get() as $node) {
-			$ids[] = $node->getAttribute('id');
-		}
-
-		return $ids;
+		return array_map(function ($node) {
+			return $node->getAttribute('id');
+		}, $qp->get());
 	}
 
-	/**
-	 * @return string[]
-	 */
 	private function text(DOMQuery $qp): array
 	{
-		$text = [];
-		foreach ($qp->get() as $node) {
-			$text[] = $node->textContent;
-		}
-
-		return $text;
+		return array_map(function ($node) {
+			return $node->textContent;
+		}, $qp->get());
 	}
 
-	/**
-	 * @return string[]
-	 */
 	private function tags(DOMQuery $qp): array
 	{
-		$tags = [];
-		foreach ($qp->get() as $node) {
-			$tags[] = $node->tagName;
-		}
-
-		return $tags;
+		return array_map(function ($node) {
+			return $node->tagName;
+		}, $qp->get());
 	}
 }

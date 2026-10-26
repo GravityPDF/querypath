@@ -40,7 +40,7 @@ use QueryPath\QueryPath;
  * The core classes that compose QueryPath.
  *
  * The QueryPath classes contain the brunt of the QueryPath code. If you are
- * interested in working with just the CSS engine, you may want to look at CssEventHandler,
+ * interested in working with just the CSS engine, you may want to look at QueryPath\CSS\DOMTraverser,
  * which can be used without the rest of QueryPath. If you are interested in looking
  * carefully at QueryPath's implementation details, then the QueryPath class is where you
  * should begin. If you are interested in writing extensions, than you may want to look at

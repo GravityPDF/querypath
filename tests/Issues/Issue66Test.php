@@ -72,13 +72,7 @@ class Issue66Test extends TestCase
 	 */
 	public function testRemoveAgreesWithFind($selector, array $expected)
 	{
-		$removed = $this->textOf(html5qp(self::HTML)->remove($selector));
-		sort($removed);
-
-		$sorted = $expected;
-		sort($sorted);
-
-		$this->assertSame($sorted, $removed);
+		$this->assertSame($expected, $this->textOf(html5qp(self::HTML)->remove($selector)));
 	}
 
 	/**
