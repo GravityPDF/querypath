@@ -709,8 +709,9 @@ class DOMQueryTest extends TestCase
 
 	public function testFilterLambda()
 	{
-		if (version_compare(PHP_VERSION, '8.0.0', '>=')) {
-			$this->markTestSkipped('create_function removed in PHP8.0');
+		if (!function_exists('create_function')) {
+			$this->expectException(Exception::class);
+			$this->expectExceptionMessage('Use filterCallback() with a closure instead.');
 		}
 
 		$file = DATA_FILE;
@@ -851,8 +852,9 @@ class DOMQueryTest extends TestCase
 
 	public function testEachLambda()
 	{
-		if (version_compare(PHP_VERSION, '8.0.0', '>=')) {
-			$this->markTestSkipped('create_function removed in PHP8.0');
+		if (!function_exists('create_function')) {
+			$this->expectException(Exception::class);
+			$this->expectExceptionMessage('Use each() with a closure instead.');
 		}
 
 		$file = DATA_FILE;
