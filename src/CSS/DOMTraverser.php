@@ -180,9 +180,9 @@ class DOMTraverser implements Traverser
 	 *
 	 * Unlike find(), which searches the descendants of the nodes it starts from, only the given
 	 * nodes can match: for `<a><b/></a>`, `b` matches the `b` element and not `a`. Combinators are
-	 * still resolved against the document, so `div > p` works. Positional pseudo-classes (`:first`,
-	 * `:eq(n)`, ...) on the subject count within the given set, and on a compound left of a
-	 * combinator across the document, as in jQuery's .filter(). Nodes that are not elements never match.
+	 * still resolved against the document, so `div > p` works. As in jQuery's .filter(), a positional
+	 * pseudo-class (`:first`, `:eq(n)`, ...) counts within the given set when it is on the subject, and
+	 * across the document when it is left of a combinator. Nodes that are not elements never match.
 	 *
 	 * @param SplObjectStorage $nodes
 	 *   The candidates, all from one document.
