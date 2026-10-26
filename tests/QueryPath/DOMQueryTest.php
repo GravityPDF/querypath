@@ -2516,6 +2516,48 @@ class DOMQueryTest extends TestCase
 		$this->assertEquals(2, qp($file, 'li')->parentsUntil('root')->count());
 	}
 
+	public function testParentsUntilOutsideTheDocument()
+	{
+		$doc    = qp('<?xml version="1.0"?><root/>')->get(0)->ownerDocument;
+		$parent = $doc->createElement('parent');
+		$child  = $parent->appendChild($doc->createElement('child'));
+
+		$this->assertSame('parent', qp($child)->parentsUntil('root')->tag());
+		$this->assertSame('parent', qp($child)->parentsUntil()->tag());
+	}
+
+	public function testUntilWalksFromElementsOnEachOthersPath()
+	{
+		$xml = '<?xml version="1.0"?><r><x><y><z/></y></x><a/><b/><c/><stop/><e/><f/></r>';
+
+		$tagsOf = function ($qp) {
+			$tags = [];
+			foreach ($qp->get() as $node) {
+				$tags[] = $node->tagName;
+			}
+			sort($tags);
+
+			return $tags;
+		};
+
+		$this->assertSame(['b', 'c', 'f'], $tagsOf(qp($xml, 'a, b, e')->nextUntil('stop')));
+		$this->assertSame(['a', 'b', 'e'], $tagsOf(qp($xml, 'c, f')->prevUntil('stop, x')));
+		$this->assertSame(['x', 'y'], $tagsOf(qp($xml, 'z, y')->parentsUntil('r')));
+	}
+
+	public function testTraversalTreatsAnEmptySelectorAsNone()
+	{
+		$xml = '<?xml version="1.0"?><r><a/><b/><c/></r>';
+
+		$this->assertSame('c', qp($xml, 'b')->nextUntil('')->tag());
+		$this->assertSame('a', qp($xml, 'b')->prevUntil('')->tag());
+		$this->assertSame('r', qp($xml, 'b')->parentsUntil('')->tag());
+		$this->assertSame('c', qp($xml, 'b')->next('')->tag());
+		$this->assertSame('a', qp($xml, 'b')->prev('')->tag());
+		$this->assertSame('r', qp($xml, 'b')->parent('')->tag());
+		$this->assertCount(0, qp($xml, 'b')->closest(''));
+	}
+
 	public function testSort()
 	{
 		$xml = '<?xml version="1.0"?><r><s/><i>1</i><i>5</i><i>2</i><i>1</i><e/></r>';
