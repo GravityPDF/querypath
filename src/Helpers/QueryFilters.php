@@ -262,35 +262,30 @@ trait QueryFilters
 	/**
 	 * Narrow the items in this object down to only a slice of the starting items.
 	 *
-	 * @param integer $start
-	 *  Where in the list of matches to begin the slice.
-	 * @param integer $length
-	 *  The number of items to include in the slice. If nothing is specified, the
-	 *  all remaining matches (from $start onward) will be included in the sliced
-	 *  list.
+	 * As in jQuery's .slice(), the slice runs from $start up to, but not
+	 * including, $end. Both are zero-based indexes, and a negative index counts
+	 * back from the end, so slice(1, -1) drops the first and last items.
+	 *
+	 * @param integer      $start
+	 *  The index of the first item to include.
+	 * @param integer|null $end
+	 *  The index to stop before. If omitted, the slice runs to the end of the
+	 *  matches. An $end at or before $start gives an empty set.
 	 *
 	 * @return DOMQuery
 	 * @throws ParseException
-	 * @see array_slice()
 	 */
-	public function slice($start, $length = 0): Query
+	public function slice($start, $end = null): Query
 	{
-		$end   = $length;
-		$found = new SplObjectStorage();
-		if ($start >= $this->count()) {
-			return $this->inst($found, null);
-		}
+		$count = $this->count();
+		$start = max(0, Util::normalizePositionalIndex($start, $count));
+		$end   = $end === null ? $count : Util::normalizePositionalIndex($end, $count);
 
-		$i = $j = 0;
-		foreach ($this->matches as $m) {
-			if ($i >= $start) {
-				if ($end > 0 && $j >= $end) {
-					break;
-				}
+		$found = new SplObjectStorage();
+		if ($start < $end) {
+			foreach (array_slice(iterator_to_array($this->matches, false), $start, $end - $start) as $m) {
 				$found->offsetSet($m);
-				++$j;
 			}
-			++$i;
 		}
 
 		return $this->inst($found, null);
@@ -620,8 +615,9 @@ trait QueryFilters
 	 * with {@link end()}.
 	 *
 	 * @param $index
-	 *  The index of the element to keep. The rest will be
-	 *  discarded.
+	 *  The zero-based index of the item to keep. The rest will be
+	 *  discarded. A negative index counts back from the end, so -1 keeps
+	 *  the last item. An index out of range gives an empty set.
 	 *
 	 * @return DOMQuery
 	 * @throws ParseException

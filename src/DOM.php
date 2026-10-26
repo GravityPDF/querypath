@@ -10,6 +10,7 @@ use DOMXPath;
 use IteratorAggregate;
 use Masterminds\HTML5;
 use QueryPath\CSS\DOMTraverser;
+use QueryPath\CSS\DOMTraverser\Util;
 use QueryPath\Entities;
 use SimpleXMLElement;
 use SplObjectStorage;
@@ -621,14 +622,18 @@ abstract class DOM implements Query, IteratorAggregate, Countable
 	 * The internal data structure used in DOMQuery does not have
 	 * strong random access support, so we suppliment it with this method.
 	 *
-	 * @param $index
+	 * @param int $index
+	 *  Zero-based. A negative index counts back from the end of the matches.
 	 *
-	 * @return object|void
+	 * @return object|null
+	 *  NULL if the index is out of range.
 	 */
 	protected function getNthMatch(int $index)
 	{
-		if ($index < 0 || $index > $this->matches->count()) {
-			return;
+		$count = $this->matches->count();
+		$index = Util::normalizePositionalIndex($index, $count);
+		if ($index < 0 || $index >= $count) {
+			return null;
 		}
 
 		$i = 0;

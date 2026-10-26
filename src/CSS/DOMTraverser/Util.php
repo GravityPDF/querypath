@@ -246,14 +246,14 @@ class Util
 	}
 
 	/**
-	 * Resolve a (possibly negative) positional index against a set size.
+	 * Resolve a zero-based index against a set size, counting a negative one back from the end.
 	 *
 	 * @param mixed $value
 	 * @param int   $count
 	 *
 	 * @return int
 	 */
-	private static function normalizePositionalIndex($value, int $count): int
+	public static function normalizePositionalIndex($value, int $count): int
 	{
 		$index = (int) $value;
 
