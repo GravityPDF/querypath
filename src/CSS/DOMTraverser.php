@@ -99,6 +99,13 @@ class DOMTraverser implements Traverser
 	protected $resolvingIndex;
 
 	/**
+	 * The candidates in the order filterList() counts them, or NULL to count in document order.
+	 *
+	 * @var DOMNode[]|null
+	 */
+	protected $candidateList;
+
+	/**
 	 * Build a new DOMTraverser.
 	 *
 	 * This requires a DOM-like object or collection of DOM nodes.
@@ -196,17 +203,73 @@ class DOMTraverser implements Traverser
 		$scopeNode = null,
 		?PseudoClass $psHandler = null
 	): SplObjectStorage {
+		return self::filterInOrder($nodes, null, $selector, $scopeNode, $psHandler);
+	}
+
+	/**
+	 * As filterNodes(), but positional pseudo-classes on the subject count along the list in the
+	 * order given, repeats included, as jQuery.filter() counts a traversal's walk.
+	 *
+	 * @param DOMNode[]        $nodes
+	 *   The candidates, all from one document, in the order to count them.
+	 * @param string           $selector
+	 *   A CSS selector.
+	 * @param DOMNode|null     $scopeNode
+	 * @param PseudoClass|null $psHandler
+	 *
+	 * @return SplObjectStorage
+	 *   The matching nodes, once each, in the order they first appear in the list.
+	 * @throws ParseException
+	 */
+	public static function filterList(
+		array $nodes,
+		$selector,
+		$scopeNode = null,
+		?PseudoClass $psHandler = null
+	): SplObjectStorage {
+		$unique = new SplObjectStorage();
+		foreach ($nodes as $node) {
+			$unique->offsetSet($node);
+		}
+
+		return self::filterInOrder($unique, array_values($nodes), $selector, $scopeNode, $psHandler);
+	}
+
+	/**
+	 * Match the given nodes themselves against a selector, returning them in the order given.
+	 *
+	 * @param SplObjectStorage $nodes
+	 * @param DOMNode[]|null   $list
+	 *   The order to count positional pseudo-classes in, or NULL for document order.
+	 * @param string           $selector
+	 * @param DOMNode|null     $scopeNode
+	 * @param PseudoClass|null $psHandler
+	 *
+	 * @return SplObjectStorage
+	 * @throws ParseException
+	 */
+	private static function filterInOrder(
+		SplObjectStorage $nodes,
+		?array $list,
+		$selector,
+		$scopeNode,
+		?PseudoClass $psHandler
+	): SplObjectStorage {
 		if (count($nodes) === 0) {
 			return new SplObjectStorage();
 		}
 
-		$traverser = new self($nodes, true, $scopeNode, $psHandler);
-		$groups    = $traverser->psHandler->parse($selector);
-		$matched   = $traverser->findGroups($groups)->matches();
+		$traverser                = new self($nodes, true, $scopeNode, $psHandler);
+		$traverser->candidateList = $list;
+		$groups                   = $traverser->psHandler->parse($selector);
+		$matched                  = $traverser->findGroups($groups)->matches();
 
 		// A single group without a set filter is matched in the order given. Otherwise the result
 		// is in document order, or a union of groups, and has to be put back in input order.
-		if (count($matched) < 2 || (count($groups) === 1 && ! $traverser->groupIsSetFiltered($groups->toArray()[0]))) {
+		$inOrder = $list === null
+			&& count($groups) === 1
+			&& ! $traverser->groupIsSetFiltered($groups->toArray()[0]);
+		if (count($matched) < 2 || $inOrder) {
 			return $matched;
 		}
 
@@ -330,7 +393,7 @@ class DOMTraverser implements Traverser
 		// Initialize matches if necessary. A caller-supplied set may hold non-element nodes,
 		// which can never match a selector.
 		if ($index === 0 && $this->initialized) {
-			$candidates = array_filter(iterator_to_array($this->matches, false), function ($node) {
+			$candidates = array_filter($this->candidateList ?? iterator_to_array($this->matches, false), function ($node) {
 				return $node instanceof DOMElement;
 			});
 		} else {
@@ -369,7 +432,9 @@ class DOMTraverser implements Traverser
 
 		$this->resolvingIndex = $previous;
 
-		$matched = Util::sortDocumentOrder($matched);
+		if ($index !== 0 || $this->candidateList === null) {
+			$matched = Util::sortDocumentOrder($matched);
+		}
 		foreach ($setFilters as $pseudoClass) {
 			$matched = $this->applySetFilter($matched, $pseudoClass);
 		}
@@ -398,7 +463,7 @@ class DOMTraverser implements Traverser
 		// :not() and :matches() whose argument uses a positional filter.
 		// The argument has to see the whole result set, exactly as jQuery's
 		// :not(:first) does, so run it over this set and keep or drop the result.
-		$inner = self::filterNodes($this->toMatches($nodes), $value, $this->scopeNode, $this->psHandler);
+		$inner = self::filterList($nodes, $value, $this->scopeNode, $this->psHandler);
 		if ($name !== 'not') {
 			return iterator_to_array($inner, false);
 		}
