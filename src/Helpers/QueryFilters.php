@@ -557,7 +557,7 @@ trait QueryFilters
 	 */
 	public function nextUntil($selector = null): Query
 	{
-		return $this->inst($this->walk('nextSibling', $selector, false), null);
+		return $this->inst($this->sortDocumentOrder($this->walk('nextSibling', $selector, false)), null);
 	}
 
 	/**
@@ -583,7 +583,7 @@ trait QueryFilters
 	 */
 	public function prevUntil($selector = null): Query
 	{
-		return $this->inst($this->walk('previousSibling', $selector, false), null);
+		return $this->inst($this->sortDocumentOrder($this->walk('previousSibling', $selector, false), true), null);
 	}
 
 	/**
@@ -605,7 +605,7 @@ trait QueryFilters
 	 */
 	public function parentsUntil($selector = null): Query
 	{
-		return $this->inst($this->sortReverseDocumentOrder($this->walk('parentNode', $selector, false)), null);
+		return $this->inst($this->sortDocumentOrder($this->walk('parentNode', $selector, false), true), null);
 	}
 
 	/**
@@ -694,7 +694,7 @@ trait QueryFilters
 			return $this->inst(new SplObjectStorage(), null);
 		}
 
-		return $this->inst($this->walk('parentNode', $selector, true, true), null);
+		return $this->inst($this->sortDocumentOrder($this->walk('parentNode', $selector, true, true)), null);
 	}
 
 	/**
@@ -715,7 +715,7 @@ trait QueryFilters
 	 */
 	public function parent($selector = null): Query
 	{
-		return $this->inst($this->walk('parentNode', $selector, true), null);
+		return $this->inst($this->sortDocumentOrder($this->walk('parentNode', $selector, true)), null);
 	}
 
 	/**
@@ -738,7 +738,7 @@ trait QueryFilters
 	{
 		// jQuery returns the ancestors of a multi-element set in reverse document order, with
 		// duplicates removed. The selector is applied after that ordering.
-		$ancestors = $this->sortReverseDocumentOrder($this->walk('parentNode', null, false));
+		$ancestors = $this->sortDocumentOrder($this->walk('parentNode', null, false), true);
 
 		return $this->inst($this->filterCandidates($ancestors, $selector), null);
 	}
@@ -788,7 +788,7 @@ trait QueryFilters
 	 */
 	public function nextAll($selector = null): Query
 	{
-		return $this->inst($this->filterCandidates($this->walk('nextSibling', null, false), $selector), null);
+		return $this->inst($this->sortDocumentOrder($this->filterCandidates($this->walk('nextSibling', null, false), $selector)), null);
 	}
 
 	/**
@@ -837,7 +837,7 @@ trait QueryFilters
 	 */
 	public function prevAll($selector = null): Query
 	{
-		return $this->inst($this->filterCandidates($this->walk('previousSibling', null, false), $selector), null);
+		return $this->inst($this->sortDocumentOrder($this->filterCandidates($this->walk('previousSibling', null, false), $selector), true), null);
 	}
 
 	/**
@@ -943,7 +943,7 @@ trait QueryFilters
 			}
 		}
 
-		return $this->inst($this->filterCandidates($found, $selector), null);
+		return $this->inst($this->sortDocumentOrder($this->filterCandidates($found, $selector)), null);
 	}
 
 	/**
@@ -994,26 +994,27 @@ trait QueryFilters
 	}
 
 	/**
-	 * Sort a set of nodes into reverse document order.
+	 * Sort a set of nodes into document order, or reverse document order.
 	 *
-	 * jQuery's ancestor traversal methods return their results in reverse document order with
-	 * duplicates removed. Because the results are accumulated per source element, a set built
-	 * from more than one starting element would otherwise be grouped by source element.
+	 * The results of a traversal are accumulated per starting element, so a set built from
+	 * more than one would otherwise be grouped by starting element, as jQuery's never are.
 	 *
 	 * @param SplObjectStorage $nodes
-	 *   The nodes to sort. Duplicates are already removed by SplObjectStorage.
+	 * @param bool             $reverse
 	 *
 	 * @return SplObjectStorage
-	 *   The same nodes, in reverse document order.
 	 */
-	private function sortReverseDocumentOrder(SplObjectStorage $nodes): SplObjectStorage
+	private function sortDocumentOrder(SplObjectStorage $nodes, bool $reverse = false): SplObjectStorage
 	{
-		// A single starting element's walk up the tree already yields reverse document order.
+		// A single starting element's walk is already in order.
 		if (count($nodes) < 2 || count($this->matches) < 2) {
 			return $nodes;
 		}
 
-		$ordered = array_reverse(Util::sortDocumentOrder(iterator_to_array($nodes, false)));
+		$ordered = Util::sortDocumentOrder(iterator_to_array($nodes, false));
+		if ($reverse) {
+			$ordered = array_reverse($ordered);
+		}
 
 		$sorted = new SplObjectStorage();
 		foreach ($ordered as $node) {
