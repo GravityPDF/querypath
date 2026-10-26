@@ -173,8 +173,9 @@ class DOMTraverser implements Traverser
 	 *
 	 * Unlike find(), which searches the descendants of the nodes it starts from, only the given
 	 * nodes can match: for `<a><b/></a>`, `b` matches the `b` element and not `a`. Combinators are
-	 * still resolved against the document, so `div > p` works, and positional pseudo-classes
-	 * (`:first`, `:eq(n)`, ...) count within the given set. Nodes that are not elements never match.
+	 * still resolved against the document, so `div > p` works. As in jQuery's .filter(), a positional
+	 * pseudo-class (`:first`, `:eq(n)`, ...) counts within the given set when it is on the subject, and
+	 * across the document when it is left of a combinator. Nodes that are not elements never match.
 	 *
 	 * @param SplObjectStorage $nodes
 	 *   The candidates, all from one document.
@@ -335,9 +336,13 @@ class DOMTraverser implements Traverser
 			});
 		} else {
 			// initialMatch() consumes the parts of the simple selector it matched on. Give it a copy,
-			// so the caller's parsed selector can be reused.
+			// so the caller's parsed selector can be reused. In filterNodes(), a compound left of a
+			// combinator is looked up across the document, so its positional filters count there.
 			$selectorGroup[$index] = clone $selectorGroup[$index];
-			$candidates            = $this->initialMatch($selectorGroup[$index], $this->matches);
+			$candidates            = $this->initialMatch(
+				$selectorGroup[$index],
+				$this->initialized ? self::documentScope($this->dom) : $this->matches
+			);
 		}
 
 		$setFilters           = $selectorGroup[$index]->setFilterPseudoClasses();
@@ -375,6 +380,23 @@ class DOMTraverser implements Traverser
 		}
 
 		return $this->toMatches($matched);
+	}
+
+	/**
+	 * The document element, standing in for the document as it does in qp($document).
+	 *
+	 * @param DOMDocument|null $document
+	 *
+	 * @return SplObjectStorage
+	 */
+	public static function documentScope($document): SplObjectStorage
+	{
+		$scope = new SplObjectStorage();
+		if ($document instanceof DOMDocument && $document->documentElement) {
+			$scope->offsetSet($document->documentElement);
+		}
+
+		return $scope;
 	}
 
 	/**
