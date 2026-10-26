@@ -4,9 +4,8 @@
  *
  * Regression tests for https://github.com/GravityPDF/querypath/issues/133
  *
- * `:scope` in find() always referred to the document element. It now refers to the element the
- * search starts from, as in jQuery's `$(el).find(':scope > li')`. With more than one element in
- * the set, jQuery runs find() from each of them, so `:scope` is each element in turn.
+ * `:scope` in find() is the element the search starts from, as in jQuery's
+ * `$(el).find(':scope > li')`, and each element in turn when the set holds several.
  */
 
 namespace QueryPathTests;
