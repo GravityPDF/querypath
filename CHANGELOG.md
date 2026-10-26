@@ -33,6 +33,7 @@ QueryPath Changelog
 - Fix `tag()` emitting an "Undefined property" warning and returning `NULL` when the first match is not an element, such as a text, comment or processing instruction node returned by `contents()`. It now returns an empty string, as it does for an empty match set (issue #93)
 - Fix QueryPath's error handler staying installed for the rest of the request when an exception other than a `QueryPath\Exception` (a `TypeError`, or one thrown by a stream wrapper, for example) escaped from parsing a document, inserting markup, or `writeXML()`/`writeHTML()` (issue #95)
 - Fix `writeHTML()` throwing `QueryPath\ParseException` instead of `QueryPath\IOException` when the file cannot be written, as `writeXML()` and `writeHTML5()` do (issue #92). `IOException` extends `ParseException`, so existing `catch (ParseException $e)` blocks still catch it
+- Fix `not()` keeping only the given nodes, instead of removing them, when passed an `SplObjectStorage` such as `get(null, true)` returns (issue #75)
 
 # 4.1.0
 
