@@ -14,7 +14,6 @@
 namespace QueryPath;
 
 use DOMDocument;
-use DOMElement;
 use DOMNode;
 use DOMXPath;
 use QueryPath\CSS\DOMTraverser;
@@ -559,9 +558,9 @@ class DOMQuery extends DOM
 	 */
 	public function tag()
 	{
-		$first = ($this->matches->count() > 0) ? $this->getFirstMatch() : null;
+		$first = $this->firstElement();
 
-		return ($first instanceof DOMElement) ? $first->tagName : '';
+		return $first === null ? '' : $first->tagName;
 	}
 
 	/**

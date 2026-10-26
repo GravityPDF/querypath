@@ -448,11 +448,9 @@ trait QueryFilters
 	public function first(): Query
 	{
 		$found = new SplObjectStorage();
-		foreach ($this->matches as $m) {
-			if ($m->nodeType === XML_ELEMENT_NODE) {
-				$found->offsetSet($m);
-				break;
-			}
+		foreach ($this->elements() as $m) {
+			$found->offsetSet($m);
+			break;
 		}
 
 		return $this->inst($found, null);
@@ -507,10 +505,8 @@ trait QueryFilters
 	{
 		$found = new SplObjectStorage();
 		$item  = null;
-		foreach ($this->matches as $m) {
-			if ($m->nodeType === XML_ELEMENT_NODE) {
-				$item = $m;
-			}
+		foreach ($this->elements() as $m) {
+			$item = $m;
 		}
 		if ($item) {
 			$found->offsetSet($item);
