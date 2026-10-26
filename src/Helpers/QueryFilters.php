@@ -373,9 +373,8 @@ trait QueryFilters
 	}
 
 	/**
-	 * Get the matches at even, zero-based positions: 0, 2, 4, etc.
-	 *
-	 * As in jQuery, and as filter(':even') does, so the first match is kept.
+	 * Get the matches at zero-based even positions (0, 2, 4, ...), as jQuery's .even() and
+	 * the :even pseudo-class do.
 	 *
 	 * @return DOMQuery
 	 *  A DOMQuery wrapping the matches at even positions.
@@ -386,13 +385,12 @@ trait QueryFilters
 	 */
 	public function even(): Query
 	{
-		return $this->everyOther(0);
+		return $this->positional('even');
 	}
 
 	/**
-	 * Get the matches at odd, zero-based positions: 1, 3, 5, etc.
-	 *
-	 * As in jQuery, and as filter(':odd') does, so the first match is dropped.
+	 * Get the matches at zero-based odd positions (1, 3, 5, ...), as jQuery's .odd() and
+	 * the :odd pseudo-class do.
 	 *
 	 * @return DOMQuery
 	 *  A DOMQuery wrapping the matches at odd positions.
@@ -403,24 +401,22 @@ trait QueryFilters
 	 */
 	public function odd(): Query
 	{
-		return $this->everyOther(1);
+		return $this->positional('odd');
 	}
 
 	/**
-	 * Keep every second match, starting at the given zero-based position.
+	 * Apply a positional pseudo-class (`even`, `odd`, ...) to the match set, as filter() would.
 	 *
-	 * @param int $offset
-	 *  0 for the even positions, 1 for the odd.
+	 * @param string $name
 	 *
 	 * @return DOMQuery
 	 * @throws ParseException
 	 */
-	private function everyOther(int $offset): Query
+	private function positional(string $name): Query
 	{
 		$found = new SplObjectStorage();
-		$i     = 0;
-		foreach ($this->matches as $m) {
-			if ($i++ % 2 === $offset && $m->nodeType === XML_ELEMENT_NODE) {
+		foreach (Util::applyPositionalPseudoClass(iterator_to_array($this->matches, false), $name) as $m) {
+			if ($m->nodeType === XML_ELEMENT_NODE) {
 				$found->offsetSet($m);
 			}
 		}
