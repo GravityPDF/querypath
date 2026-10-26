@@ -5,6 +5,7 @@ namespace QueryPath\Helpers;
 use DOMNode;
 use QueryPath\CSS\DOMTraverser;
 use QueryPath\CSS\DOMTraverser\PseudoClass;
+use QueryPath\CSS\DOMTraverser\Util;
 use QueryPath\CSS\ParseException;
 use SplObjectStorage;
 
@@ -42,6 +43,14 @@ final class NodeMatcher
 	private $psHandler;
 
 	/**
+	 * The document's matches for a positional selector, FALSE for any other selector, or NULL
+	 * until matchesInDocument() first needs to know.
+	 *
+	 * @var SplObjectStorage|false|null
+	 */
+	private $inDocument;
+
+	/**
 	 * @param string $selector
 	 *   A valid CSS selector.
 	 */
@@ -73,6 +82,46 @@ final class NodeMatcher
 		}
 
 		return $this->results[$node];
+	}
+
+	/**
+	 * Test a single node as jQuery's .is() does, counting a positional selector (:first,
+	 * :eq(n), ...) across the node's whole document.
+	 *
+	 * The document's matches are found once, on the first call, so every node tested must
+	 * belong to the same document.
+	 *
+	 * @param DOMNode $node
+	 *
+	 * @return bool
+	 * @throws ParseException
+	 */
+	public function matchesInDocument($node): bool
+	{
+		if ($this->inDocument === null) {
+			$this->inDocument = Util::selectorHasPositionalPseudoClass($this->selector)
+				? $this->documentMatches($node->ownerDocument)
+				: false;
+		}
+
+		return $this->inDocument === false ? $this->matches($node) : $this->inDocument->offsetExists($node);
+	}
+
+	/**
+	 * @param \DOMDocument $document
+	 *
+	 * @return SplObjectStorage
+	 * @throws ParseException
+	 */
+	private function documentMatches($document): SplObjectStorage
+	{
+		// As in qp($document), the document element stands in for the document, so it can match.
+		$scope = new SplObjectStorage();
+		if ($document->documentElement) {
+			$scope->offsetSet($document->documentElement);
+		}
+
+		return (new DOMTraverser($scope, false, null, $this->psHandler))->find($this->selector)->matches();
 	}
 
 	/**
