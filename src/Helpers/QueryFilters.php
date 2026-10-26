@@ -538,9 +538,11 @@ trait QueryFilters
 	/**
 	 * Get all siblings after an element until the selector is reached.
 	 *
-	 * For each element in the DOMQuery, get all siblings that appear after
-	 * it. If a selector is passed in, then only siblings that match the
-	 * selector will be included.
+	 * For each element in the DOMQuery, get the siblings that appear after it,
+	 * stopping before the first one that matches the selector.
+	 *
+	 * As in jQuery, a positional selector (`:first`, `:eq()`, ...) counts across the
+	 * whole document, so `nextUntil(':eq(3)')` stops at the document's fourth element.
 	 *
 	 * @param string $selector
 	 *  A valid CSS 3 selector.
@@ -564,8 +566,9 @@ trait QueryFilters
 	 * Get the previous siblings for each element in the DOMQuery
 	 * until the selector is reached.
 	 *
-	 * For each element in the DOMQuery, get all previous siblings. If a
-	 * selector is provided, only matching siblings will be retrieved.
+	 * For each element in the DOMQuery, get the previous siblings, stopping
+	 * before the first one that matches the selector. A positional selector
+	 * counts across the whole document, as in nextUntil().
 	 *
 	 * @param string $selector
 	 *  A valid CSS 3 selector.
@@ -589,7 +592,8 @@ trait QueryFilters
 	/**
 	 * Get all ancestors of each element in the DOMQuery until the selector is reached.
 	 *
-	 * If a selector is present, only matching ancestors will be retrieved.
+	 * The walk stops before the first ancestor that matches the selector. A positional
+	 * selector counts across the whole document, as in nextUntil().
 	 *
 	 * @param string $selector
 	 *  A valid CSS 3 Selector.
@@ -677,7 +681,8 @@ trait QueryFilters
 	 * present element. If the present element does not match, this traverses up
 	 * the ancestry chain (e.g. checks each parent) looking for an item that matches.
 	 *
-	 * It is provided for jQuery 1.3 compatibility.
+	 * It is provided for jQuery 1.3 compatibility. As in jQuery, a positional selector
+	 * (`:first`, `:eq()`, ...) never matches.
 	 *
 	 * @param string $selector
 	 *  A CSS Selector to match.
@@ -690,7 +695,7 @@ trait QueryFilters
 	public function closest($selector): Query
 	{
 		// As in jQuery, nothing is closest to an empty selector.
-		if (empty($selector)) {
+		if (empty($selector) || Util::selectorHasPositionalPseudoClass($selector)) {
 			return $this->inst(new SplObjectStorage(), null);
 		}
 
@@ -701,7 +706,7 @@ trait QueryFilters
 	 * Get the immediate parent of each element in the DOMQuery.
 	 *
 	 * If a selector is passed, this will return the nearest matching parent for
-	 * each element in the DOMQuery.
+	 * each element in the DOMQuery. A positional selector is tested as in next().
 	 *
 	 * @param string $selector
 	 *  A valid CSS3 selector.
@@ -743,6 +748,10 @@ trait QueryFilters
 	 * Get the next sibling of each element in the DOMQuery.
 	 *
 	 * If a selector is provided, the next matching sibling will be returned.
+	 *
+	 * A positional selector (`:first`, `:eq()`, ...) is tested against each sibling
+	 * alone, so `:first` matches any of them and `:eq(1)` none. jQuery filters the
+	 * combined results instead, which differs only for a set of more than one element.
 	 *
 	 * @param string $selector
 	 *  A CSS3 selector.
@@ -792,7 +801,7 @@ trait QueryFilters
 	 *
 	 * For each element in the DOMQuery, this retrieves the previous sibling
 	 * (if any). If a selector is supplied, it retrieves the first matching
-	 * sibling (if any is found).
+	 * sibling (if any is found). A positional selector is tested as in next().
 	 *
 	 * @param string $selector
 	 *  A valid CSS 3 selector.
@@ -963,6 +972,7 @@ trait QueryFilters
 	{
 		$found   = new SplObjectStorage();
 		$matcher = empty($selector) ? null : new NodeMatcher($selector);
+
 		foreach ($this->matches as $m) {
 			$n = $inclusive ? $m : $m->{$axis};
 			for (; $n !== null && $n->nodeType !== XML_DOCUMENT_NODE; $n = $n->{$axis}) {
@@ -979,7 +989,8 @@ trait QueryFilters
 				}
 
 				// Every element beyond one already collected was collected with it, up to the same stop.
-				if ($found->offsetExists($n) || ($matcher !== null && $matcher->matches($n))) {
+				// jQuery tests the stop with .is(), so a positional stop counts across the document.
+				if ($found->offsetExists($n) || ($matcher !== null && $matcher->matchesInDocument($n))) {
 					break;
 				}
 				$found->offsetSet($n);
