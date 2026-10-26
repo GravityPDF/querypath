@@ -791,6 +791,23 @@ class DOMQueryTest extends TestCase
 		$this->assertEquals(1, $qp->not($arr)->count());
 	}
 
+	public function testNotRemovesTheSameNodesForEveryArgumentType()
+	{
+		$qp      = qp(DATA_FILE, 'li');
+		$exclude = $qp->branch()->filter('#one, #three');
+		$ids     = function ($q) {
+			return array_map(function ($n) {
+				return $n->getAttribute('id');
+			}, $q->get());
+		};
+
+		$expected = ['two', 'four', 'five'];
+		$this->assertSame($expected, $ids($qp->not('#one, #three')), 'Selector');
+		$this->assertSame($expected, $ids($qp->not($exclude->get())), 'Array');
+		$this->assertSame($expected, $ids($qp->not($exclude->get(null, true))), 'SplObjectStorage');
+		$this->assertSame(['two', 'three', 'four', 'five'], $ids($qp->not($exclude->get(0))), 'DOMElement');
+	}
+
 	public function testSlice()
 	{
 		$file = DATA_FILE;
