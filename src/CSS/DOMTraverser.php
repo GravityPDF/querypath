@@ -201,12 +201,15 @@ class DOMTraverser implements Traverser
 		}
 
 		$traverser = new self($nodes, true, $scopeNode, $psHandler);
-		$matched   = $traverser->find($selector)->matches();
-		if (count($matched) < 2) {
+		$groups    = $traverser->psHandler->parse($selector);
+		$matched   = $traverser->findGroups($groups)->matches();
+
+		// A single group without a set filter is matched in the order given. Otherwise the result
+		// is in document order, or a union of groups, and has to be put back in input order.
+		if (count($matched) < 2 || (count($groups) === 1 && ! $traverser->groupIsSetFiltered($groups->toArray()[0]))) {
 			return $matched;
 		}
 
-		// The traverser returns document order.
 		$found = new SplObjectStorage();
 		foreach ($nodes as $node) {
 			if ($matched->offsetExists($node)) {
@@ -396,11 +399,13 @@ class DOMTraverser implements Traverser
 		// The argument has to see the whole result set, exactly as jQuery's
 		// :not(:first) does, so run it over this set and keep or drop the result.
 		$inner = self::filterNodes($this->toMatches($nodes), $value, $this->scopeNode, $this->psHandler);
+		if ($name !== 'not') {
+			return iterator_to_array($inner, false);
+		}
 
 		$filtered = [];
 		foreach ($nodes as $node) {
-			$isMatch = $inner->offsetExists($node);
-			if ($name === 'not' ? ! $isMatch : $isMatch) {
+			if (! $inner->offsetExists($node)) {
 				$filtered[] = $node;
 			}
 		}
@@ -690,6 +695,9 @@ class DOMTraverser implements Traverser
 	 * ever match elements, so the three shortcuts below skip anything that is not one rather than
 	 * calling the element-only DOM API on it. Everything downstream of here is therefore elements,
 	 * which is why matchesSimpleSelector() and friends can keep their DOMElement type hints.
+	 *
+	 * It clears the parts of $selector it matched on, so it must be given a copy: parsed selectors
+	 * are shared through PseudoClass::parse().
 	 *
 	 * @param \QueryPath\CSS\SimpleSelector $selector
 	 * @param SplObjectStorage              $matches

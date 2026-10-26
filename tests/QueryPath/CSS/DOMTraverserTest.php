@@ -39,7 +39,7 @@ class DOMTraverserTest extends TestCase
 		$this->assertInstanceOf('\QueryPath\CSS\DOMTraverser', $traverser);
 	}
 
-	protected function traverser($xml = null)
+	protected function traverser($xml = null, ?PseudoClass $ps = null)
 	{
 		$dom = new DOMDocument('1.0');
 		if ($xml === null) {
@@ -51,9 +51,7 @@ class DOMTraverserTest extends TestCase
 		$splos = new SPLObjectStorage();
 		$splos->offsetSet($dom->documentElement);
 
-		$traverser = new DOMTraverser($splos);
-
-		return $traverser;
+		return new DOMTraverser($splos, false, null, $ps);
 	}
 
 	protected function find($selector)
@@ -511,15 +509,27 @@ class DOMTraverserTest extends TestCase
 			'document element'               => [['root', 'ul'], 'root', ['root']],
 			':root'                          => [['ul', 'root'], ':root', ['root']],
 			':scope is the document element' => [['ul', 'root'], ':scope', ['root']],
+			':scope is the scope node'       => [['ul', 'l1', 'l2', 'o1'], ':scope', ['ul'], 'ul'],
+			'combinator from the scope node' => [['ul', 'l1', 'l2', 'o1'], ':scope > li', ['l1', 'l2'], 'ul'],
+			'empty set'                      => [[], 'li', []],
+			'empty set, positional'          => [[], 'li:first', []],
 		];
 	}
 
 	/**
 	 * @dataProvider filterNodesProvider
 	 */
-	public function testFilterNodes(array $ids, $selector, array $expected)
+	public function testFilterNodes(array $ids, $selector, array $expected, $scopeId = null)
 	{
-		$this->assertSame($expected, $this->ids(DOMTraverser::filterNodes($this->nthNodes(...$ids), $selector)));
+		$nodes = $this->nthNodes(...$ids);
+		$scope = null;
+		foreach ($nodes as $node) {
+			if ($node->getAttribute('id') === $scopeId) {
+				$scope = $node;
+			}
+		}
+
+		$this->assertSame($expected, $this->ids(DOMTraverser::filterNodes($nodes, $selector, $scope)));
 	}
 
 	public function testFilterNodesSkipsNodesThatAreNotElements()
@@ -538,22 +548,6 @@ class DOMTraverserTest extends TestCase
 		$this->assertSame(['l1'], $this->ids(DOMTraverser::filterNodes($nodes, ':first')));
 	}
 
-	public function testFilterNodesWithAnEmptySet()
-	{
-		$this->assertCount(0, DOMTraverser::filterNodes(new SplObjectStorage(), 'li'));
-		$this->assertCount(0, DOMTraverser::filterNodes(new SplObjectStorage(), 'li:first'));
-	}
-
-	public function testFilterNodesWithAScopeNode()
-	{
-		$nodes = $this->nthNodes('ul', 'l1', 'l2', 'o1');
-		$nodes->rewind();
-		$ul = $nodes->current();
-
-		$this->assertSame(['ul'], $this->ids(DOMTraverser::filterNodes($nodes, ':scope', $ul)));
-		$this->assertSame(['l1', 'l2'], $this->ids(DOMTraverser::filterNodes($nodes, ':scope > li', $ul)));
-	}
-
 	/**
 	 * A shared handler hands every query the same parsed selector, which the traverser must leave
 	 * as it found it.
@@ -564,14 +558,10 @@ class DOMTraverserTest extends TestCase
 	 */
 	public function testQueriesSharingAHandlerReuseTheParsedSelector($selector, array $expected)
 	{
-		$dom = new DOMDocument('1.0');
-		$dom->loadXML(str_replace('<ol id="ol">', '<ol id="ol"><b id="x" class="x"/>', $this->nthXml));
-		$splos = new SplObjectStorage();
-		$splos->offsetSet($dom->documentElement);
-
-		$ps = new PseudoClass();
+		$ps  = new PseudoClass();
+		$xml = str_replace('<ol id="ol">', '<ol id="ol"><b id="x" class="x"/>', $this->nthXml);
 		for ($i = 0; $i < 2; $i++) {
-			$this->assertSame($expected, $this->ids((new DOMTraverser($splos, false, null, $ps))->find($selector)->matches()));
+			$this->assertSame($expected, $this->ids($this->traverser($xml, $ps)->find($selector)->matches()));
 		}
 	}
 }

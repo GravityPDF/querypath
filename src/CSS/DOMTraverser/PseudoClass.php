@@ -58,7 +58,7 @@ class PseudoClass
 	protected $anbRules = [];
 
 	/**
-	 * Parsed :has() arguments, keyed by the argument. See relativeSelector().
+	 * :has() arguments as relativeSelector() returns them, keyed by the argument.
 	 *
 	 * @var array
 	 */
@@ -488,19 +488,19 @@ class PseudoClass
 			return $this->relativeSelectors[$selector];
 		}
 
-		$handler = new Selector();
-		$parser  = new Parser($selector, $handler);
-		$parser->parse();
-
 		$sibling = SimpleSelector::ADJACENT | SimpleSelector::SIBLING;
 		$groups  = [];
-		foreach ($handler as $group) {
-			// Groups are stored right-to-left, so the last simple selector is the leftmost.
+		foreach ($this->parse($selector) as $group) {
+			// Groups are stored right-to-left, so the last simple selector is the leftmost. It is
+			// copied before :scope is added, as the parse is shared.
 			$anchor = end($group);
 			if (count($group) === 1 || ! $anchor->isBlank()) {
 				$anchor             = new SimpleSelector();
 				$anchor->combinator = SimpleSelector::ANY_DESCENDANT;
 				$group[]            = $anchor;
+			} else {
+				$anchor                   = clone $anchor;
+				$group[count($group) - 1] = $anchor;
 			}
 			$anchor->pseudoClasses[] = ['name' => 'scope', 'value' => null];
 
