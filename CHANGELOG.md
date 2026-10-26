@@ -3,6 +3,7 @@ QueryPath Changelog
 
 # Unreleased changes
 
+- On PHP 8.0 and later, `filterLambda()` and `eachLambda()` now throw a `QueryPath\Exception` that names their replacements, `filterCallback()` and `each()`, instead of an `Error` about the undefined `create_function()` (issue #81). They still work on PHP 7.1–7.4 and will be removed in 5.0
 - **Behaviour change.** Fix the jQuery positional pseudo-classes (`:eq()`, `:first`, `:last`, `:lt()`, `:gt()`, `:odd`, `:even`, and the `:nth()` alias of `:eq()`), which indexed an element's siblings instead of the matched set (issue #66). They are now applied, zero-indexed and in document order, to the set the selector matched, as in jQuery. Most visibly, `:eq(0)` now matches the first result instead of never matching. `:lt()`, `:gt()`, `:eq()` and `:nth()` are zero-indexed where they were previously one-indexed, `:odd`/`:even` now index the matched set rather than sibling position, and a negative index counts back from the end of the set (`:eq(-1)` is the last match). The CSS structural pseudo-classes (`:nth-child()`, `:nth-of-type()`, `:first-child`, `:last-child`, ...) are unchanged and still count siblings, one-indexed
 - Make `QueryPath\CSS\QueryPathEventHandler`, the legacy engine still used by `remove()` and `replaceAll()`, agree with `QueryPath\CSS\DOMTraverser` on all of the positional pseudo-classes. `remove('li:first')` and `find('li:first')` now select the same element
 - Support positional pseudo-classes on any simple selector in a chain, not just the last one: `ul:first li` selects the list items of the first `ul`, and each comma-separated group is filtered independently before the union is returned in document order
@@ -28,12 +29,21 @@ QueryPath Changelog
 - Fix the `:text` pseudo-class so it matches jQuery: it selects `input` elements whose `type` attribute is absent or is `text` (case-insensitively). It never indicated, and still does not indicate, whether a node is a text node
 - `find('*')` now matches the nodes in the match set as well as their descendants, so that a selector can be tested against an element already in hand
 - Fix `QPXML::createElement()` throwing "Undefined namespace" for a prefixed element name whose prefix is declared on the matched element or an ancestor below the document element. The prefix is now resolved against the namespaces in scope on the first matched element (issue #94)
+- **Behaviour change.** `firstChild()` now returns the first child element of every matched element, as `lastChild()` already did, instead of only that of the first matched element (issue #78). Matches with no child elements contribute nothing. Use `firstChild()->first()` for the previous result
+- Fix `detach($selector)` ignoring its selector and detaching the current match set instead (issue #76). It now detaches only the matches of `$selector`, as `remove($selector)` does, and leaves the current match set in the document
 - `writeHTML5()` now returns the `DOMQuery` like the other `write*()` methods, and throws `QueryPath\IOException` instead of a `TypeError` when the file cannot be written (issue #80)
 - Fix `QueryPath\ParseException` and `QueryPath\IOException` losing the PHP warning they were raised from (issue #91). The message was the error number, as in `2 (/path/to/src/DOMQuery.php: 1343)`, and the code was always `0`. The message now carries the warning text and the code is the PHP error level (for example `E_WARNING`), so code that matches on the old message text will need updating
 - Fix `tag()` emitting an "Undefined property" warning and returning `NULL` when the first match is not an element, such as a text, comment or processing instruction node returned by `contents()`. It now returns an empty string, as it does for an empty match set (issue #93)
 - Fix QueryPath's error handler staying installed for the rest of the request when an exception other than a `QueryPath\Exception` (a `TypeError`, or one thrown by a stream wrapper, for example) escaped from parsing a document, inserting markup, or `writeXML()`/`writeHTML()` (issue #95)
 - Fix `writeHTML()` throwing `QueryPath\ParseException` instead of `QueryPath\IOException` when the file cannot be written, as `writeXML()` and `writeHTML5()` do (issue #92). `IOException` extends `ParseException`, so existing `catch (ParseException $e)` blocks still catch it
 - Fix `html()` and `writeHTML()` dropping the closing `?` of a processing instruction in an `html5qp()` document, so `<?php echo $title; ?>` came out as `<?php echo $title; >` (issue #86). `html5qp()` documents are now `QueryPath\Document` instances, like those from `qp()` and `htmlqp()`
+- Fix `css()` merging the inline styles of every matched element and writing the combined result back to all of them. The new declarations are now merged into each element's own `style` attribute (issue #77)
+- Fix `not()` keeping only the given nodes, instead of removing them, when passed an `SplObjectStorage` such as `get(null, true)` returns (issue #75)
+- Fix `QueryPath::VERSION` and `QueryPath::VERSION_MAJOR` still reporting `3.2.2` and `3`. They now report `4.2.0` and `4`, and both are deprecated in favour of `\Composer\InstalledVersions::getPrettyVersion('gravitypdf/querypath')`, which cannot drift from the installed version (issue #83)
+
+# 4.2.0
+
+- Add PHP 8.5 support
 
 # 4.1.0
 

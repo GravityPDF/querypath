@@ -701,17 +701,17 @@ trait QueryMutators
 	 */
 	public function detach($selector = null): Query
 	{
-		if (null !== $selector) {
-			$this->find($selector);
-		}
+		$matches = null === $selector ? $this->matches : $this->find($selector)->matches;
 
-		$found      = new SplObjectStorage();
-		$this->last = $this->matches;
-		foreach ($this->matches as $item) {
+		$found = new SplObjectStorage();
+		foreach ($matches as $item) {
 			// The item returned is (according to docs) different from
 			// the one passed in, so we have to re-store it.
 			$found->offsetSet($item->parentNode->removeChild($item));
 		}
+
+		// attach() re-attaches whatever the last detach() removed.
+		$this->last = $found;
 
 		return $this->inst($found, null);
 	}
@@ -1040,9 +1040,11 @@ trait QueryMutators
 			return $this->attr('style');
 		}
 
-		// Get any existing CSS.
-		$css = [];
+		$rules = is_array($name) ? $name : [$name => $value];
+
 		foreach ($this->elements() as $match) {
+			// Get this element's existing CSS.
+			$css   = [];
 			$style = $match->getAttribute('style');
 			if (! empty($style)) {
 				// XXX: Is this sufficient?
@@ -1059,23 +1061,18 @@ trait QueryMutators
 					$css[$css_att] = trim($css_val);
 				}
 			}
-		}
 
-		if (is_array($name)) {
 			// Use array_merge instead of + to preserve order.
-			$css = array_merge($css, $name);
-		} else {
-			$css[$name] = $value;
-		}
+			$css = array_merge($css, $rules);
 
-		// Collapse CSS into a string.
-		$format     = '%s: %s;';
-		$css_string = '';
-		foreach ($css as $n => $v) {
-			$css_string .= sprintf($format, $n, trim($v));
-		}
+			// Collapse CSS into a string.
+			$css_string = '';
+			foreach ($css as $n => $v) {
+				$css_string .= sprintf('%s: %s;', $n, trim($v));
+			}
 
-		$this->attr('style', $css_string);
+			$match->setAttribute('style', $css_string);
+		}
 
 		return $this;
 	}

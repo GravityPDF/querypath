@@ -517,6 +517,24 @@ class DOMQueryTest extends TestCase
 		$this->assertEquals('a: c;b: b;', $qp->css());
 	}
 
+	public function testCssMergesIntoEachElementsOwnStyle()
+	{
+		$html = '<div><p style="color: red"></p><p style="font-size: 2px; margin: 5px"></p><p></p></div>';
+
+		$qp = html5qp($html, 'p')->css('margin', '0');
+		$this->assertSame('color: red;margin: 0;', $qp->get(0)->getAttribute('style'));
+		$this->assertSame('font-size: 2px;margin: 0;', $qp->get(1)->getAttribute('style'));
+		$this->assertSame('margin: 0;', $qp->get(2)->getAttribute('style'));
+
+		$qp = html5qp($html, 'p')->css(['margin' => '0', 'color' => 'blue']);
+		$this->assertSame('color: blue;margin: 0;', $qp->get(0)->getAttribute('style'));
+		$this->assertSame('font-size: 2px;margin: 0;color: blue;', $qp->get(1)->getAttribute('style'));
+		$this->assertSame('margin: 0;color: blue;', $qp->get(2)->getAttribute('style'));
+
+		// The getter still returns the first element's style, unparsed.
+		$this->assertSame('color: red', html5qp($html, 'p')->css());
+	}
+
 	public function testRemoveAttr()
 	{
 		$file = DATA_FILE;
@@ -709,8 +727,9 @@ class DOMQueryTest extends TestCase
 
 	public function testFilterLambda()
 	{
-		if (version_compare(PHP_VERSION, '8.0.0', '>=')) {
-			$this->markTestSkipped('create_function removed in PHP8.0');
+		if (!function_exists('create_function')) {
+			$this->expectException(Exception::class);
+			$this->expectExceptionMessage('Use filterCallback() with a closure instead.');
 		}
 
 		$file = DATA_FILE;
@@ -771,6 +790,23 @@ class DOMQueryTest extends TestCase
 		$this->assertEquals(count($arr), $qp->count());
 		array_shift($arr);
 		$this->assertEquals(1, $qp->not($arr)->count());
+	}
+
+	public function testNotRemovesTheSameNodesForEveryArgumentType()
+	{
+		$qp      = qp(DATA_FILE, 'li');
+		$exclude = $qp->branch()->filter('#one, #three');
+		$ids     = function ($q) {
+			return array_map(function ($n) {
+				return $n->getAttribute('id');
+			}, $q->get());
+		};
+
+		$expected = ['two', 'four', 'five'];
+		$this->assertSame($expected, $ids($qp->not('#one, #three')), 'Selector');
+		$this->assertSame($expected, $ids($qp->not($exclude->get())), 'Array');
+		$this->assertSame($expected, $ids($qp->not($exclude->get(null, true))), 'SplObjectStorage');
+		$this->assertSame(['two', 'three', 'four', 'five'], $ids($qp->not($exclude->get(0))), 'DOMElement');
 	}
 
 	public function testSlice()
@@ -851,8 +887,9 @@ class DOMQueryTest extends TestCase
 
 	public function testEachLambda()
 	{
-		if (version_compare(PHP_VERSION, '8.0.0', '>=')) {
-			$this->markTestSkipped('create_function removed in PHP8.0');
+		if (!function_exists('create_function')) {
+			$this->expectException(Exception::class);
+			$this->expectExceptionMessage('Use each() with a closure instead.');
 		}
 
 		$file = DATA_FILE;
@@ -2057,6 +2094,55 @@ class DOMQueryTest extends TestCase
 		$this->assertEquals(5, $dest->find(':root li')->count());
 	}
 
+	public function testDetachWithSelector()
+	{
+		$xml = '<?xml version="1.0"?><root><p><i>a</i><b>x</b></p><p><i>b</i></p><i>c</i></root>';
+		$qp  = qp($xml, 'p');
+
+		$detached = $qp->detach('i');
+
+		$this->assertSame(2, $detached->count());
+		$this->assertSame('i', $detached->tag());
+		$this->assertSame('ab', $detached->text());
+		$this->assertNull($detached->get(0)->parentNode);
+
+		$this->assertSame(2, $qp->count());
+		$this->assertSame('p', $qp->tag());
+		$this->assertSame(2, $qp->top('p')->count());
+		$this->assertSame(1, $qp->top('b')->count());
+		$this->assertSame('c', $qp->top('i')->text());
+
+		$this->assertSame(2, $detached->end()->count());
+		$this->assertSame('p', $detached->tag());
+	}
+
+	public function testDetachWithSelectorAgreesWithRemove()
+	{
+		$xml = '<?xml version="1.0"?><root><p><i>a</i><b>x</b></p><p><i>b</i></p><i>c</i></root>';
+
+		foreach (['i', 'p > i', 'p', '*', 'noSuchElement'] as $selector) {
+			$removeQp = qp($xml, 'p');
+			$removed  = $removeQp->remove($selector);
+			$detachQp = qp($xml, 'p');
+			$detached = $detachQp->detach($selector);
+
+			$this->assertSame($removed->count(), $detached->count(), $selector);
+			$this->assertSame($removeQp->top()->xml(), $detachQp->top()->xml(), $selector);
+		}
+	}
+
+	public function testAttachAfterDetachWithSelector()
+	{
+		$qp = qp('<?xml version="1.0"?><root><p><i>a</i></p><p><i>b</i></p></root>', 'p');
+		$qp->detach('i');
+
+		$dest = qp('<?xml version="1.0"?><root><dest/></root>', 'dest');
+		$qp->attach($dest);
+
+		$this->assertSame(2, $dest->find('i')->count());
+		$this->assertSame(2, $qp->top('p')->count());
+	}
+
 	public function testEmptyElement()
 	{
 		$file = DATA_FILE;
@@ -2142,6 +2228,13 @@ class DOMQueryTest extends TestCase
 		$file = DATA_FILE;
 		$this->assertEquals(1, qp($file, '#inner-one')->firstChild()->count());
 		$this->assertEquals("Hello", qp($file, '#inner-one')->firstChild()->text());
+	}
+
+	public function testFirstChildReturnsOneChildPerMatch()
+	{
+		$xml = '<?xml version="1.0"?><root><p/><p>text only</p><p>text <i>a</i><i>b</i></p><p><!-- c --><i>c</i></p></root>';
+
+		$this->assertSame('a,c', qp($xml, 'p')->firstChild()->textImplode(','));
 	}
 
 	public function testLast()
