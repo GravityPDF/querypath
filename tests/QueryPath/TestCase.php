@@ -35,6 +35,38 @@ class TestCase extends \Yoast\PHPUnitPolyfills\TestCases\TestCase
 	}
 
 	/**
+	 * Build a match set from element IDs, in the order given rather than document order.
+	 *
+	 * @param string $xml
+	 * @param string ...$ids
+	 *
+	 * @return \QueryPath\DOMQuery
+	 */
+	protected function selectIds(string $xml, string ...$ids)
+	{
+		$qp = qp($xml, '#' . array_shift($ids));
+		foreach ($ids as $id) {
+			$qp = $qp->add('#' . $id);
+		}
+
+		return $qp;
+	}
+
+	/**
+	 * The IDs of a match set's elements, comma-separated, in match-set order.
+	 *
+	 * @param \QueryPath\DOMQuery $query
+	 *
+	 * @return string
+	 */
+	protected function idList($query): string
+	{
+		return implode(',', array_map(function ($node) {
+			return $node->getAttribute('id');
+		}, $query->get()));
+	}
+
+	/**
 	 * Whether libxml's HTML parser follows HTML5, as it does from 2.14.
 	 *
 	 * Such a parser reads `<?...>` as a comment rather than a processing instruction, and reports no
