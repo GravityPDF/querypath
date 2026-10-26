@@ -940,8 +940,10 @@ trait QueryFilters
 	{
 		$found = new SplObjectStorage();
 		foreach ($this->matches as $m) {
-			$parent = $m->parentNode;
-			foreach ($parent->childNodes as $n) {
+			if ($m->parentNode === null) {
+				continue;
+			}
+			foreach ($m->parentNode->childNodes as $n) {
 				if ($n->nodeType === XML_ELEMENT_NODE && $n !== $m) {
 					$found->offsetSet($n);
 				}
