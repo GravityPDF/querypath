@@ -206,6 +206,27 @@ class PseudoClassTest extends TestCase
 		$this->assertEquals(1, $i);
 	}
 
+	public function testHasMatchesRelatedElementsNotTheElementItself()
+	{
+		$xml = '<?xml version="1.0"?><root><ul><li><b/></li></ul><p/></root>';
+		[$ele, $root] = $this->doc($xml, 'ul');
+		$ps = new PseudoClass();
+
+		$this->assertTrue($ps->elementMatches('has', $ele, $root, 'li'));
+		$this->assertTrue($ps->elementMatches('has', $ele, $root, 'b'));
+		$this->assertTrue($ps->elementMatches('has', $ele, $root, '> li'));
+		$this->assertFalse($ps->elementMatches('has', $ele, $root, '> b'));
+		$this->assertTrue($ps->elementMatches('has', $ele, $root, '+ p'));
+		$this->assertTrue($ps->elementMatches('has', $ele, $root, '~ p'));
+		$this->assertFalse($ps->elementMatches('has', $ele, $root, 'ul'));
+		$this->assertFalse($ps->elementMatches('has', $ele, $root, 'p'));
+
+		$this->assertTrue($ps->elementMatches('matches', $ele, $root, 'ul'));
+		$this->assertFalse($ps->elementMatches('matches', $ele, $root, 'li'));
+		$this->assertFalse($ps->elementMatches('not', $ele, $root, 'ul'));
+		$this->assertTrue($ps->elementMatches('not', $ele, $root, 'li'));
+	}
+
 	public function testParent()
 	{
 		$ps = new PseudoClass();

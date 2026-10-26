@@ -52,6 +52,7 @@ QueryPath Changelog
 - Fix `not()` keeping only the given nodes, instead of removing them, when passed an `SplObjectStorage` such as `get(null, true)` returns (issue #75)
 - Fix selectors with two or more levels of nested parentheses, such as `li:not(:not(:nth-child(1)))` or `ul:has(li:not(:nth-child(1)))`, throwing "Recursion error detected" (issue #120). The scanner skipped the character after every nested argument, so the outer argument never saw its closing paren. This also stops `li:not(:nth-child(1)) b` from folding ` b` into the `:not()` argument, and lets quoted arguments contain parentheses, as in `:contains("a)b")`
 - Fix `QueryPath::VERSION` and `QueryPath::VERSION_MAJOR` still reporting `3.2.2` and `3`. They now report `4.2.0` and `4`, and both are deprecated in favour of `\Composer\InstalledVersions::getPrettyVersion('gravitypdf/querypath')`, which cannot drift from the installed version (issue #83)
+- **Behaviour change.** Fix `:has()` never matching in `find()`, `filter()` and the other methods that use `QueryPath\CSS\DOMTraverser`, so that `ul:has(li)` selected nothing and `:not(:has(li))` selected everything (issue #121). `:has()` now matches an element with a descendant matching its argument, and supports relative selectors: `ul:has(> li)` (a child), `h2:has(+ p)` (the next sibling) and `h2:has(~ p)` (a later sibling). A positional pseudo-class in the argument indexes each element's own matches, so `ul:has(li:eq(2))` selects every list with at least three items
 
 # 4.2.0
 

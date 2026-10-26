@@ -49,10 +49,12 @@ class Util
 	 * If that argument contains a positional pseudo-class then the whole
 	 * pseudo-class becomes a set filter too, because the argument has to be
 	 * evaluated against the result set rather than against a lone node.
+	 *
+	 * :has() is not listed: its argument is searched for around each node, so a
+	 * positional pseudo-class in it indexes that node's own matches, as in jQuery.
 	 */
 	private const SELECTOR_ARGUMENT_PSEUDO_CLASSES = [
 		'not',
-		'has',
 		'matches',
 	];
 
@@ -84,7 +86,7 @@ class Util
 	 * Check whether a pseudo-class has to be applied to the whole result set.
 	 *
 	 * That is true of the positional pseudo-classes themselves, and of
-	 * :not()/:has()/:matches() when their argument contains one.
+	 * :not()/:matches() when their argument contains one.
 	 *
 	 * @param string $name
 	 * @param mixed  $value

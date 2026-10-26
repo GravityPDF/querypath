@@ -18,6 +18,9 @@ use QueryPath\CSS\NotImplementedException;
 use QueryPath\CSS\EventHandler;
 use QueryPath\CSS\ParseException;
 use DOMNode;
+use QueryPath\CSS\Parser;
+use QueryPath\CSS\Selector;
+use QueryPath\CSS\SimpleSelector;
 use SPLObjectStorage;
 
 /**
@@ -51,6 +54,13 @@ class PseudoClass
 	 * @var array
 	 */
 	protected $anbRules = [];
+
+	/**
+	 * Parsed :has() arguments, keyed by the argument. See relativeSelector().
+	 *
+	 * @var array
+	 */
+	protected $relativeSelectors = [];
 
 	/**
 	 * Start remembering sibling positions, so the :nth-* pseudo-classes index
@@ -216,9 +226,9 @@ class PseudoClass
 			case 'header':
 				return $this->header($node);
 			case 'has':
-			case 'matches':
 				return $this->has($node, $value);
-			break;
+			case 'matches':
+				return $this->is($node, $value);
 			case 'not':
 				if (empty($value)) {
 					throw new ParseException(':not() requires a value.');
@@ -392,9 +402,116 @@ class PseudoClass
 	/**
 	 * Provides :has pseudoclass.
 	 *
+	 * Its argument is a relative selector, so `:has(li)` looks for a descendant
+	 * and `:has(> li)`, `:has(+ li)` and `:has(~ li)` for a child or later sibling.
+	 *
 	 * @throws ParseException
 	 */
 	protected function has($node, $selector): bool
+	{
+		foreach ($this->relativeSelector($selector) as [$group, $combinator, $nextOnly]) {
+			if (! ($combinator & (SimpleSelector::ADJACENT | SimpleSelector::SIBLING))) {
+				if ($this->findsAny($node, $node, $group)) {
+					return true;
+				}
+				continue;
+			}
+
+			// Search the later siblings one at a time, so a match near the node ends the search.
+			for ($next = $node->nextSibling; $next !== null; $next = $next->nextSibling) {
+				if (! $next instanceof DOMElement) {
+					continue;
+				}
+
+				if ($this->findsAny($next, $node, $group)) {
+					return true;
+				}
+
+				if ($nextOnly) {
+					break;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Parse the argument of :has(), anchoring each group to :scope.
+	 *
+	 * A group that starts with a combinator (`> li`) has a blank leftmost simple selector,
+	 * which becomes :scope. Any other group (`li`) is a descendant of :scope.
+	 *
+	 * @return array
+	 *   One [group, anchor combinator, whether only the next sibling can match] per group.
+	 * @throws ParseException
+	 */
+	protected function relativeSelector($selector): array
+	{
+		if (isset($this->relativeSelectors[$selector])) {
+			return $this->relativeSelectors[$selector];
+		}
+
+		$handler = new Selector();
+		$parser  = new Parser($selector, $handler);
+		$parser->parse();
+
+		$sibling = SimpleSelector::ADJACENT | SimpleSelector::SIBLING;
+		$groups  = [];
+		foreach ($handler as $group) {
+			// Groups are stored right-to-left, so the last simple selector is the leftmost.
+			$anchor = end($group);
+			if (count($group) === 1 || ! $anchor->isBlank()) {
+				$anchor             = new SimpleSelector();
+				$anchor->combinator = SimpleSelector::ANY_DESCENDANT;
+				$group[]            = $anchor;
+			}
+			$anchor->pseudoClasses[] = ['name' => 'scope', 'value' => null];
+
+			// `+ li` can only be the next sibling, unless the group goes on to another one (`+ li ~ li`).
+			$nextOnly = $anchor->combinator === SimpleSelector::ADJACENT;
+			foreach (array_slice($group, 0, -1) as $simpleSelector) {
+				if ($simpleSelector->combinator & $sibling) {
+					$nextOnly = false;
+				}
+			}
+
+			$groups[] = [$group, $anchor->combinator, $nextOnly];
+		}
+
+		return $this->relativeSelectors[$selector] = $groups;
+	}
+
+	/**
+	 * Whether $group matches $root or any of its descendants.
+	 *
+	 * @param DOMElement       $root
+	 * @param DOMElement       $scope
+	 * @param SimpleSelector[] $group
+	 *
+	 * @throws ParseException
+	 */
+	protected function findsAny(DOMElement $root, DOMElement $scope, array $group): bool
+	{
+		$splos = new SPLObjectStorage();
+		$splos->offsetSet($root);
+
+		// The traverser consumes the element and ID selectors as it matches them, so give it a copy.
+		$copy = [];
+		foreach ($group as $simpleSelector) {
+			$copy[] = clone $simpleSelector;
+		}
+		$traverser = new DOMTraverser($splos, false, $scope);
+
+		return count($traverser->findGroups([$copy])->matches()) > 0;
+	}
+
+	/**
+	 * Provides :matches pseudoclass, which tests the node itself.
+	 *
+	 * @throws ParseException
+	 */
+	protected function is($node, $selector): bool
 	{
 		$splos = new SPLObjectStorage();
 		$splos->offsetSet($node);
@@ -411,7 +528,7 @@ class PseudoClass
 	 */
 	protected function isNot($node, $selector): bool
 	{
-		return ! $this->has($node, $selector);
+		return ! $this->is($node, $selector);
 	}
 
 	/**

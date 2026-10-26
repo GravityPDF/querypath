@@ -399,6 +399,106 @@ class DOMQueryTest extends TestCase
 		$this->assertEquals($qp->get(0)->tagName, 'root');
 	}
 
+	protected const HAS_XML = '<?xml version="1.0"?><root id="root"><ul id="a"><li id="a1"/><li id="a2"/></ul>'
+		. '<ul id="b"><li id="b1"/><li id="b2"/><li id="b3"/></ul>'
+		. '<ol id="c"><x id="x"/><li id="k"><span id="s"/></li></ol><p id="p"/><q id="q"/></root>';
+
+	/**
+	 * @dataProvider hasSelectorProvider
+	 */
+	public function testFindHas(string $selector, array $expected)
+	{
+		$this->assertSame($expected, $this->ids(qp(self::HAS_XML)->find($selector)), $selector);
+	}
+
+	public function hasSelectorProvider(): array
+	{
+		return [
+			['ul:has(li)', ['a', 'b']],
+			['root:has(ul)', ['root']],
+			['ul:has(span)', []],
+			['ol:has(span)', ['c']],
+			['ol:has(x, span)', ['c']],
+			['*:has(#k)', ['root', 'c']],
+			['ul:has(li:nth-child(3))', ['b']],
+			['ul:has(li:first-child)', ['a', 'b']],
+			['ul:has(li:eq(1))', ['a', 'b']],
+			['ul:has(li:eq(2))', ['b']],
+			['ul:has(> li)', ['a', 'b']],
+			['ol:has(> span)', []],
+			['ol:has(> li > span)', ['c']],
+			['x:has(+ li)', ['x']],
+			['ul:has(+ ol)', ['b']],
+			['ul:has(+ p)', []],
+			['ul:has(~ p)', ['a', 'b']],
+			['ul:has(~ #q)', ['a', 'b']],
+			['ul:has(~ #s)', []],
+			['ul:has(~ ol > li > span)', ['a', 'b']],
+			['ul:has(+ ul ~ q)', ['a']],
+			['ul:not(:has(li))', []],
+			['ul:not(:has(span))', ['a', 'b']],
+			['*:not(:has(*))', ['a1', 'a2', 'b1', 'b2', 'b3', 'x', 's', 'p', 'q']],
+		];
+	}
+
+	public function testFindHasHtml5()
+	{
+		$html = '<!DOCTYPE html><html><body><ul id="a"><li>1</li><li>2</li></ul>'
+			. '<ul id="b"><li>1</li><li>2</li><li>3</li></ul><ol id="c"></ol></body></html>';
+
+		$this->assertSame(['body'], $this->ids(html5qp($html)->find('body:has(ul)')));
+		$this->assertSame(['a', 'b'], $this->ids(html5qp($html)->find('ul:has(> li)')));
+		$this->assertSame(['b'], $this->ids(html5qp($html)->find('ul:has(li:nth-child(3))')));
+		$this->assertSame(['b'], $this->ids(html5qp($html)->find('ul:has(+ ol)')));
+	}
+
+	public function testFilterHas()
+	{
+		$this->assertSame(['a', 'b'], $this->ids(qp(self::HAS_XML, 'ul')->filter(':has(li)')));
+		$this->assertSame(['b'], $this->ids(qp(self::HAS_XML, 'ul')->filter('ul:has(li:nth-child(3))')));
+		$this->assertSame(['a'], $this->ids(qp(self::HAS_XML, 'ul')->filter(':has(+ ul)')));
+	}
+
+	public function testFindHasAgreesWithRemove()
+	{
+		$selectors = [
+			'ul:has(li)',
+			'root:has(ul)',
+			'ul:has(> li)',
+			'ul:has(li:nth-child(3))',
+			'ul:has(li:first-child)',
+			'ul:has(li:eq(1))',
+			'ul:has(li:eq(2))',
+			'x:has(+ li)',
+			'ul:has(~ p)',
+		];
+
+		foreach ($selectors as $selector) {
+			$this->assertSame(
+				$this->ids(qp(self::HAS_XML)->remove($selector)),
+				$this->ids(qp(self::HAS_XML)->find($selector)),
+				$selector
+			);
+		}
+	}
+
+	public function testFindNotIsUnaffectedByHas()
+	{
+		$this->assertSame(['a1', 'a2', 'b1', 'b2', 'b3'], $this->ids(qp(self::HAS_XML)->find('li:not(#k)')));
+		$this->assertSame(['k'], $this->ids(qp(self::HAS_XML)->find('li:not(:empty)')));
+		$this->assertSame(['a', 'b'], $this->ids(qp(self::HAS_XML)->find('#root > *:not(ol, p, q)')));
+	}
+
+	protected function ids(DOMQuery $qp): array
+	{
+		$ids = [];
+		foreach ($qp->get() as $node) {
+			$ids[] = $node->getAttribute('id') ?: $node->tagName;
+		}
+
+		return $ids;
+	}
+
 	public function testFindInPlace()
 	{
 		$file = DATA_FILE;
