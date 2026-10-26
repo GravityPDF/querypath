@@ -18,7 +18,7 @@ use SplObjectStorage;
  * that describes a position within the set (:first, :eq(n), :odd, ...), because each node
  * would be the only member of its own one-element set.
  *
- * An instance remembers each per-node answer, because the walk-and-stop traversals
+ * matches() remembers each per-node answer, because the walk-and-stop traversals
  * (closest(), nextUntil(), ...) revisit the same nodes from every starting element. An
  * instance must not outlive the call that made it, or a later DOM change could leave it
  * holding stale answers.
@@ -60,32 +60,30 @@ final class NodeMatcher
 		if (! $this->results->offsetExists($node)) {
 			$single = new SplObjectStorage();
 			$single->offsetSet($node);
-			$this->results[$node] = self::matchesAny($single, $this->selector);
+			$this->results[$node] = $this->matchesAny($single);
 		}
 
 		return $this->results[$node];
 	}
 
 	/**
-	 * Reduce a set of nodes to those that match a selector, preserving their order.
+	 * Reduce a set of nodes to those that match the selector, preserving their order.
 	 *
 	 * Nodes that are not elements can never match a CSS selector, and are skipped.
 	 *
 	 * @param SplObjectStorage $nodes
 	 *   The candidate nodes.
-	 * @param string           $selector
-	 *   A valid CSS selector.
 	 *
 	 * @return SplObjectStorage
 	 * @throws ParseException
 	 */
-	public static function filter(SplObjectStorage $nodes, $selector): SplObjectStorage
+	public function filter(SplObjectStorage $nodes): SplObjectStorage
 	{
 		if (count($nodes) === 0) {
 			return new SplObjectStorage();
 		}
 
-		$matched = self::matching($nodes, $selector);
+		$matched = $this->matching($nodes);
 
 		// The traverser returns document order; callers such as parents() need their own.
 		$found = new SplObjectStorage();
@@ -99,29 +97,27 @@ final class NodeMatcher
 	}
 
 	/**
-	 * Test whether at least one of the given nodes matches a selector.
+	 * Test whether at least one of the given nodes matches the selector.
 	 *
 	 * @param SplObjectStorage $nodes
-	 * @param string           $selector
 	 *
 	 * @return bool
 	 * @throws ParseException
 	 */
-	public static function matchesAny(SplObjectStorage $nodes, $selector): bool
+	public function matchesAny(SplObjectStorage $nodes): bool
 	{
-		return count($nodes) > 0 && count(self::matching($nodes, $selector)) > 0;
+		return count($nodes) > 0 && count($this->matching($nodes)) > 0;
 	}
 
 	/**
-	 * Find the nodes that match a selector, in document order.
+	 * Find the nodes that match the selector, in document order.
 	 *
 	 * @param SplObjectStorage $nodes
-	 * @param string           $selector
 	 *
 	 * @return SplObjectStorage
 	 * @throws ParseException
 	 */
-	public static function matching(SplObjectStorage $nodes, $selector): SplObjectStorage
+	public function matching(SplObjectStorage $nodes): SplObjectStorage
 	{
 		// "Initialized" mode makes the traverser take the supplied set as its candidates rather
 		// than seeding them with a descendant search. The scope node is left at its default (the
@@ -129,6 +125,6 @@ final class NodeMatcher
 		// candidate would make every candidate match `:scope`.
 		$traverser = new DOMTraverser($nodes, true);
 
-		return $traverser->find($selector)->matches();
+		return $traverser->find($this->selector)->matches();
 	}
 }

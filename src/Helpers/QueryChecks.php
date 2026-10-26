@@ -73,7 +73,7 @@ trait QueryChecks
 			throw new Exception('Cannot compare an object to a DOMQuery.');
 		}
 
-		return NodeMatcher::matchesAny($this->matches, $selector);
+		return (new NodeMatcher($selector))->matchesAny($this->matches);
 	}
 
 	/**

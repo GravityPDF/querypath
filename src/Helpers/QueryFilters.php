@@ -40,7 +40,7 @@ trait QueryFilters
 	 */
 	public function filter($selector): Query
 	{
-		return $this->inst(NodeMatcher::filter($this->matches, $selector), null);
+		return $this->inst((new NodeMatcher($selector))->filter($this->matches), null);
 	}
 
 	/**
@@ -703,7 +703,7 @@ trait QueryFilters
 				}
 			}
 		} else {
-			$exclude = $selector instanceof SplObjectStorage ? $selector : NodeMatcher::matching($this->matches, $selector);
+			$exclude = $selector instanceof SplObjectStorage ? $selector : (new NodeMatcher($selector))->matching($this->matches);
 			foreach ($this->matches as $m) {
 				if (! $exclude->offsetExists($m)) {
 					$found->offsetSet($m);
@@ -1129,6 +1129,6 @@ trait QueryFilters
 			return $candidates;
 		}
 
-		return NodeMatcher::filter($candidates, $selector);
+		return (new NodeMatcher($selector))->filter($candidates);
 	}
 }
