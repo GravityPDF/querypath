@@ -45,6 +45,21 @@ class QueryPathTest extends TestCase
 
 		$this->assertTrue($qp->grrrrrrr());
 	}
+
+	public function testVersionMajorMatchesVersion()
+	{
+		$this->assertSame((int) explode('.', QueryPath::VERSION)[0], QueryPath::VERSION_MAJOR);
+	}
+
+	/**
+	 * Releasing turns "# Unreleased changes" into a version heading, so VERSION must be bumped alongside it.
+	 */
+	public function testVersionMatchesLatestChangelogRelease()
+	{
+		preg_match('/^# (\d+\.\d+\.\d+)$/m', file_get_contents(__DIR__ . '/../../CHANGELOG.md'), $matches);
+
+		$this->assertSame($matches[1], QueryPath::VERSION);
+	}
 }
 
 class DummyExtension implements Extension
