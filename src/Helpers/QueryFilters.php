@@ -374,7 +374,8 @@ trait QueryFilters
 
 	/**
 	 * Get the matches at zero-based even positions (0, 2, 4, ...), as jQuery's .even() and
-	 * the :even pseudo-class do.
+	 * the :even pseudo-class do. Every node counts, whatever its type; use filter('*')->even()
+	 * to count only the elements.
 	 *
 	 * @return DOMQuery
 	 *  A DOMQuery wrapping the matches at even positions.
@@ -390,7 +391,8 @@ trait QueryFilters
 
 	/**
 	 * Get the matches at zero-based odd positions (1, 3, 5, ...), as jQuery's .odd() and
-	 * the :odd pseudo-class do.
+	 * the :odd pseudo-class do. Every node counts, whatever its type; use filter('*')->odd()
+	 * to count only the elements.
 	 *
 	 * @return DOMQuery
 	 *  A DOMQuery wrapping the matches at odd positions.
@@ -416,35 +418,30 @@ trait QueryFilters
 	{
 		$found = new SplObjectStorage();
 		foreach (Util::applyPositionalPseudoClass(iterator_to_array($this->matches, false), $name) as $m) {
-			if ($m->nodeType === XML_ELEMENT_NODE) {
-				$found->offsetSet($m);
-			}
+			$found->offsetSet($m);
 		}
 
 		return $this->inst($found, null);
 	}
 
 	/**
-	 * Get the first matching element.
+	 * Get the first match.
 	 *
+	 * As in jQuery, this is the same as eq(0): the first node of any type, so
+	 * after contents() it may be a text node. Use children()->first() or
+	 * filter('*')->first() for the first element.
 	 *
 	 * @return DOMQuery
-	 *  A DOMQuery wrapping all of the children.
+	 *  A DOMQuery wrapping the first match, or an empty one.
 	 * @throws ParseException
-	 * @see    prev()
+	 * @see    last()
+	 * @see    eq()
 	 * @since  2.1
 	 * @author eabrand
-	 * @see    next()
 	 */
 	public function first(): Query
 	{
-		$found = new SplObjectStorage();
-		foreach ($this->elements() as $m) {
-			$found->offsetSet($m);
-			break;
-		}
-
-		return $this->inst($found, null);
+		return $this->eq(0);
 	}
 
 	/**
@@ -475,29 +472,23 @@ trait QueryFilters
 	}
 
 	/**
-	 * Get the last matching element.
+	 * Get the last match.
 	 *
+	 * As in jQuery, this is the last node of any type, so after contents() it
+	 * may be a text node. Use children()->last() or filter('*')->last() for
+	 * the last element.
 	 *
 	 * @return DOMQuery
-	 *  A DOMQuery wrapping all of the children.
+	 *  A DOMQuery wrapping the last match, or an empty one.
 	 * @throws ParseException
-	 * @see    prev()
+	 * @see    first()
+	 * @see    eq()
 	 * @since  2.1
 	 * @author eabrand
-	 * @see    next()
 	 */
 	public function last(): Query
 	{
-		$found = new SplObjectStorage();
-		$item  = null;
-		foreach ($this->elements() as $m) {
-			$item = $m;
-		}
-		if ($item) {
-			$found->offsetSet($item);
-		}
-
-		return $this->inst($found, null);
+		return $this->eq($this->count() - 1);
 	}
 
 	/**
