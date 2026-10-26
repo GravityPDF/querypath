@@ -85,7 +85,6 @@ trait QueryFilters
 	 * @return DOMQuery
 	 * @throws ParseException
 	 * @throws Exception
-	 *  On PHP 8.0 and later, where create_function() no longer exists.
 	 *
 	 * @see map()
 	 * @see mapLambda()
@@ -363,7 +362,6 @@ trait QueryFilters
 	 * @return DOMQuery
 	 *  The DOMQuery object.
 	 * @throws Exception
-	 *  On PHP 8.0 and later, where create_function() no longer exists.
 	 * @deprecated
 	 *   Relies on create_function(), which was removed in PHP 8.0, so this
 	 *   method only works on PHP 7. Use each() with a closure instead. It
