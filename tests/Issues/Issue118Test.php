@@ -71,18 +71,18 @@ class Issue118Test extends TestCase
 	}
 
 	/**
-	 * The set methods count a positional selector within the set, in document order
-	 * (issue #66), whatever order the results come back in (issue #117). jQuery counts
-	 * in walk order, so for prevAll() and parents() its :first is the nearest node.
+	 * The set methods count a positional selector along the walk, before the results are
+	 * sorted (issue #134), so for prevAll() and parents() :first is the nearest node.
+	 * siblings() still counts in document order.
 	 */
-	public function testSetMethodsCountPositionsInDocumentOrder()
+	public function testSetMethodsCountPositionsInWalkOrder()
 	{
-		$this->assertSame('a', $this->idList($this->selectIds(self::SIBLINGS, 'e')->prevAll(':first')));
-		$this->assertSame('d', $this->idList($this->selectIds(self::SIBLINGS, 'e')->prevAll(':last')));
-		$this->assertSame('b', $this->idList($this->selectIds(self::SIBLINGS, 'c', 'e')->prevAll(':eq(1)')));
-		$this->assertSame('b', $this->idList($this->selectIds(self::SIBLINGS, 'c', 'a')->nextAll(':first')));
+		$this->assertSame('d', $this->idList($this->selectIds(self::SIBLINGS, 'e')->prevAll(':first')));
+		$this->assertSame('a', $this->idList($this->selectIds(self::SIBLINGS, 'e')->prevAll(':last')));
+		$this->assertSame('a', $this->idList($this->selectIds(self::SIBLINGS, 'c', 'e')->prevAll(':eq(1)')));
+		$this->assertSame('b', $this->idList($this->selectIds(self::SIBLINGS, 'a', 'c')->nextAll(':first')));
 		$this->assertSame('a', $this->idList($this->selectIds(self::SIBLINGS, 'd', 'b')->siblings(':first')));
-		$this->assertSame('r', $this->idList($this->selectIds(self::ANCESTORS, 'u1', 'u2')->parents(':first')));
-		$this->assertSame('t2', $this->idList($this->selectIds(self::ANCESTORS, 'u1', 'u2')->parents(':last')));
+		$this->assertSame('t1', $this->idList($this->selectIds(self::ANCESTORS, 'u1', 'u2')->parents(':first')));
+		$this->assertSame('r', $this->idList($this->selectIds(self::ANCESTORS, 'u1', 'u2')->parents(':last')));
 	}
 }

@@ -3,6 +3,7 @@
 namespace QueryPath\Helpers;
 
 use DOMElement;
+use QueryPath\CSS\DOMTraverser;
 use QueryPath\CSS\DOMTraverser\Util;
 use QueryPath\CSS\ParseException;
 use QueryPath\DOMQuery;
@@ -726,7 +727,8 @@ trait QueryFilters
 	/**
 	 * Get all ancestors of each element in the DOMQuery.
 	 *
-	 * If a selector is present, only matching ancestors will be retrieved.
+	 * If a selector is present, only matching ancestors will be retrieved. As in jQuery, a
+	 * positional selector counts from the nearest ancestor, so `parents(':first')` is the parent.
 	 *
 	 * @param string $selector
 	 *  A valid CSS 3 Selector.
@@ -741,7 +743,7 @@ trait QueryFilters
 	 */
 	public function parents($selector = null): Query
 	{
-		return $this->inReverseDocumentOrder($this->walk('parentNode', null, false), $selector);
+		return $this->inReverseDocumentOrder($this->walkAll('parentNode', $selector));
 	}
 
 	/**
@@ -793,7 +795,7 @@ trait QueryFilters
 	 */
 	public function nextAll($selector = null): Query
 	{
-		return $this->inDocumentOrder($this->walk('nextSibling', null, false), $selector);
+		return $this->inDocumentOrder($this->walkAll('nextSibling', $selector));
 	}
 
 	/**
@@ -825,7 +827,8 @@ trait QueryFilters
 	 * Get the previous siblings for each element in the DOMQuery.
 	 *
 	 * For each element in the DOMQuery, get all previous siblings. If a
-	 * selector is provided, only matching siblings will be retrieved.
+	 * selector is provided, only matching siblings will be retrieved. As in jQuery, a
+	 * positional selector counts from the nearest sibling, so `prevAll(':first')` is prev().
 	 *
 	 * @param string $selector
 	 *  A valid CSS 3 selector.
@@ -842,7 +845,7 @@ trait QueryFilters
 	 */
 	public function prevAll($selector = null): Query
 	{
-		return $this->inReverseDocumentOrder($this->walk('previousSibling', null, false), $selector);
+		return $this->inReverseDocumentOrder($this->walkAll('previousSibling', $selector));
 	}
 
 	/**
@@ -1000,6 +1003,38 @@ trait QueryFilters
 		}
 
 		return $found;
+	}
+
+	/**
+	 * Walk from each matched element to the end of a DOM axis, keeping the elements that match
+	 * an optional selector.
+	 *
+	 * As in jQuery, a positional selector counts along the walks joined in walk order, an element
+	 * reached from two starting elements counted twice, so prevAll(':first') is the nearest
+	 * previous sibling.
+	 *
+	 * @param string      $axis
+	 * @param string|null $selector
+	 *
+	 * @return SplObjectStorage
+	 * @throws ParseException
+	 */
+	private function walkAll(string $axis, $selector): SplObjectStorage
+	{
+		if (empty($selector) || ! Util::selectorHasPositionalPseudoClass($selector)) {
+			return $this->filterCandidates($this->walk($axis, null, false), $selector);
+		}
+
+		$walked = [];
+		foreach ($this->matches as $m) {
+			for ($n = $m->{$axis}; $n !== null && $n->nodeType !== XML_DOCUMENT_NODE; $n = $n->{$axis}) {
+				if ($n->nodeType === XML_ELEMENT_NODE) {
+					$walked[] = $n;
+				}
+			}
+		}
+
+		return DOMTraverser::filterList($walked, $selector);
 	}
 
 	/**
