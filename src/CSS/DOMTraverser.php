@@ -179,7 +179,7 @@ class DOMTraverser implements Traverser
 	 * not be reused.
 	 *
 	 * @param iterable $handler
-	 *   A Selector, or an array of SimpleSelector[] groups in the same order.
+	 *   The SimpleSelector[] groups, as a Selector yields them.
 	 *
 	 * @return DOMTraverser
 	 * @throws ParseException

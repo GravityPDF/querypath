@@ -409,29 +409,28 @@ class PseudoClass
 	 */
 	protected function has($node, $selector): bool
 	{
-		foreach ($this->relativeSelector($selector) as [$group, $combinator, $nextOnly, $descends]) {
-			if (! ($combinator & (SimpleSelector::ADJACENT | SimpleSelector::SIBLING))) {
+		foreach ($this->relativeSelector($selector) as [$group, $siblings, $nextOnly, $descends]) {
+			if (! $siblings) {
 				if ($this->findsAny($node, $node, $group, false)) {
 					return true;
 				}
-				continue;
-			}
+			} else {
+				// Search the later siblings one at a time, so a match near the node ends the search.
+				for ($next = $node->nextSibling; $next !== null; $next = $next->nextSibling) {
+					if (! $next instanceof DOMElement) {
+						continue;
+					}
 
-			// Search the later siblings one at a time, so a match near the node ends the search.
-			for ($next = $node->nextSibling; $next !== null; $next = $next->nextSibling) {
-				if (! $next instanceof DOMElement) {
-					continue;
-				}
+					// The sibling can match itself, and its descendants when the group goes on to them (`+ ul li`).
+					if ($this->findsAny($next, $node, $group, true)
+						|| ($descends && $this->findsAny($next, $node, $group, false))
+					) {
+						return true;
+					}
 
-				// The sibling can match itself, and its descendants when the group goes on to them (`+ ul li`).
-				if ($this->findsAny($next, $node, $group, true)
-					|| ($descends && $this->findsAny($next, $node, $group, false))
-				) {
-					return true;
-				}
-
-				if ($nextOnly) {
-					break;
+					if ($nextOnly) {
+						break;
+					}
 				}
 			}
 		}
@@ -446,8 +445,8 @@ class PseudoClass
 	 * which becomes :scope. Any other group (`li`) is a descendant of :scope.
 	 *
 	 * @return array
-	 *   One [group, anchor combinator, whether only the next sibling can match, whether the group
-	 *   reaches below the sibling it starts from] per group.
+	 *   One [group, whether it starts at a later sibling (`+`/`~`), whether only the next sibling
+	 *   can match, whether it reaches below the sibling it starts from] per group.
 	 * @throws ParseException
 	 */
 	protected function relativeSelector($selector): array
@@ -483,7 +482,7 @@ class PseudoClass
 				}
 			}
 
-			$groups[] = [$group, $anchor->combinator, $nextOnly, $descends];
+			$groups[] = [$group, (bool) ($anchor->combinator & $sibling), $nextOnly, $descends];
 		}
 
 		return $this->relativeSelectors[$selector] = $groups;
