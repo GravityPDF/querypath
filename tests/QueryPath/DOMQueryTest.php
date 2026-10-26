@@ -2277,7 +2277,9 @@ class DOMQueryTest extends TestCase
 	{
 		$xml = '<?xml version="1.0"?><root><p><i>a</i><b>x</b></p><p><i>b</i></p><i>c</i></root>';
 
-		foreach (['i', 'p > i', 'p', '*', 'noSuchElement'] as $selector) {
+		// remove() still lets a selector match the nodes in hand, while detach() searches
+		// descendants only, as find() does, so selectors such as 'p' and '*' disagree (#126).
+		foreach (['i', 'p > i', 'noSuchElement'] as $selector) {
 			$removeQp = qp($xml, 'p');
 			$removed  = $removeQp->remove($selector);
 			$detachQp = qp($xml, 'p');
@@ -2286,6 +2288,9 @@ class DOMQueryTest extends TestCase
 			$this->assertSame($removed->count(), $detached->count(), $selector);
 			$this->assertSame($removeQp->top()->xml(), $detachQp->top()->xml(), $selector);
 		}
+
+		$this->assertSame(0, qp($xml, 'p')->detach('p')->count());
+		$this->assertSame(3, qp($xml, 'p')->detach('*')->count());
 	}
 
 	public function testAttachAfterDetachWithSelector()
