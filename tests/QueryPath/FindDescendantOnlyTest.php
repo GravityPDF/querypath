@@ -78,4 +78,48 @@ class FindDescendantOnlyTest extends TestCase
 		// The document element keeps its exception here as well.
 		$this->assertCount(1, qp($xml)->find('#a1'));
 	}
+
+	/**
+	 * Each initial matcher (element, ID, class) skips the text and comment nodes in the set,
+	 * and still excludes the element in the set while finding its descendants.
+	 *
+	 * @testWith ["*", "c1"]
+	 *           ["c", "c1"]
+	 *           ["#c1", "c1"]
+	 *           [".k", "c1"]
+	 *           ["#b1", ""]
+	 *           ["b", ""]
+	 *           ["b > c", "c1"]
+	 */
+	public function testFindFromAMixedNodeSet($selector, $expected): void
+	{
+		$xml = '<?xml version="1.0"?><root><a id="a1">text<b id="b1" class="k"><c id="c1" class="k"/></b><!-- comment --></a></root>';
+
+		$contents = qp($xml, '#a1')->contents();
+		$this->assertCount(3, $contents);
+
+		$ids = [];
+		foreach ($contents->find($selector)->get() as $node) {
+			$ids[] = $node->getAttribute('id');
+		}
+		$this->assertSame($expected, implode(',', $ids));
+	}
+
+	public function testFindFromALeafOrAnEmptySetFindsNothing(): void
+	{
+		$this->assertCount(0, qp(self::XML, '#b1')->find('*'));
+		$this->assertCount(0, qp(self::XML, 'nope')->find('*'));
+	}
+
+	/**
+	 * Starting below the document element must not bypass selector parsing.
+	 *
+	 * @testWith ["[foo"]
+	 *           [""]
+	 */
+	public function testFindRejectsAMalformedSelector($selector): void
+	{
+		$this->expectException(\QueryPath\CSS\ParseException::class);
+		qp(self::XML, '#a1')->find($selector);
+	}
 }
