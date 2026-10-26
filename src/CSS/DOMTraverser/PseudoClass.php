@@ -30,7 +30,7 @@ class PseudoClass
 	/**
 	 * Element positions within their sibling lists, keyed by element.
 	 *
-	 * Each entry is [[fromStart, fromEnd], [ofTypeFromStart, ofTypeFromEnd]].
+	 * Each entry is [fromStart, fromEnd, ofTypeFromStart, ofTypeFromEnd].
 	 * Positions are only kept while a query is running: the DOM may be mutated
 	 * between queries, so they must not outlive the query that indexed them.
 	 *
@@ -60,7 +60,9 @@ class PseudoClass
 	 */
 	public function beginQuery(): void
 	{
-		++$this->queryDepth;
+		if ($this->queryDepth++ === 0) {
+			$this->positions = new SplObjectStorage();
+		}
 	}
 
 	public function endQuery(): void
@@ -413,48 +415,9 @@ class PseudoClass
 	}
 
 	/**
-	 * Get the relative position of a node in its sibling set.
-	 */
-	protected function nodePositionFromStart($node, $byType = false): int
-	{
-		$i   = 1;
-		$tag = $node->tagName;
-		while (isset($node->previousSibling)) {
-			$node = $node->previousSibling;
-			if ($node->nodeType === XML_ELEMENT_NODE && ( ! $byType || $node->tagName === $tag)) {
-				++$i;
-			}
-		}
-
-		return $i;
-	}
-
-	/**
-	 * Get the relative position of a node in its sibling set.
-	 *
-	 * @param      $node
-	 * @param bool $byType
-	 *
-	 * @return int
-	 */
-	protected function nodePositionFromEnd($node, $byType = false): int
-	{
-		$i   = 1;
-		$tag = $node->tagName;
-		while (isset($node->nextSibling)) {
-			$node = $node->nextSibling;
-			if ($node->nodeType === XML_ELEMENT_NODE && ( ! $byType || $node->tagName === $tag)) {
-				++$i;
-			}
-		}
-
-		return $i;
-	}
-
-	/**
 	 * Record the position of every element child of $parent.
 	 */
-	protected function indexSiblings(DOMNode $parent): void
+	protected function indexSiblings(DOMNode $parent, SplObjectStorage $positions): void
 	{
 		$elements   = [];
 		$typeCounts = [];
@@ -468,10 +431,7 @@ class PseudoClass
 
 		$count = count($elements);
 		foreach ($elements as $i => [$child, $typePos]) {
-			$this->positions[$child] = [
-				[$i + 1, $count - $i],
-				[$typePos, $typeCounts[$child->tagName] - $typePos + 1],
-			];
+			$positions[$child] = [$i + 1, $count - $i, $typePos, $typeCounts[$child->tagName] - $typePos + 1];
 		}
 	}
 
@@ -513,19 +473,12 @@ class PseudoClass
 		}
 
 		// First we need to find the position of $node in other elements.
-		if ($this->queryDepth > 0) {
-			if ($this->positions === null) {
-				$this->positions = new SplObjectStorage();
-			}
-			if (! $this->positions->offsetExists($node)) {
-				$this->indexSiblings($parent);
-			}
-			$pos = $this->positions[$node][$byType ? 1 : 0][$reverse ? 1 : 0];
-		} elseif ($reverse) {
-			$pos = $this->nodePositionFromEnd($node, $byType);
-		} else {
-			$pos = $this->nodePositionFromStart($node, $byType);
+		// Outside a query nothing is remembered, so index into a throwaway store.
+		$positions = $this->positions ?? new SplObjectStorage();
+		if (! $positions->offsetExists($node)) {
+			$this->indexSiblings($parent, $positions);
 		}
+		$pos = $positions[$node][($byType ? 2 : 0) + ($reverse ? 1 : 0)];
 
 		// If group size is 0, we just check to see if this
 		// is the nth element:

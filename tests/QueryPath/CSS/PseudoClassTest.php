@@ -658,10 +658,10 @@ class PseudoClassTest extends TestCase
 		return new class extends PseudoClass {
 			public $indexed = 0;
 
-			protected function indexSiblings(DOMNode $parent): void
+			protected function indexSiblings(DOMNode $parent, SplObjectStorage $positions): void
 			{
 				++$this->indexed;
-				parent::indexSiblings($parent);
+				parent::indexSiblings($parent, $positions);
 			}
 		};
 	}

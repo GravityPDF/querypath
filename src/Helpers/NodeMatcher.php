@@ -4,6 +4,7 @@ namespace QueryPath\Helpers;
 
 use DOMNode;
 use QueryPath\CSS\DOMTraverser;
+use QueryPath\CSS\DOMTraverser\PseudoClass;
 use QueryPath\CSS\ParseException;
 use SplObjectStorage;
 
@@ -20,9 +21,9 @@ use SplObjectStorage;
  * would be the only member of its own one-element set.
  *
  * matches() remembers each per-node answer, because the walk-and-stop traversals
- * (closest(), nextUntil(), ...) revisit the same nodes from every starting element. An
- * instance must not outlive the call that made it, or a later DOM change could leave it
- * holding stale answers.
+ * (closest(), nextUntil(), ...) revisit the same nodes from every starting element, and
+ * every query shares one sibling index for the :nth-* pseudo-classes. An instance must not
+ * outlive the call that made it, or a later DOM change could leave it holding stale answers.
  */
 final class NodeMatcher
 {
@@ -38,6 +39,11 @@ final class NodeMatcher
 	private $results;
 
 	/**
+	 * @var PseudoClass
+	 */
+	private $psHandler;
+
+	/**
 	 * @param string $selector
 	 *   A valid CSS selector.
 	 */
@@ -45,6 +51,10 @@ final class NodeMatcher
 	{
 		$this->selector = $selector;
 		$this->results  = new SplObjectStorage();
+
+		// Held open for the matcher's lifetime, which is a single call.
+		$this->psHandler = new PseudoClass();
+		$this->psHandler->beginQuery();
 	}
 
 	/**
@@ -124,7 +134,7 @@ final class NodeMatcher
 		// than seeding them with a descendant search. The scope node is left at its default (the
 		// document element) so that `:scope` means the same here as in find(); scoping to a
 		// candidate would make every candidate match `:scope`.
-		$traverser = new DOMTraverser($nodes, true);
+		$traverser = new DOMTraverser($nodes, true, null, $this->psHandler);
 
 		return $traverser->find($this->selector)->matches();
 	}
