@@ -2,7 +2,6 @@
 
 namespace QueryPath\Helpers;
 
-use DOMElement;
 use DOMNode;
 use QueryPath\CSS\ParseException;
 use QueryPath\DOMQuery;
@@ -78,14 +77,7 @@ trait QueryChecks
 			throw new Exception('Cannot compare an object to a DOMQuery.');
 		}
 
-		$matcher = new NodeMatcher($selector);
-		foreach ($this->matches as $m) {
-			if ($m instanceof DOMElement && $matcher->matchesInDocument($m)) {
-				return true;
-			}
-		}
-
-		return false;
+		return (new NodeMatcher($selector))->matchesAnyInDocument($this->matches);
 	}
 
 	/**
