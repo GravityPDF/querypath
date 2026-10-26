@@ -261,13 +261,13 @@ class PseudoClass
 			case 'has':
 				return $this->has($node, $value);
 			case 'matches':
-				return $this->is($node, $value);
+				return $this->is($node, $value, $scope);
 			case 'not':
 				if (empty($value)) {
 					throw new ParseException(':not() requires a value.');
 				}
 
-				return $this->isNot($node, $value);
+				return $this->isNot($node, $value, $scope);
 			// Contains == text matches.
 			// In QP 2.1, this was changed.
 			case 'contains':
@@ -545,12 +545,12 @@ class PseudoClass
 	 *
 	 * @throws ParseException
 	 */
-	protected function is($node, $selector): bool
+	protected function is($node, $selector, $scope = null): bool
 	{
 		$splos = new SPLObjectStorage();
 		$splos->offsetSet($node);
 
-		return count(DOMTraverser::filterNodes($splos, $selector, null, $this)) > 0;
+		return count(DOMTraverser::filterNodes($splos, $selector, $scope, $this)) > 0;
 	}
 
 	/**
@@ -558,9 +558,9 @@ class PseudoClass
 	 *
 	 * @throws ParseException
 	 */
-	protected function isNot($node, $selector): bool
+	protected function isNot($node, $selector, $scope = null): bool
 	{
-		return ! $this->is($node, $selector);
+		return ! $this->is($node, $selector, $scope);
 	}
 
 	/**
