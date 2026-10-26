@@ -63,23 +63,16 @@ class Issue66Test extends TestCase
 	}
 
 	/**
-	 * remove() and replaceAll() use the legacy QueryPathEventHandler engine.
-	 * It has to give the same answer as find().
+	 * remove() has to give the same answer as find().
 	 *
 	 * @dataProvider positionalProvider
 	 *
 	 * @param string $selector
 	 * @param array  $expected
 	 */
-	public function testLegacyEngineAgreesWithTheTraverser($selector, array $expected)
+	public function testRemoveAgreesWithFind($selector, array $expected)
 	{
-		$removed = $this->textOf(html5qp(self::HTML)->remove($selector));
-		sort($removed);
-
-		$sorted = $expected;
-		sort($sorted);
-
-		$this->assertSame($sorted, $removed);
+		$this->assertSame($expected, $this->textOf(html5qp(self::HTML)->remove($selector)));
 	}
 
 	/**
