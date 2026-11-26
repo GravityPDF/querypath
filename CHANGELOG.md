@@ -4,6 +4,7 @@ QueryPath Changelog
 # Unreleased changes
 
 - Add support for PHP 8.6
+- With libxml2 2.14+, `htmlqp()` parses `<?php ... ?>` as a comment (`<!--?php ... ?-->`) and no longer throws `QueryPath\ParseException` on malformed HTML. Use `html5qp()` to keep processing instructions
 
 # 4.1.0
 
