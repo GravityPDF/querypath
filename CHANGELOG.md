@@ -3,6 +3,7 @@ QueryPath Changelog
 
 # Unreleased changes
 
+- Add support for PHP 8.6
 - On PHP 8.0 and later, `filterLambda()` and `eachLambda()` now throw a `QueryPath\Exception` that names their replacements, `filterCallback()` and `each()`, instead of an `Error` about the undefined `create_function()` (issue #81). They still work on PHP 7.1–7.4 and will be removed in 5.0
 - **Behaviour change.** Fix the jQuery positional pseudo-classes (`:eq()`, `:first`, `:last`, `:lt()`, `:gt()`, `:odd`, `:even`, and the `:nth()` alias of `:eq()`), which indexed an element's siblings instead of the matched set (issue #66). They are now applied, zero-indexed and in document order, to the set the selector matched, as in jQuery. Most visibly, `:eq(0)` now matches the first result instead of never matching. `:lt()`, `:gt()`, `:eq()` and `:nth()` are zero-indexed where they were previously one-indexed, `:odd`/`:even` now index the matched set rather than sibling position, and a negative index counts back from the end of the set (`:eq(-1)` is the last match). The CSS structural pseudo-classes (`:nth-child()`, `:nth-of-type()`, `:first-child`, `:last-child`, ...) are unchanged and still count siblings, one-indexed
 - Make `QueryPath\CSS\QueryPathEventHandler`, the legacy selector engine, agree with `QueryPath\CSS\DOMTraverser` on the positional pseudo-classes, except in the argument of `:not()`
