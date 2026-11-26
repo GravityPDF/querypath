@@ -1885,7 +1885,8 @@ class DOMQueryTest extends TestCase
 	public function testFailWriteXMLReportsWarning()
 	{
 		$this->expectException(IOException::class);
-		$this->expectExceptionMessage('DOMDocument::save(./test/no-writing.xml)');
+		// PHP 8.6 dropped the call's arguments from warnings: "DOMDocument::save(): ...".
+		$this->expectExceptionMessageMatches('/DOMDocument::save\\((?:\\.\\/test\\/no-writing\\.xml)?\\): [Ff]ailed to open stream/');
 		$this->expectExceptionCode(E_WARNING);
 
 		qp()->writeXML('./test/no-writing.xml');
