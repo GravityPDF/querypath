@@ -16,6 +16,7 @@ use QueryPath\Options;
 use QueryPath\ParseException;
 use QueryPath\QueryPath;
 use QueryPath\DOMQuery;
+use RuntimeException;
 use SplDoublyLinkedList;
 use stdClass;
 
@@ -311,6 +312,15 @@ class DOMQueryTest extends TestCase
 		}
 	}
 
+	public function testFailedParseReportsWarning()
+	{
+		$this->expectException(ParseException::class);
+		$this->expectExceptionMessage('DOMDocument::loadXML()');
+		$this->expectExceptionCode(E_WARNING);
+
+		qp('<?xml version="1.0"?><foo><bar>foonator;</foo>', null);
+	}
+
 	public function testIgnoreParserWarnings()
 	{
 		$qp = @qp('<html><body><b><i>BAD!</b></i></body>', null, ['ignore_parser_warnings' => true]);
@@ -507,6 +517,24 @@ class DOMQueryTest extends TestCase
 		$this->assertEquals('a: c;b: b;', $qp->css());
 	}
 
+	public function testCssMergesIntoEachElementsOwnStyle()
+	{
+		$html = '<div><p style="color: red"></p><p style="font-size: 2px; margin: 5px"></p><p></p></div>';
+
+		$qp = html5qp($html, 'p')->css('margin', '0');
+		$this->assertSame('color: red;margin: 0;', $qp->get(0)->getAttribute('style'));
+		$this->assertSame('font-size: 2px;margin: 0;', $qp->get(1)->getAttribute('style'));
+		$this->assertSame('margin: 0;', $qp->get(2)->getAttribute('style'));
+
+		$qp = html5qp($html, 'p')->css(['margin' => '0', 'color' => 'blue']);
+		$this->assertSame('color: blue;margin: 0;', $qp->get(0)->getAttribute('style'));
+		$this->assertSame('font-size: 2px;margin: 0;color: blue;', $qp->get(1)->getAttribute('style'));
+		$this->assertSame('margin: 0;color: blue;', $qp->get(2)->getAttribute('style'));
+
+		// The getter still returns the first element's style, unparsed.
+		$this->assertSame('color: red', html5qp($html, 'p')->css());
+	}
+
 	public function testRemoveAttr()
 	{
 		$file = DATA_FILE;
@@ -514,6 +542,122 @@ class DOMQueryTest extends TestCase
 		$qp = qp($file, 'inner')->removeAttr('class');
 		$this->assertEquals(2, $qp->count());
 		$this->assertFalse($qp->get(0)->hasAttribute('class'));
+	}
+
+	/**
+	 * Match sets from contents() that mix an element with non-element nodes.
+	 *
+	 * @return array
+	 *   The XML, and whether the element is the first node of the set.
+	 */
+	public function nonElementMatchSetProvider(): array
+	{
+		$element = '<a class="c" x="1" style="color: blue;"/>';
+		$others  = [
+			'text'                   => 'text',
+			'comment'                => '<!--comment-->',
+			'CDATA'                  => '<![CDATA[cdata]]>',
+			'processing instruction' => '<?pi data?>',
+		];
+
+		$sets = [];
+		foreach ($others as $kind => $node) {
+			$sets[$kind . ' first'] = ['<?xml version="1.0"?><root>' . $node . $element . '</root>', false];
+		}
+		$sets['non-elements after an element'] = [
+			'<?xml version="1.0"?><root>' . $element . implode('', $others) . '</root>',
+			true,
+		];
+
+		return $sets;
+	}
+
+	/**
+	 * The contents() of the provider's root, and the <a> element among them.
+	 *
+	 * @return array
+	 */
+	private function contentsWithElement($xml): array
+	{
+		$qp = qp($xml, 'root')->contents();
+
+		return [$qp, $qp->top('a')->get(0)];
+	}
+
+	/**
+	 * @dataProvider nonElementMatchSetProvider
+	 */
+	public function testAttrWithNonElementNodes($xml, $elementFirst)
+	{
+		[$qp, $a] = $this->contentsWithElement($xml);
+
+		$this->assertSame($elementFirst ? '1' : null, $qp->attr('x'));
+		$this->assertSame($elementFirst ? ['class' => 'c', 'x' => '1', 'style' => 'color: blue;'] : null, $qp->attr());
+		$this->assertSame($qp->get(0)->nodeType, $qp->attr('nodeType'));
+
+		$this->assertSame($qp, $qp->attr('y', '2'));
+		$this->assertSame('2', $a->getAttribute('y'));
+
+		$this->assertSame($qp, $qp->attr(['z' => '3']));
+		$this->assertSame('3', $a->getAttribute('z'));
+	}
+
+	/**
+	 * @dataProvider nonElementMatchSetProvider
+	 */
+	public function testCssWithNonElementNodes($xml, $elementFirst)
+	{
+		[$qp, $a] = $this->contentsWithElement($xml);
+
+		$this->assertSame($qp, $qp->css('margin', '0'));
+		$this->assertSame('color: blue;margin: 0;', $a->getAttribute('style'));
+		$this->assertSame($elementFirst ? 'color: blue;margin: 0;' : null, $qp->css());
+	}
+
+	/**
+	 * @dataProvider nonElementMatchSetProvider
+	 */
+	public function testClassMethodsWithNonElementNodes($xml)
+	{
+		[$qp, $a] = $this->contentsWithElement($xml);
+
+		$this->assertTrue($qp->hasClass('c'));
+		$this->assertFalse($qp->hasClass('d'));
+
+		$this->assertSame($qp, $qp->addClass('d'));
+		$this->assertSame('c d', $a->getAttribute('class'));
+
+		$this->assertSame($qp, $qp->removeClass('c'));
+		$this->assertSame('d', $a->getAttribute('class'));
+
+		$this->assertSame($qp, $qp->removeClass());
+		$this->assertFalse($a->hasAttribute('class'));
+	}
+
+	/**
+	 * @dataProvider nonElementMatchSetProvider
+	 */
+	public function testHasAttrAndRemoveAttrWithNonElementNodes($xml)
+	{
+		[$qp, $a] = $this->contentsWithElement($xml);
+
+		$this->assertTrue($qp->hasAttr('x'));
+		$this->assertFalse($qp->hasAttr('y'));
+
+		$this->assertSame($qp, $qp->removeAttr('x'));
+		$this->assertFalse($a->hasAttribute('x'));
+		$this->assertFalse($qp->hasAttr('x'));
+	}
+
+	/**
+	 * @dataProvider nonElementMatchSetProvider
+	 */
+	public function testFirstAndLastWithNonElementNodes($xml)
+	{
+		[$qp, $a] = $this->contentsWithElement($xml);
+
+		$this->assertSame([$a], $qp->first()->get());
+		$this->assertSame([$a], $qp->last()->get());
 	}
 
 	public function testEq()
@@ -583,8 +727,9 @@ class DOMQueryTest extends TestCase
 
 	public function testFilterLambda()
 	{
-		if (version_compare(PHP_VERSION, '8.0.0', '>=')) {
-			$this->markTestSkipped('create_function removed in PHP8.0');
+		if (!function_exists('create_function')) {
+			$this->expectException(Exception::class);
+			$this->expectExceptionMessage('Use filterCallback() with a closure instead.');
 		}
 
 		$file = DATA_FILE;
@@ -645,6 +790,23 @@ class DOMQueryTest extends TestCase
 		$this->assertEquals(count($arr), $qp->count());
 		array_shift($arr);
 		$this->assertEquals(1, $qp->not($arr)->count());
+	}
+
+	public function testNotRemovesTheSameNodesForEveryArgumentType()
+	{
+		$qp      = qp(DATA_FILE, 'li');
+		$exclude = $qp->branch()->filter('#one, #three');
+		$ids     = function ($q) {
+			return array_map(function ($n) {
+				return $n->getAttribute('id');
+			}, $q->get());
+		};
+
+		$expected = ['two', 'four', 'five'];
+		$this->assertSame($expected, $ids($qp->not('#one, #three')), 'Selector');
+		$this->assertSame($expected, $ids($qp->not($exclude->get())), 'Array');
+		$this->assertSame($expected, $ids($qp->not($exclude->get(null, true))), 'SplObjectStorage');
+		$this->assertSame(['two', 'three', 'four', 'five'], $ids($qp->not($exclude->get(0))), 'DOMElement');
 	}
 
 	public function testSlice()
@@ -725,8 +887,9 @@ class DOMQueryTest extends TestCase
 
 	public function testEachLambda()
 	{
-		if (version_compare(PHP_VERSION, '8.0.0', '>=')) {
-			$this->markTestSkipped('create_function removed in PHP8.0');
+		if (!function_exists('create_function')) {
+			$this->expectException(Exception::class);
+			$this->expectExceptionMessage('Use each() with a closure instead.');
 		}
 
 		$file = DATA_FILE;
@@ -767,6 +930,17 @@ class DOMQueryTest extends TestCase
 	{
 		$file = DATA_FILE;
 		$this->assertEquals('li', qp($file, 'li')->tag());
+		$this->assertSame('', qp($file, 'nonexistent')->tag());
+	}
+
+	/**
+	 * Issue #93
+	 *
+	 * @dataProvider nonElementMatchSetProvider
+	 */
+	public function testTagFirstMatchOfContents($xml, $elementFirst)
+	{
+		$this->assertSame($elementFirst ? 'a' : '', qp($xml, 'root')->contents()->tag());
 	}
 
 	public function testAppend()
@@ -1088,6 +1262,62 @@ class DOMQueryTest extends TestCase
 		$qp  = qp($data);
 		$rem = $qp->remove('noSuchElement');
 		$this->assertEquals(0, count($rem));
+	}
+
+	const NESTED_PSEUDO_CLASS_XML = '<?xml version="1.0"?><root><ul><li>1</li><li>2</li><li>3</li></ul><ul><li>4</li></ul><p>a(b)</p><p>a)b</p></root>';
+
+	public function findNestedPseudoClassProvider(): array
+	{
+		return [
+			['li:not(:not(:nth-child(1)))', ['1', '4']],
+			['li:not(:matches(:nth-child(1)))', ['2', '3']],
+			['li:not(:not(:first-child))', ['1', '4']],
+			['ul:not(:nth-child(1))', ['4']],
+			['li:not(:not(:not(:nth-child(1))))', ['2', '3']],
+			['ul:not(:nth-child(2)) li', ['1', '2', '3']],
+			['p:contains("a(b)")', ['a(b)']],
+			["p:contains('a)b')", ['a)b']],
+		];
+	}
+
+	/**
+	 * @dataProvider findNestedPseudoClassProvider
+	 */
+	public function testFindWithNestedPseudoClass($selector, $expected)
+	{
+		$found = qp(self::NESTED_PSEUDO_CLASS_XML)->find($selector);
+
+		$this->assertSame($expected, array_map(function ($node) {
+			return $node->textContent;
+		}, $found->get()));
+	}
+
+	public function removeNestedPseudoClassProvider(): array
+	{
+		return [
+			['li:not(:not(:nth-child(1)))', ['1', '4']],
+			['ul:has(li:not(:nth-child(1)))', ['123']],
+			['ul:not(:has(li:nth-child(3)))', ['4']],
+			['li:not(:not(:first-child))', ['1', '4']],
+			['ul:not(:has(li))', []],
+			['ul:not(:nth-child(1))', ['4']],
+			['li:not(:not(:not(:nth-child(1))))', ['2', '3']],
+			['ul:not(:nth-child(2)) li', ['1', '2', '3']],
+			['p:contains("a(b)")', ['a(b)']],
+			["p:contains('a)b')", ['a)b']],
+		];
+	}
+
+	/**
+	 * @dataProvider removeNestedPseudoClassProvider
+	 */
+	public function testRemoveWithNestedPseudoClass($selector, $expected)
+	{
+		$removed = qp(self::NESTED_PSEUDO_CLASS_XML)->remove($selector);
+
+		$this->assertSame($expected, array_map(function ($node) {
+			return $node->textContent;
+		}, $removed->get()));
 	}
 
 	public function testHasClass()
@@ -1480,36 +1710,104 @@ class DOMQueryTest extends TestCase
 	{
 		$this->expectException(IOException::class);
 
-		try {
-			qp()->writeXML('./test/no-writing.xml');
-		} catch (Exception $e) {
-			//print $e->getMessage();
-			throw $e;
-		}
+		qp()->writeXML('./test/no-writing.xml');
+	}
+
+	public function testFailWriteXMLReportsWarning()
+	{
+		$this->expectException(IOException::class);
+		// PHP 8.6 dropped the call's arguments from warnings: "DOMDocument::save(): ...".
+		$this->expectExceptionMessageMatches('/DOMDocument::save\\((?:\\.\\/test\\/no-writing\\.xml)?\\): [Ff]ailed to open stream/');
+		$this->expectExceptionCode(E_WARNING);
+
+		qp()->writeXML('./test/no-writing.xml');
 	}
 
 	public function testFailWriteXHTML()
 	{
 		$this->expectException(IOException::class);
 
-		try {
-			qp()->writeXHTML('./test/no-writing.xml');
-		} catch (IOException $e) {
-			//print $e->getMessage();
-			throw $e;
-		}
+		qp()->writeXHTML('./test/no-writing.xml');
 	}
 
 	public function testFailWriteHTML()
 	{
 		$this->expectException(IOException::class);
 
+		htmlqp('<html><body><p>bar</p></body></html>')->writeHTML('./test/no-writing.html');
+	}
+
+	public function testFailWriteHTML5()
+	{
+		$this->expectException(IOException::class);
+
+		html5qp('<html><body>bar</body></html>')->writeHTML5('./test/no-writing.html');
+	}
+
+	public function throwingCallProvider(): array
+	{
+		$url = ThrowingStreamWrapper::PROTOCOL . '://out';
+
+		return [
+			'writeXML'          => [function () use ($url) {
+				qp('<?xml version="1.0"?><foo/>')->writeXML($url);
+			}],
+			'writeHTML'         => [function () use ($url) {
+				htmlqp('<p>bar</p>')->writeHTML($url);
+			}],
+			'writeHTML5'        => [function () use ($url) {
+				html5qp('<p>bar</p>')->writeHTML5($url);
+			}],
+			'load with context' => [function () use ($url) {
+				qp($url . '.xml', null, ['context' => stream_context_create()]);
+			}],
+		];
+	}
+
+	/**
+	 * A throwable QueryPath does not convert must not leave its error handler installed.
+	 *
+	 * @dataProvider throwingCallProvider
+	 *
+	 * @param callable $callback
+	 */
+	public function testErrorHandlerRestoredAfterForeignThrowable(callable $callback)
+	{
+		$sentinel = function () {
+			return false;
+		};
+
+		stream_wrapper_register(ThrowingStreamWrapper::PROTOCOL, ThrowingStreamWrapper::class);
+		set_error_handler($sentinel);
 		try {
-			qp('<?xml version="1.0"?><foo/>')->writeXML('./test/no-writing.xml');
-		} catch (IOException $e) {
-			// print $e->getMessage();
-			throw $e;
+			$callback();
+			$this->fail('Expected a RuntimeException.');
+		} catch (RuntimeException $e) {
+			$current = set_error_handler(null);
+			restore_error_handler();
+		} finally {
+			restore_error_handler();
+			stream_wrapper_unregister(ThrowingStreamWrapper::PROTOCOL);
 		}
+
+		$this->assertSame($sentinel, $current);
+	}
+
+	public function testWriteHTML5()
+	{
+		$qp = html5qp('<html><body>bar</body></html>');
+
+		// Writing to stdout returns the DOMQuery, so it can be chained.
+		$out = $this->capture(function () use ($qp) {
+			$this->assertSame($qp, $qp->writeHTML5());
+		});
+		$this->assertStringContainsString('<body>bar</body>', $out);
+
+		// Writing to a file returns the DOMQuery as well.
+		$name = './' . __FUNCTION__ . '.html';
+		$this->assertSame($qp, $qp->writeHTML5($name));
+		$this->assertStringContainsString('<body>bar</body>', file_get_contents($name));
+		unlink($name);
 	}
 
 	public function testWriteHTML()
@@ -1875,6 +2173,56 @@ class DOMQueryTest extends TestCase
 		$dest   = qp('<?xml version="1.0"?><root><dest/></root>', 'dest');
 		$qp     = $qp->attach($dest);
 		$this->assertEquals(5, $dest->find(':root li')->count());
+	}
+
+	public function testDetachWithSelector()
+	{
+		$xml = '<?xml version="1.0"?><root><p><i>a</i><b>x</b></p><p><i>b</i></p><i>c</i></root>';
+		$qp  = qp($xml, 'p');
+
+		$detached = $qp->detach('i');
+
+		$this->assertSame(2, $detached->count());
+		$this->assertSame('i', $detached->tag());
+		$this->assertSame('ab', $detached->text());
+		$this->assertNull($detached->get(0)->parentNode);
+
+		$this->assertSame(2, $qp->count());
+		$this->assertSame('p', $qp->tag());
+		$this->assertSame(2, $qp->top('p')->count());
+		$this->assertSame(1, $qp->top('b')->count());
+		$this->assertSame('c', $qp->top('i')->text());
+
+		$this->assertSame(2, $detached->end()->count());
+		$this->assertSame('p', $detached->tag());
+	}
+
+	public function testDetachWithSelectorAgreesWithRemove()
+	{
+		$xml = '<?xml version="1.0"?><root><p><i>a</i><b>x</b></p><p><i>b</i></p><i>c</i></root>';
+
+		// Not '*': on 4.x remove() still uses the legacy selector engine, which disagrees with find() on it.
+		foreach (['i', 'p > i', 'p', 'noSuchElement'] as $selector) {
+			$removeQp = qp($xml, 'p');
+			$removed  = $removeQp->remove($selector);
+			$detachQp = qp($xml, 'p');
+			$detached = $detachQp->detach($selector);
+
+			$this->assertSame($removed->count(), $detached->count(), $selector);
+			$this->assertSame($removeQp->top()->xml(), $detachQp->top()->xml(), $selector);
+		}
+	}
+
+	public function testAttachAfterDetachWithSelector()
+	{
+		$qp = qp('<?xml version="1.0"?><root><p><i>a</i></p><p><i>b</i></p></root>', 'p');
+		$qp->detach('i');
+
+		$dest = qp('<?xml version="1.0"?><root><dest/></root>', 'dest');
+		$qp->attach($dest);
+
+		$this->assertSame(2, $dest->find('i')->count());
+		$this->assertSame(2, $qp->top('p')->count());
 	}
 
 	public function testEmptyElement()

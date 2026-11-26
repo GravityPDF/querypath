@@ -84,17 +84,23 @@ trait QueryFilters
 	 *
 	 * @return DOMQuery
 	 * @throws ParseException
+	 * @throws Exception
 	 *
 	 * @see map()
 	 * @see mapLambda()
 	 * @see filterCallback()
 	 * @see filter()
 	 * @deprecated
-	 *   Since PHP 5.3 supports anonymous functions -- REAL Lambdas -- this
-	 *   method is not necessary and should be avoided.
+	 *   Relies on create_function(), which was removed in PHP 8.0, so this
+	 *   method only works on PHP 7. Use filterCallback() with a closure
+	 *   instead. It will be removed in 5.0.
 	 */
 	public function filterLambda($fn): Query
 	{
+		if (!function_exists('create_function')) {
+			throw new Exception('filterLambda() requires create_function(), which was removed in PHP 8.0. Use filterCallback() with a closure instead.');
+		}
+
 		$function = create_function('$index, $item', $fn);
 		$found    = new SplObjectStorage();
 		$i        = 0;
@@ -355,9 +361,11 @@ trait QueryFilters
 	 *
 	 * @return DOMQuery
 	 *  The DOMQuery object.
+	 * @throws Exception
 	 * @deprecated
-	 *   Since PHP 5.3 supports anonymous functions -- REAL Lambdas -- this
-	 *   method is not necessary and should be avoided.
+	 *   Relies on create_function(), which was removed in PHP 8.0, so this
+	 *   method only works on PHP 7. Use each() with a closure instead. It
+	 *   will be removed in 5.0.
 	 * @see each()
 	 * @see filterLambda()
 	 * @see filterCallback()
@@ -365,6 +373,10 @@ trait QueryFilters
 	 */
 	public function eachLambda($lambda): Query
 	{
+		if (!function_exists('create_function')) {
+			throw new Exception('eachLambda() requires create_function(), which was removed in PHP 8.0. Use each() with a closure instead.');
+		}
+
 		$index = 0;
 		foreach ($this->matches as $item) {
 			$fn = create_function('$index, &$item', $lambda);
@@ -448,11 +460,9 @@ trait QueryFilters
 	public function first(): Query
 	{
 		$found = new SplObjectStorage();
-		foreach ($this->matches as $m) {
-			if ($m->nodeType === XML_ELEMENT_NODE) {
-				$found->offsetSet($m);
-				break;
-			}
+		foreach ($this->elements() as $m) {
+			$found->offsetSet($m);
+			break;
 		}
 
 		return $this->inst($found, null);
@@ -507,10 +517,8 @@ trait QueryFilters
 	{
 		$found = new SplObjectStorage();
 		$item  = null;
-		foreach ($this->matches as $m) {
-			if ($m->nodeType === XML_ELEMENT_NODE) {
-				$item = $m;
-			}
+		foreach ($this->elements() as $m) {
+			$item = $m;
 		}
 		if ($item) {
 			$found->offsetSet($item);
@@ -720,7 +728,7 @@ trait QueryFilters
 			}
 		} elseif ($selector instanceof SplObjectStorage) {
 			foreach ($this->matches as $m) {
-				if ($selector->offsetExists($m)) {
+				if (! $selector->offsetExists($m)) {
 					$found->offsetSet($m);
 				}
 			}

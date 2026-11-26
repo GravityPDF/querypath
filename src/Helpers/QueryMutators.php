@@ -602,7 +602,7 @@ trait QueryMutators
 	 */
 	public function addClass($class)
 	{
-		foreach ($this->matches as $m) {
+		foreach ($this->elements() as $m) {
 			if ($m->hasAttribute('class')) {
 				$val = $m->getAttribute('class');
 				$m->setAttribute('class', $val . ' ' . $class);
@@ -651,12 +651,12 @@ trait QueryMutators
 	public function removeClass($class = false): Query
 	{
 		if (empty($class)) {
-			foreach ($this->matches as $m) {
+			foreach ($this->elements() as $m) {
 				$m->removeAttribute('class');
 			}
 		} else {
 			$to_remove = array_filter(explode(' ', $class));
-			foreach ($this->matches as $m) {
+			foreach ($this->elements() as $m) {
 				if ($m->hasAttribute('class')) {
 					$vals = array_filter(explode(' ', $m->getAttribute('class')));
 					$buf  = [];
@@ -701,17 +701,17 @@ trait QueryMutators
 	 */
 	public function detach($selector = null): Query
 	{
-		if (null !== $selector) {
-			$this->find($selector);
-		}
+		$matches = null === $selector ? $this->matches : $this->find($selector)->matches;
 
-		$found      = new SplObjectStorage();
-		$this->last = $this->matches;
-		foreach ($this->matches as $item) {
+		$found = new SplObjectStorage();
+		foreach ($matches as $item) {
 			// The item returned is (according to docs) different from
 			// the one passed in, so we have to re-store it.
 			$found->offsetSet($item->parentNode->removeChild($item));
 		}
+
+		// attach() re-attaches whatever the last detach() removed.
+		$this->last = $found;
 
 		return $this->inst($found, null);
 	}
@@ -922,7 +922,8 @@ trait QueryMutators
 	 * - If $name is a string and is set, then the attribute value will be returned.
 	 *
 	 * When an attribute value is retrieved, only the attribute value of the FIRST
-	 * match is returned.
+	 * match is returned, or NULL if that match is not an element. Setters skip
+	 * matches that are not elements.
 	 *
 	 * @param mixed  $name
 	 *   The name of the attribute or an associative array of name/value pairs.
@@ -941,10 +942,10 @@ trait QueryMutators
 	{
 		// Default case: Return all attributes as an assoc array.
 		if (is_null($name)) {
-			if ($this->matches->count() === 0) {
+			$ele = $this->firstElement();
+			if ($ele === null) {
 				return null;
 			}
-			$ele    = $this->getFirstMatch();
 			$buffer = [];
 
 			// This does not appear to be part of the DOM
@@ -958,8 +959,8 @@ trait QueryMutators
 
 		// multi-setter
 		if (is_array($name)) {
-			foreach ($name as $k => $v) {
-				foreach ($this->matches as $m) {
+			foreach ($this->elements() as $m) {
+				foreach ($name as $k => $v) {
 					$m->setAttribute($k, $v);
 				}
 			}
@@ -968,7 +969,7 @@ trait QueryMutators
 		}
 		// setter
 		if (isset($value)) {
-			foreach ($this->matches as $m) {
+			foreach ($this->elements() as $m) {
 				$m->setAttribute($name, $value);
 			}
 
@@ -986,7 +987,9 @@ trait QueryMutators
 		}
 
 		// Always return first match's attr.
-		return $this->getFirstMatch()->getAttribute($name);
+		$first = $this->firstElement();
+
+		return $first === null ? null : $first->getAttribute($name);
 	}
 
 	/**
@@ -1037,9 +1040,11 @@ trait QueryMutators
 			return $this->attr('style');
 		}
 
-		// Get any existing CSS.
-		$css = [];
-		foreach ($this->matches as $match) {
+		$rules = is_array($name) ? $name : [$name => $value];
+
+		foreach ($this->elements() as $match) {
+			// Get this element's existing CSS.
+			$css   = [];
 			$style = $match->getAttribute('style');
 			if (! empty($style)) {
 				// XXX: Is this sufficient?
@@ -1056,23 +1061,18 @@ trait QueryMutators
 					$css[$css_att] = trim($css_val);
 				}
 			}
-		}
 
-		if (is_array($name)) {
 			// Use array_merge instead of + to preserve order.
-			$css = array_merge($css, $name);
-		} else {
-			$css[$name] = $value;
-		}
+			$css = array_merge($css, $rules);
 
-		// Collapse CSS into a string.
-		$format     = '%s: %s;';
-		$css_string = '';
-		foreach ($css as $n => $v) {
-			$css_string .= sprintf($format, $n, trim($v));
-		}
+			// Collapse CSS into a string.
+			$css_string = '';
+			foreach ($css as $n => $v) {
+				$css_string .= sprintf('%s: %s;', $n, trim($v));
+			}
 
-		$this->attr('style', $css_string);
+			$match->setAttribute('style', $css_string);
+		}
 
 		return $this;
 	}

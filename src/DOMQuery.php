@@ -547,7 +547,9 @@ class DOMQuery extends DOM
 	 * The tag name of the first element in the list.
 	 *
 	 * This returns the tag name of the first element in the list of matches. If
-	 * the list is empty, an empty string will be used.
+	 * the list is empty, or the first match is not an element (for example, a
+	 * text, comment or processing instruction node returned by contents()), an
+	 * empty string will be used.
 	 *
 	 * @return string
 	 *  The tag name of the first element in the list.
@@ -556,7 +558,9 @@ class DOMQuery extends DOM
 	 */
 	public function tag()
 	{
-		return ($this->matches->count() > 0) ? $this->getFirstMatch()->tagName : '';
+		$first = $this->firstElement();
+
+		return $first === null ? '' : $first->tagName;
 	}
 
 	/**
@@ -1299,14 +1303,9 @@ class DOMQuery extends DOM
 		if ($path === null) {
 			print $this->document->saveXML(null, $options);
 		} else {
-			try {
-				set_error_handler([IOException::class, 'initializeFromError']);
+			self::withErrorHandler(IOException::class, function () use ($path, $options) {
 				$this->document->save($path, $options);
-			} catch (Exception $e) {
-				restore_error_handler();
-				throw $e;
-			}
-			restore_error_handler();
+			});
 		}
 
 		return $this;
@@ -1337,14 +1336,9 @@ class DOMQuery extends DOM
 		if ($path === null) {
 			print $this->document->saveHTML();
 		} else {
-			try {
-				set_error_handler(['\QueryPath\ParseException', 'initializeFromError']);
+			self::withErrorHandler(IOException::class, function () use ($path) {
 				$this->document->saveHTMLFile($path);
-			} catch (Exception $e) {
-				restore_error_handler();
-				throw $e;
-			}
-			restore_error_handler();
+			});
 		}
 
 		return $this;
@@ -1356,6 +1350,12 @@ class DOMQuery extends DOM
 	 * This works the same as the other write* functions, but it encodes the output
 	 * as HTML5 with UTF-8.
 	 *
+	 * @param string|null $path
+	 *  The path to the file into which the HTML5 should be written. If
+	 *  this is NULL, data will be written to STDOUT.
+	 *
+	 * @return DOMQuery
+	 *  The DOMQuery object, unmodified.
 	 * @throws Exception
 	 *  In the event that a file cannot be written, an Exception will be thrown.
 	 * @see innerHTML5()
@@ -1367,11 +1367,13 @@ class DOMQuery extends DOM
 		if ($path === null) {
 			// Print the document to stdout.
 			print $html5->saveHTML($this->document);
-
-			return;
+		} else {
+			self::withErrorHandler(IOException::class, function () use ($html5, $path) {
+				$html5->save($this->document, $path);
+			});
 		}
 
-		$html5->save($this->document, $path);
+		return $this;
 	}
 
 	/**
