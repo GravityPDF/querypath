@@ -102,7 +102,7 @@ class QueryPath
 	 * @since 2.0
 	 * @deprecated Use \Composer\InstalledVersions::getPrettyVersion('gravitypdf/querypath') (Composer 2).
 	 */
-	public const VERSION = '4.2.0';
+	public const VERSION = '4.3.0';
 
 	/**
 	 * Major version number.
