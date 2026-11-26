@@ -3,7 +3,7 @@ QueryPath Changelog
 
 # Unreleased changes
 
--
+- Add support for PHP 8.6
 
 # 4.1.0
 
